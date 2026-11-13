@@ -1,3 +1,4 @@
+import StoreKit
 import SwiftUI
 import SortlyCore
 import SortlyEngine
@@ -141,8 +142,10 @@ struct PlanReviewView: View {
 /// Result of an executed plan with undo.
 struct ResultCard: View {
     @Environment(AppModel.self) private var model
+    @Environment(\.requestReview) private var requestReview
     var plan: ChangePlan
     @State private var confirmUndo = false
+    private static let reviewKey = "review.askedAfterFirstAlbums"
 
     var body: some View {
         let summary = plan.summary
@@ -162,6 +165,16 @@ struct ResultCard: View {
             }
             Button("Rückgängig machen") { confirmUndo = true }
                 .buttonStyle(SecondaryButtonStyle())
+        }
+        .task {
+            // Ask for a rating once, at the moment the first albums are done (never after errors).
+            let summary = plan.summary
+            guard summary.newAlbums + summary.extendedAlbums > 0,
+                  !plan.steps.contains(where: { if case .failed = $0.state { true } else { false } }),
+                  !UserDefaults.standard.bool(forKey: Self.reviewKey) else { return }
+            UserDefaults.standard.set(true, forKey: Self.reviewKey)
+            try? await Task.sleep(for: .seconds(2))
+            requestReview()
         }
         .confirmationDialog("Änderungen rückgängig machen?", isPresented: $confirmUndo, titleVisibility: .visible) {
             Button("Rückgängig machen", role: .destructive) {
