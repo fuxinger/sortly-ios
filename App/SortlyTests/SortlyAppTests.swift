@@ -38,7 +38,6 @@ struct VisionTaxonomyTests {
             return
         }
         guard !supported.isEmpty else { return }
-        print("VISION_IDENTIFIERS \(supported.sorted().joined(separator: ","))")
         var unknown: [String] = []
         var uncovered: [String] = []
         for category in ImageTaxonomy.all where !category.visionIdentifiers.isEmpty {
@@ -90,6 +89,21 @@ struct AtlasRenderingTests {
         return atlas
     }
 
+    /// CI logs drop very long lines, so the image is printed in numbered chunks.
+    static func emit(_ name: String, _ data: Data) {
+        let text = data.base64EncodedString()
+        let size = 4000
+        let total = (text.count + size - 1) / size
+        var index = 0
+        var start = text.startIndex
+        while start < text.endIndex {
+            let end = text.index(start, offsetBy: size, limitedBy: text.endIndex) ?? text.endIndex
+            print("PREVIEW_JPEG \(name) \(index + 1)/\(total) \(text[start..<end])")
+            start = end
+            index += 1
+        }
+    }
+
     /// Renders the share card and the atlas screen and prints them as JPEG (base64) into
     /// the CI log, so the design can be reviewed without a Mac.
     @Test func renderPreviews() async throws {
@@ -101,7 +115,7 @@ struct AtlasRenderingTests {
         card.scale = 1
         let cardImage = try #require(card.uiImage)
         #expect(cardImage.size == CGSize(width: 720, height: 1280))
-        print("PREVIEW_JPEG sharecard \(cardImage.jpegData(compressionQuality: 0.8)!.base64EncodedString())")
+        Self.emit("sharecard", cardImage.jpegData(compressionQuality: 0.8)!)
 
         let screen = ImageRenderer(content:
             AtlasContent(atlas: atlas, outlines: outlines, revealed: 14)
@@ -112,6 +126,6 @@ struct AtlasRenderingTests {
         )
         screen.scale = 2
         let screenImage = try #require(screen.uiImage)
-        print("PREVIEW_JPEG atlas \(screenImage.jpegData(compressionQuality: 0.7)!.base64EncodedString())")
+        Self.emit("atlas", screenImage.jpegData(compressionQuality: 0.7)!)
     }
 }

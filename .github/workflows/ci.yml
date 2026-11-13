@@ -69,7 +69,7 @@ jobs:
             -resultBundlePath ../build/TestResults.xcresult \
             CODE_SIGNING_ALLOWED=NO > ../build-log.txt 2>&1
           status=$?
-          grep -E "error:|warning: .*Sortly|Test Suite|Test case|Executed|TAXONOMY|VISION_IDENTIFIERS|PREVIEW_JPEG|\*\* " ../build-log.txt | grep -v "/SourcePackages/" | head -400
+          grep -E "error:|warning: .*Sortly|Test Suite|Test case|Executed|TAXONOMY|VISION_IDENTIFIERS|PREVIEW_JPEG|\*\* " ../build-log.txt | grep -v "/SourcePackages/" | head -3000
           exit $status
       - name: Build simulator app for browser testing
         if: hashFiles('App/project.yml') != ''
@@ -99,7 +99,7 @@ jobs:
         run: |
           cd App
           xcodebuild -exportLocalizations -project Sortly.xcodeproj -localizationPath ../build/loc -exportLanguage en CODE_SIGNING_ALLOWED=NO | tail -3
-          find ../build/loc -name "*.xliff" -exec sh -c 'echo "XLIFF_BEGIN"; base64 -i "$1" | tr -d "\n"; echo; echo "XLIFF_END"' _ {} \;
+          find ../build/loc -name "*.xliff" -exec sh -c 'base64 -i "$1" | tr -d "\n" | fold -w 4000 | sed "s/^/XLIFF /"' _ {} \;
       - name: Upload strings
         if: success() && hashFiles('build/loc/**') != ''
         uses: actions/upload-artifact@v4

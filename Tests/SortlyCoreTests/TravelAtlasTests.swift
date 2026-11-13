@@ -39,3 +39,32 @@ struct TravelAtlasTests {
         #expect(TravelAtlas.flag("X") == "")
     }
 }
+
+@Suite("Photo story facts")
+struct PhotoStoryTests {
+    @Test func yearFactsMentionMonthTopicsAndTrips() {
+        var utc = Calendar(identifier: .gregorian)
+        utc.timeZone = TimeZone(identifier: "UTC")!
+        let trip = SortlyID("t1")
+        var facts: [AssetFacts] = []
+        for i in 0..<12 {
+            let date = utc.date(from: DateComponents(year: 2024, month: 8, day: 1 + i % 5, hour: 12))!
+            facts.append(AssetFacts(
+                asset: AssetSnapshot(id: AssetID("p\(i)"), creationDate: date),
+                place: PlaceComponents(isoCountryCode: "IT", country: "Italien", locality: "Rom"),
+                tripID: trip,
+                categories: ["animal.dog": .likely]
+            ))
+        }
+        facts.append(AssetFacts(asset: AssetSnapshot(id: "old", creationDate: utc.date(from: DateComponents(year: 2019, month: 3, day: 1)))))
+        let lines = PhotoStory.facts(.year(2024), facts: facts, calendar: utc)
+        let text = lines.joined(separator: "\n")
+        #expect(text.contains("Jahr: 2024. Fotos: 12"))
+        #expect(text.contains("August"))
+        #expect(text.contains("Hunde (12 Fotos)"))
+        #expect(text.contains("Rom (Italien, 5 Tage)"))
+        #expect(PhotoStory.availableYears(facts, calendar: utc) == [2024, 2019])
+        #expect(PhotoStory.facts(.year(2001), facts: facts, calendar: utc).isEmpty)
+        #expect(!PhotoStory.facts(.all, facts: facts, calendar: utc).isEmpty)
+    }
+}

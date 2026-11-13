@@ -109,6 +109,7 @@ struct AtlasView: View {
     @State private var outlines: [AtlasOutlines.Country] = []
     @State private var revealed = 0
     @State private var story: String?
+    @State private var storyScope: PhotoStory.Scope = .trips
     @State private var writing = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -120,7 +121,7 @@ struct AtlasView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: Theme.Spacing.l) {
                 AtlasContent(atlas: atlas, outlines: outlines, revealed: revealed)
-                if SmartAssistant.isAvailable && !order.isEmpty {
+                if SmartAssistant.isAvailable && !model.facts.isEmpty {
                     storySection(atlas)
                 }
             }
@@ -157,7 +158,19 @@ struct AtlasView: View {
 extension AtlasView {
     @ViewBuilder
     func storySection(_ atlas: TravelAtlas) -> some View {
+        let years = PhotoStory.availableYears(model.facts)
         VStack(alignment: .leading, spacing: Theme.Spacing.m) {
+            Text("Deine Foto-Geschichte").font(.title3.weight(.bold)).foregroundStyle(.white)
+            Picker("Geschichte über", selection: $storyScope) {
+                Text("Reisen").tag(PhotoStory.Scope.trips)
+                Text("Alles").tag(PhotoStory.Scope.all)
+                ForEach(years.prefix(10), id: \.self) { year in
+                    Text(verbatim: String(year)).tag(PhotoStory.Scope.year(year))
+                }
+            }
+            .pickerStyle(.menu)
+            .tint(AtlasStyle.glow)
+            .onChange(of: storyScope) { story = nil }
             if let story {
                 Text(story)
                     .font(.title3)
@@ -165,53 +178,36 @@ extension AtlasView {
                     .fixedSize(horizontal: false, vertical: true)
                     .textSelection(.enabled)
                     .transition(.opacity)
+                ShareLink(item: story) { Label("Text teilen", systemImage: "square.and.arrow.up") }
+                    .font(.subheadline).foregroundStyle(.white.opacity(0.75))
             }
             Button {
-                Task { await tell(atlas) }
+                Task { await tell() }
             } label: {
                 if writing {
                     ProgressView().tint(.white)
                 } else {
-                    Label(story == nil ? "Erzähl meine Reisegeschichte" : "Neu erzählen", systemImage: "apple.intelligence")
+                    Label(story == nil ? "Erzähl meine Geschichte" : "Neu erzählen", systemImage: "apple.intelligence")
                 }
             }
             .font(.headline)
             .foregroundStyle(AtlasStyle.glow)
             .disabled(writing)
+            Text("Geschrieben von Apple Intelligence auf deinem iPhone, nur aus Zahlen, Orten und Themen.")
+                .font(.caption).foregroundStyle(.white.opacity(0.5))
         }
         .padding(Theme.Spacing.l)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(.white.opacity(0.06), in: RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous))
     }
 
-    func tell(_ atlas: TravelAtlas) async {
+    func tell() async {
         writing = true
         defer { writing = false }
-        let text = await SmartAssistant.travelStory(facts: Self.storyFacts(atlas))
+        let facts = model.facts, scope = storyScope
+        let lines = await Task.detached(priority: .userInitiated) { PhotoStory.facts(scope, facts: facts) }.value
+        let text = await SmartAssistant.travelStory(facts: lines)
         withAnimation { story = text ?? String(localized: "Die Geschichte konnte gerade nicht geschrieben werden. Versuch es gleich noch einmal.") }
-    }
-
-    /// Plain facts for the language model; nothing else is passed in.
-    static func storyFacts(_ atlas: TravelAtlas) -> [String] {
-        let year = { (date: Date) in String(Calendar.current.component(.year, from: date)) }
-        var lines: [String] = []
-        lines.append("Länder insgesamt: \(atlas.countryCodes.count), Kontinente: \(atlas.continents.count), Städte: \(atlas.cityCount), Reisen: \(atlas.tripCount)")
-        if let since = atlas.sinceYear { lines.append("Fotos mit Ort seit: \(since)") }
-        let firsts = atlas.countriesByFirstVisit.prefix(12).compactMap { code in
-            atlas.firstVisits[code].map { "\(AtlasStyle.countryName(code)) (\(year($0)))" }
-        }
-        if !firsts.isEmpty { lines.append("Länder in der Reihenfolge des ersten Besuchs: " + firsts.joined(separator: ", ")) }
-        if let first = atlas.trips.first {
-            lines.append("Erste Reise: \(first.place), \(AtlasStyle.countryName(first.countryCode)), \(year(first.start)), \(first.days) Tage")
-        }
-        if let longest = atlas.trips.max(by: { $0.days < $1.days }) {
-            lines.append("Längste Reise: \(longest.place), \(AtlasStyle.countryName(longest.countryCode)), \(year(longest.start)), \(longest.days) Tage")
-        }
-        if let latest = atlas.trips.last {
-            lines.append("Letzte Reise: \(latest.place), \(AtlasStyle.countryName(latest.countryCode)), \(year(latest.start))")
-        }
-        if let city = atlas.favoriteTripCity { lines.append("Meistfotografierter Reiseort: \(city)") }
-        return lines
     }
 }
 

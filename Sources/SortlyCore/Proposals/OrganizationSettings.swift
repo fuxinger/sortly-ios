@@ -25,7 +25,9 @@ public struct OrganizationSettings: Hashable, Sendable, Codable {
     public var privacy: PrivacySettings
 
     public init() {
-        enabledAreas = [.places, .trips, .frequentPlaces, .chronology, .mediaTypes, .screenshots, .imageCategories, .documents, .messenger]
+        // Defaults avoid an album flood: years/months and media types are already shown by
+        // the Photos app and are opt-in (decision 2026-11-13, docs/DECISIONS.md).
+        enabledAreas = [.places, .trips, .frequentPlaces, .screenshots, .imageCategories, .documents]
         primaryAreas = [.trips, .places]
         rootFolderTitle = "SORTLY"
         titleLanguage = .deviceDefault

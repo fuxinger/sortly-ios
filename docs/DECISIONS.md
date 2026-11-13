@@ -14,3 +14,4 @@
 | Design „Klar“, SF Pro | iOS-nah, ruhig, Barrierefreiheit | „Warm“, „Kontrast“ | — |
 | Einmalkauf, 10 Alben gratis | fair, kein Abo | Abo, Werbung | `Purchases.freeAlbumLimit` |
 | XcodeGen statt eingechecktem Projekt | lesbare Projektdatei, keine Konflikte | .xcodeproj | Build braucht `xcodegen generate` |
+| Standardbereiche ohne Jahre/Monate, Medientypen, Messenger | vermeidet Album-Flut; Fotos-App zeigt Datum und Medientypen schon | alles an | Nutzer schaltet diese Bereiche bei Bedarf ein |

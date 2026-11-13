@@ -39,12 +39,12 @@ enum SmartAssistant {
         #endif
     }
 
-    /// A short, warm travel story (3–4 sentences) built only from the given facts.
+    /// A short, warm story (3–4 sentences) about the user's photos, built only from the given facts.
     static func travelStory(facts: [String]) async -> String? {
         #if canImport(FoundationModels)
         guard isAvailable, !facts.isEmpty else { return nil }
         let session = LanguageModelSession(instructions: """
-        Du schreibst eine kurze, warme Reisegeschichte in der Du-Form auf Deutsch, drei bis vier Sätze.
+        Du schreibst eine kurze, warme Geschichte über die Fotos eines Menschen in der Du-Form auf Deutsch, drei bis vier Sätze.
         Verwende ausschließlich die gegebenen Fakten. Erfinde keine Orte, Personen, Erlebnisse oder Zahlen.
         Keine Aufzählung, keine Überschrift, keine Emojis.
         """)
