@@ -95,6 +95,8 @@ public struct AlbumProposal: Hashable, Sendable, Codable, Identifiable {
     public var coverAssetID: AssetID?
     /// Personal or sensitive content: never automatic, extra care in export (§4.8, §8).
     public var isSensitive: Bool
+    /// Personal places and groups must be named by the user before an album is created (§4.3, §4.4).
+    public var requiresUserName: Bool
 
     public init(
         id: SortlyID,
@@ -108,7 +110,8 @@ public struct AlbumProposal: Hashable, Sendable, Codable, Identifiable {
         dateRange: DateInterval? = nil,
         placeKeys: [PlaceKey] = [],
         coverAssetID: AssetID? = nil,
-        isSensitive: Bool = false
+        isSensitive: Bool = false,
+        requiresUserName: Bool = false
     ) {
         self.id = id
         self.kind = kind
@@ -122,5 +125,6 @@ public struct AlbumProposal: Hashable, Sendable, Codable, Identifiable {
         self.placeKeys = placeKeys
         self.coverAssetID = coverAssetID ?? assetIDs.min()
         self.isSensitive = isSensitive
+        self.requiresUserName = requiresUserName
     }
 }

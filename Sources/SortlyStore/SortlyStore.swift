@@ -14,9 +14,12 @@ public actor SortlyStore: ChangePlanStoring {
         db = try SQLiteDatabase(path: url?.path)
         encoder = JSONEncoder()
         encoder.outputFormatting = [.sortedKeys]
-        encoder.dateEncodingStrategy = .millisecondsSince1970
+        // Dates are stored as exact Double seconds since the reference date, so values
+        // round-trip bit-identically (milliseconds would truncate and break equality checks
+        // such as plan fingerprints and override de-duplication).
+        encoder.dateEncodingStrategy = .deferredToDate
         decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .millisecondsSince1970
+        decoder.dateDecodingStrategy = .deferredToDate
         try Migrations.migrate(db)
         hasFullTextSearch = (try? db.query("SELECT 1 FROM sqlite_master WHERE name = 'text_fts'").isEmpty == false) ?? false
     }
