@@ -1,0 +1,81 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  core-linux:
+    name: Core tests (Linux)
+    runs-on: ubuntu-24.04
+    container: swift:6.2-noble
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install SQLite headers
+        run: apt-get update -qq && apt-get install -y -qq libsqlite3-dev
+      - name: Build and test
+        run: swift test --parallel
+
+  ios:
+    name: iOS build and tests (macOS)
+    runs-on: macos-26
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - name: Select newest Xcode
+        run: |
+          ls -d /Applications/Xcode*.app
+          XCODE=$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)
+          sudo xcode-select -s "$XCODE"
+          xcodebuild -version
+          xcrun simctl list runtimes
+      - name: Core tests (macOS)
+        run: swift test --parallel
+      - name: Generate Xcode project
+        if: hashFiles('App/project.yml') != ''
+        run: |
+          brew install xcodegen
+          cd App && xcodegen generate
+      - name: Pick simulator
+        if: hashFiles('App/project.yml') != ''
+        id: sim
+        run: |
+          UDID=$(xcrun simctl list devices available -j | python3 -c '
+          import json,sys
+          d=json.load(sys.stdin)["devices"]
+          best=None
+          for rt,devs in d.items():
+              if "iOS" not in rt: continue
+              for x in devs:
+                  if x["name"].startswith("iPhone"):
+                      best=(rt,x["udid"],x["name"])
+          print(best[1])')
+          echo "udid=$UDID" >> "$GITHUB_OUTPUT"
+      - name: Build and test app
+        if: hashFiles('App/project.yml') != ''
+        run: |
+          set -o pipefail
+          cd App
+          xcodebuild test \
+            -project Sortly.xcodeproj \
+            -scheme Sortly \
+            -destination "id=${{ steps.sim.outputs.udid }}" \
+            -resultBundlePath ../build/TestResults.xcresult \
+            CODE_SIGNING_ALLOWED=NO \
+            | tee ../build-log.txt | grep -E "error:|warning:|Test Suite|Executed|\*\* " || true
+          test ${PIPESTATUS[0]} -eq 0
+      - name: Upload logs
+        if: always() && hashFiles('build-log.txt') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-build-log
+          path: |
+            build-log.txt
+            build/TestResults.xcresult
+          retention-days: 7
