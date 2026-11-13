@@ -277,6 +277,8 @@ final class AppModel {
                 }
             }
             execution.finished = result
+            let used = result.summary
+            Purchases.shared.recordUsage(albums: used.newAlbums + used.extendedAlbums)
             // Applied proposals leave the open list; other accepted ones stay accepted.
             let applied = Set(result.steps.compactMap(\.sourceID))
             for id in applied where decisions[id]?.isAccepted == true { decisions[id] = nil }

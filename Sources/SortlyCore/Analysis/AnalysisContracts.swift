@@ -38,8 +38,8 @@ public enum AnalysisImageSource: String, Hashable, Sendable, Codable {
 
 public struct AnimalObservation: Hashable, Sendable, Codable {
     public var kind: GroupKind
-    public var observation: Observation
-    public init(kind: GroupKind, observation: Observation) {
+    public var observation: VisualObservation
+    public init(kind: GroupKind, observation: VisualObservation) {
         self.kind = kind
         self.observation = observation
     }
@@ -49,7 +49,7 @@ public struct AnimalObservation: Hashable, Sendable, Codable {
 public struct ContentAnalysis: Hashable, Sendable, Codable {
     public var labels: [LabelScore]
     /// Face observations with embeddings; only when face grouping is enabled (GDPR Art. 9).
-    public var faces: [Observation]
+    public var faces: [VisualObservation]
     public var animals: [AnimalObservation]
     public var featurePrint: Embedding?
     /// The analyzer saw a page-like document (receipt, letter, form).
@@ -60,7 +60,7 @@ public struct ContentAnalysis: Hashable, Sendable, Codable {
 
     public init(
         labels: [LabelScore] = [],
-        faces: [Observation] = [],
+        faces: [VisualObservation] = [],
         animals: [AnimalObservation] = [],
         featurePrint: Embedding? = nil,
         looksLikeDocument: Bool = false,

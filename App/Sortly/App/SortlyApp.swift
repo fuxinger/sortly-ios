@@ -3,6 +3,7 @@ import SwiftUI
 @main
 struct SortlyApp: App {
     @State private var model = AppModel.shared
+    @State private var purchases = Purchases.shared
 
     init() {
         BackgroundWork.register()
@@ -12,7 +13,11 @@ struct SortlyApp: App {
         WindowGroup {
             RootView()
                 .environment(model)
-                .task { await model.bootstrap() }
+                .environment(purchases)
+                .task {
+                    purchases.start()
+                    await model.bootstrap()
+                }
         }
     }
 }

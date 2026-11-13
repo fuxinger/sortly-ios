@@ -5,6 +5,7 @@ import SortlyEngine
 /// Settings (prompt §17): areas, naming, privacy, history and undo, about.
 struct SettingsView: View {
     @Environment(AppModel.self) private var model
+    @Environment(Purchases.self) private var purchases
     @Environment(\.dismiss) private var dismiss
     @State private var confirmReset = false
 
@@ -80,6 +81,15 @@ struct SettingsView: View {
                 Button("Analyse neu aufbauen", role: .destructive) { confirmReset = true }
             } footer: {
                 Text("Löscht nur SORTLYs eigene Analyse. Deine Fotos und Alben bleiben, wie sie sind.")
+            }
+
+            Section("Vollversion") {
+                if purchases.isUnlocked {
+                    Label("Freigeschaltet", systemImage: "checkmark.seal.fill").foregroundStyle(Theme.accent)
+                } else {
+                    LabeledContent("Noch kostenlos", value: "\(purchases.remainingFreeAlbums) Alben")
+                    Button("Kauf wiederherstellen") { Task { await purchases.restore() } }
+                }
             }
 
             Section("Über") {

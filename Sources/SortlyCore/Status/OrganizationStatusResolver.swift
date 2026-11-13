@@ -122,6 +122,7 @@ public struct OrganizationStatusResolver: Sendable {
 
     /// Library-wide progress figures for the overview screen.
     public struct Progress: Hashable, Sendable {
+        public init() {}
         public var total = 0
         public var fully = 0
         public var partially = 0

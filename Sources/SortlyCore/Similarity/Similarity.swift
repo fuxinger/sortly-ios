@@ -30,7 +30,7 @@ public struct Embedding: Hashable, Sendable, Codable {
 }
 
 /// One detected face or animal on one asset.
-public struct Observation: Hashable, Sendable, Codable, Identifiable {
+public struct VisualObservation: Hashable, Sendable, Codable, Identifiable {
     public var id: String          // "\(assetID)#\(index)"
     public var assetID: AssetID
     public var embedding: Embedding
@@ -89,7 +89,7 @@ public struct ObservationGrouper: Sendable {
         self.minAnchorQuality = minAnchorQuality
     }
 
-    public func group(_ observations: [Observation], kind: GroupKind, feedback: GroupingFeedback = .init()) -> [ObservationGroup] {
+    public func group(_ observations: [VisualObservation], kind: GroupKind, feedback: GroupingFeedback = .init()) -> [ObservationGroup] {
         let usable = observations.filter { !feedback.rejected.contains($0.id) }
         let byID = Dictionary(uniqueKeysWithValues: usable.map { ($0.id, $0) })
 
@@ -113,7 +113,7 @@ public struct ObservationGrouper: Sendable {
         }
 
         let cannotLink = feedback.cannotLink
-        func violates(_ obs: Observation, _ cluster: Cluster) -> Bool {
+        func violates(_ obs: VisualObservation, _ cluster: Cluster) -> Bool {
             if cluster.assets.contains(obs.assetID) { return true }
             return cluster.members.contains { cannotLink.contains([obs.id, $0].sorted()) }
         }

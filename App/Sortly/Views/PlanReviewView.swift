@@ -6,6 +6,7 @@ import SortlyEngine
 /// conflicts, execution with progress, result and undo.
 struct PlanReviewView: View {
     @Environment(AppModel.self) private var model
+    @Environment(Purchases.self) private var purchases
     /// A plan built elsewhere (album merge); otherwise the accepted proposals are planned.
     var prebuilt: ChangePlan? = nil
     @State private var loading = true
@@ -94,16 +95,25 @@ struct PlanReviewView: View {
         }
 
         let blocking = plan.conflicts.contains(where: \.isBlocking)
-        Button {
-            Task { await model.execute(plan) }
-        } label: {
-            Text("Jetzt umsetzen")
-        }
-        .buttonStyle(PrimaryButtonStyle())
-        .disabled(blocking || plan.steps.isEmpty)
-        if blocking {
-            Text("Erst die markierten Punkte klären. Ändere dazu den Vorschlag unter „Anpassen“.")
-                .font(.footnote).foregroundStyle(.secondary)
+        let albums = summary.newAlbums + summary.extendedAlbums
+        if !purchases.allows(albums: albums) {
+            UnlockCard(albumsInPlan: albums)
+        } else {
+            Button {
+                Task { await model.execute(plan) }
+            } label: {
+                Text("Jetzt umsetzen")
+            }
+            .buttonStyle(PrimaryButtonStyle())
+            .disabled(blocking || plan.steps.isEmpty)
+            if blocking {
+                Text("Erst die markierten Punkte klären. Ändere dazu den Vorschlag unter „Anpassen“.")
+                    .font(.footnote).foregroundStyle(.secondary)
+            }
+            if !purchases.isUnlocked && albums > 0 && purchases.allows(albums: albums) {
+                Text("Noch \(purchases.remainingFreeAlbums) Alben kostenlos.")
+                    .font(.footnote).foregroundStyle(.secondary)
+            }
         }
     }
 
@@ -181,6 +191,41 @@ enum ConflictText {
             return String(localized: "\(count) Fotos sind nicht mehr in der Mediathek.")
         case .writeAccessMissing:
             return String(localized: "SORTLY hat keinen vollen Zugriff auf deine Fotos.")
+        }
+    }
+}
+
+/// Shown when a plan needs more albums than are still free.
+struct UnlockCard: View {
+    @Environment(Purchases.self) private var purchases
+    var albumsInPlan: Int
+
+    var body: some View {
+        Card {
+            Label("SORTLY freischalten", systemImage: "lock.open").font(.headline)
+            Text("Dieser Plan ordnet \(albumsInPlan) Alben. Kostenlos sind noch \(purchases.remainingFreeAlbums). Mit einem einmaligen Kauf kannst du unbegrenzt sortieren, ohne Abo.")
+                .font(.subheadline).foregroundStyle(.secondary)
+            Button {
+                Task { await purchases.purchase() }
+            } label: {
+                if purchases.isPurchasing {
+                    ProgressView().tint(.white)
+                } else if let product = purchases.product {
+                    Text("Freischalten für \(product.displayPrice)")
+                } else {
+                    Text("Freischalten")
+                }
+            }
+            .buttonStyle(PrimaryButtonStyle())
+            .disabled(purchases.isPurchasing)
+            Button("Kauf wiederherstellen") { Task { await purchases.restore() } }
+                .font(.subheadline)
+                .frame(maxWidth: .infinity)
+            Text("Tipp: Du kannst auch weniger Vorschläge auf einmal übernehmen.")
+                .font(.footnote).foregroundStyle(.secondary)
+            if let error = purchases.lastError {
+                Text(error).font(.footnote).foregroundStyle(.red)
+            }
         }
     }
 }

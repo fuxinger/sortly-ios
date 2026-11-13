@@ -152,9 +152,9 @@ struct SimilarityTests {
     }
 
     @Test func groupsSimilarFacesAndRespectsSameAssetConstraint() {
-        var obs: [Observation] = []
-        for i in 0..<6 { obs.append(Observation(id: "p1-\(i)", assetID: AssetID("img\(i)"), embedding: vec(0, noise: 0.2, seed: i), quality: 0.9)) }
-        for i in 0..<5 { obs.append(Observation(id: "p2-\(i)", assetID: AssetID("img\(i)"), embedding: vec(6, noise: 0.2, seed: i + 50), quality: 0.9)) }
+        var obs: [VisualObservation] = []
+        for i in 0..<6 { obs.append(VisualObservation(id: "p1-\(i)", assetID: AssetID("img\(i)"), embedding: vec(0, noise: 0.2, seed: i), quality: 0.9)) }
+        for i in 0..<5 { obs.append(VisualObservation(id: "p2-\(i)", assetID: AssetID("img\(i)"), embedding: vec(6, noise: 0.2, seed: i + 50), quality: 0.9)) }
         let groups = ObservationGrouper(distanceThreshold: 0.3, minGroupSize: 3).group(obs, kind: .person)
         #expect(groups.count == 2)
         #expect(groups.allSatisfy { $0.confirmedName == nil && !$0.isConfirmed })
@@ -163,7 +163,7 @@ struct SimilarityTests {
     }
 
     @Test func confirmedGroupsAreAnchorsAndKeepNames() {
-        let obs = (0..<5).map { Observation(id: "o\($0)", assetID: AssetID("a\($0)"), embedding: vec(2, noise: 0.1, seed: $0), quality: 0.8) }
+        let obs = (0..<5).map { VisualObservation(id: "o\($0)", assetID: AssetID("a\($0)"), embedding: vec(2, noise: 0.1, seed: $0), quality: 0.8) }
         var feedback = GroupingFeedback()
         let groupID = SortlyID("bello")
         feedback.confirmedGroups[groupID] = ["o0", "o1"]
