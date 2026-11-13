@@ -1,0 +1,92 @@
+name: Sortly
+options:
+  bundleIdPrefix: app.sortly
+  deploymentTarget:
+    iOS: "26.0"
+  developmentLanguage: de
+  createIntermediateGroups: true
+  xcodeVersion: "26.0"
+packages:
+  SortlyKit:
+    path: ..
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    SWIFT_STRICT_CONCURRENCY: complete
+    SWIFT_UPCOMING_FEATURE_EXISTENTIAL_ANY: YES
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+    LOCALIZATION_PREFERS_STRING_CATALOGS: YES
+    SWIFT_EMIT_LOC_STRINGS: YES
+targets:
+  Sortly:
+    type: application
+    platform: iOS
+    sources:
+      - path: Sortly
+    dependencies:
+      - package: SortlyKit
+        product: SortlyCore
+      - package: SortlyKit
+        product: SortlyStore
+      - package: SortlyKit
+        product: SortlyEngine
+      - package: SortlyKit
+        product: SortlyWorldMap
+    info:
+      path: Sortly/Resources/Info.plist
+      properties:
+        CFBundleDisplayName: SORTLY
+        CFBundleShortVersionString: "0.1.0"
+        CFBundleVersion: "1"
+        LSRequiresIPhoneOS: true
+        UILaunchScreen:
+          UIColorName: LaunchBackground
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        NSPhotoLibraryUsageDescription: "SORTLY liest deine Fotos nur auf diesem iPhone, um Alben vorzuschlagen. Nichts wird hochgeladen, Originale werden nie verändert."
+        UIBackgroundModes:
+          - processing
+        BGTaskSchedulerPermittedIdentifiers:
+          - app.sortly.ios.refinement
+          - app.sortly.ios.analysis.*
+        ITSAppUsesNonExemptEncryption: false
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.sortly.ios
+        TARGETED_DEVICE_FAMILY: "1,2"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        CURRENT_PROJECT_VERSION: 1
+        MARKETING_VERSION: 0.1.0
+  SortlyTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: SortlyTests
+    dependencies:
+      - target: Sortly
+      - package: SortlyKit
+        product: SortlyTestSupport
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.sortly.ios.tests
+        GENERATE_INFOPLIST_FILE: YES
+schemes:
+  Sortly:
+    build:
+      targets:
+        Sortly: all
+        SortlyTests: [test]
+    test:
+      targets:
+        - SortlyTests
+      gatherCoverageData: false

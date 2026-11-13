@@ -60,16 +60,40 @@ jobs:
       - name: Build and test app
         if: hashFiles('App/project.yml') != ''
         run: |
-          set -o pipefail
+          set +e
           cd App
           xcodebuild test \
             -project Sortly.xcodeproj \
             -scheme Sortly \
             -destination "id=${{ steps.sim.outputs.udid }}" \
             -resultBundlePath ../build/TestResults.xcresult \
-            CODE_SIGNING_ALLOWED=NO \
-            | tee ../build-log.txt | grep -E "error:|warning:|Test Suite|Executed|\*\* " || true
-          test ${PIPESTATUS[0]} -eq 0
+            CODE_SIGNING_ALLOWED=NO > ../build-log.txt 2>&1
+          status=$?
+          grep -E "error:|warning: .*Sortly|Test Suite|Test case|Executed|TAXONOMY|\*\* " ../build-log.txt | grep -v "/SourcePackages/" | head -400
+          exit $status
+      - name: Build simulator app for browser testing
+        if: hashFiles('App/project.yml') != ''
+        run: |
+          set -o pipefail
+          cd App
+          xcodebuild build \
+            -project Sortly.xcodeproj \
+            -scheme Sortly \
+            -configuration Release \
+            -sdk iphonesimulator \
+            -destination "generic/platform=iOS Simulator" \
+            -derivedDataPath ../build/sim \
+            CODE_SIGNING_ALLOWED=NO | tail -5
+          cd ../build/sim/Build/Products/Release-iphonesimulator
+          ditto -c -k --sequesterRsrc --keepParent Sortly.app ../../../../Sortly-simulator.zip
+          ls -la ../../../../Sortly-simulator.zip
+      - name: Upload simulator app
+        if: success() && hashFiles('build/Sortly-simulator.zip') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: Sortly-simulator-app
+          path: build/Sortly-simulator.zip
+          retention-days: 30
       - name: Upload logs
         if: always() && hashFiles('build-log.txt') != ''
         uses: actions/upload-artifact@v4

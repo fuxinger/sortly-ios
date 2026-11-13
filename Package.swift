@@ -9,7 +9,7 @@ let strictSettings: [SwiftSetting] = [
 ]
 
 let package = Package(
-    name: "SortlyCore",
+    name: "SortlyKit",
     platforms: [.iOS("26.0"), .macOS("15.0")],
     products: [
         .library(name: "SortlyCore", targets: ["SortlyCore"]),
