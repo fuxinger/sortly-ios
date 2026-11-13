@@ -36,6 +36,7 @@ struct VisionTaxonomyTests {
             return
         }
         guard !supported.isEmpty else { return }
+        print("VISION_IDENTIFIERS \(supported.sorted().joined(separator: ","))")
         var unknown: [String] = []
         var uncovered: [String] = []
         for category in ImageTaxonomy.all where !category.visionIdentifiers.isEmpty {

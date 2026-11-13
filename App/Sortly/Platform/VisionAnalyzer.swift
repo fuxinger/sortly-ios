@@ -94,11 +94,13 @@ struct VisionAnalyzer: ContentAnalyzing {
     }
 
     func recognizeText(_ asset: AssetSnapshot, allowNetwork: Bool) async throws -> TextAnalysis {
-        // Screenshots are always local and small; documents may need the original.
-        let quality: ImageQuality = asset.isScreenshotLike ? .localPreview : .original
-        var loaded = try await ImageLoader.image(for: asset.id, quality: .original, allowNetwork: allowNetwork && quality == .original)
-        if loaded == nil, quality == .original {
+        // OCR needs the full resolution. Screenshots are usually on the device anyway; other
+        // originals come from iCloud only with consent (allowNetwork). Fallback: local preview.
+        var source: AnalysisImageSource = .original
+        var loaded = try? await ImageLoader.image(for: asset.id, quality: .original, allowNetwork: allowNetwork)
+        if loaded == nil {
             loaded = try await ImageLoader.image(for: asset.id, quality: .localPreview, allowNetwork: false)
+            source = .localPreview
         }
         guard let image = loaded else { throw AnalysisError.unreadable }
 
@@ -110,6 +112,6 @@ struct VisionAnalyzer: ContentAnalyzing {
             .compactMap { $0.topCandidates(1).first?.string }
         let barcodes = (try? await DetectBarcodesRequest().perform(on: image.cgImage, orientation: image.orientation))?
             .compactMap(\.payloadString) ?? []
-        return TextAnalysis(text: lines.joined(separator: "\n"), barcodePayloads: barcodes, source: .original)
+        return TextAnalysis(text: lines.joined(separator: "\n"), barcodePayloads: barcodes, source: source)
     }
 }
