@@ -109,10 +109,10 @@ public struct CollectionInventory: Sendable, Codable, Hashable {
         return folders.first { self.path(of: $0.id) + [$0.title] == path }
     }
 
-    /// Inverted index asset -> albums containing it (user albums only).
+    /// Inverted index asset -> albums containing it (all album kinds, no folders).
     public func albumMembershipIndex() -> [AssetID: [CollectionID]] {
         var index: [AssetID: [CollectionID]] = [:]
-        for album in albums where album.kind == .userAlbum || album.kind == .restrictedAlbum {
+        for album in albums {
             for asset in album.assetIDs {
                 index[asset, default: []].append(album.id)
             }
