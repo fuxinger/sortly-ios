@@ -14,6 +14,7 @@ let package = Package(
     products: [
         .library(name: "SortlyCore", targets: ["SortlyCore"]),
         .library(name: "SortlyStore", targets: ["SortlyStore"]),
+        .library(name: "SortlyWorldMap", targets: ["SortlyWorldMap"]),
         .library(name: "SortlyTestSupport", targets: ["SortlyTestSupport"]),
     ],
     targets: [
@@ -36,13 +37,19 @@ let package = Package(
             swiftSettings: strictSettings
         ),
         .target(
+            name: "SortlyWorldMap",
+            dependencies: ["SortlyCore"],
+            resources: [.copy("Resources/world.sortlymap"), .copy("Resources/LICENSE-NaturalEarth.txt")],
+            swiftSettings: strictSettings
+        ),
+        .target(
             name: "SortlyTestSupport",
             dependencies: ["SortlyCore"],
             swiftSettings: strictSettings
         ),
         .testTarget(
             name: "SortlyCoreTests",
-            dependencies: ["SortlyCore", "SortlyTestSupport"],
+            dependencies: ["SortlyCore", "SortlyWorldMap", "SortlyTestSupport"],
             swiftSettings: strictSettings
         ),
         .testTarget(

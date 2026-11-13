@@ -191,11 +191,19 @@ public actor SortlyStore: ChangePlanStoring {
 
     public func setPlace(_ place: ResolvedPlace?, for asset: AssetID) throws {
         if let place {
-            try db.execute("INSERT OR REPLACE INTO asset_places (asset_id, components, source, resolved_at) VALUES (?, ?, ?, ?)", [
+            try db.execute("INSERT OR REPLACE INTO asset_places (asset_id, components, source, resolved_at, precision_m) VALUES (?, ?, ?, ?, ?)", [
                 .text(asset.rawValue), try json(place.components), .text(place.source.rawValue), Self.date(place.resolvedAt),
+                place.precisionMeters.map { .real($0) } ?? .null,
             ])
         } else {
             try db.execute("DELETE FROM asset_places WHERE asset_id = ?", [.text(asset.rawValue)])
+        }
+    }
+
+    /// Writes many places in one transaction (geocoding results arrive in batches).
+    public func setPlaces(_ places: [AssetID: ResolvedPlace]) throws {
+        try db.transaction {
+            for (asset, place) in places { try setPlace(place, for: asset) }
         }
     }
 
@@ -204,7 +212,10 @@ public actor SortlyStore: ChangePlanStoring {
         for r in try db.query("SELECT * FROM asset_places") {
             guard let id = r["asset_id"]?.string, let c = try decode(PlaceComponents.self, r["components"]),
                   let source = PlaceSource(rawValue: r["source"]?.string ?? "") else { continue }
-            result[AssetID(id)] = ResolvedPlace(components: c, source: source, resolvedAt: Date(timeIntervalSince1970: r["resolved_at"]?.double ?? 0))
+            result[AssetID(id)] = ResolvedPlace(
+                components: c, source: source, resolvedAt: Date(timeIntervalSince1970: r["resolved_at"]?.double ?? 0),
+                precisionMeters: r["precision_m"]?.double
+            )
         }
         return result
     }
@@ -371,3 +382,5 @@ public actor SortlyStore: ChangePlanStoring {
         }
     }
 }
+
+extension SortlyStore: PlaceCaching {}

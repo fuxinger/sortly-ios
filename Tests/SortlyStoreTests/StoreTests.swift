@@ -10,7 +10,7 @@ struct StoreTests {
 
     @Test func migrationsRun() async throws {
         let s = try store()
-        #expect(await s.schemaVersion == 1)
+        #expect(await s.schemaVersion == 2)
     }
 
     @Test func fileBackedStoreSurvivesReopen() async throws {
@@ -22,7 +22,7 @@ struct StoreTests {
         }
         let reopened = try SortlyStore(url: url)
         #expect(try await reopened.assetCount() == 1)
-        #expect(await reopened.schemaVersion == 1)
+        #expect(await reopened.schemaVersion == 2)
     }
 
     @Test func upsertReportsOnlyChangedAssetsAndRoundTrips() async throws {

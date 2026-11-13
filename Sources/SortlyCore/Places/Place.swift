@@ -150,10 +150,21 @@ public struct ResolvedPlace: Hashable, Sendable, Codable {
     public var components: PlaceComponents
     public var source: PlaceSource
     public var resolvedAt: Date
+    /// Raster (metres) the town-level name was resolved with. `nil` = only country and
+    /// region are known (offline map), so the overnight refinement pass revisits it.
+    public var precisionMeters: Double?
 
-    public init(components: PlaceComponents, source: PlaceSource, resolvedAt: Date = Date()) {
+    public init(components: PlaceComponents, source: PlaceSource, resolvedAt: Date = Date(), precisionMeters: Double? = nil) {
         self.components = components
         self.source = source
         self.resolvedAt = resolvedAt
+        self.precisionMeters = precisionMeters
+    }
+
+    /// Needs another lookup to reach `cellMeters` precision.
+    public func needsRefinement(to cellMeters: Double) -> Bool {
+        guard source == .gpsReverseGeocoded else { return false }
+        guard let precisionMeters else { return true }
+        return precisionMeters > cellMeters
     }
 }

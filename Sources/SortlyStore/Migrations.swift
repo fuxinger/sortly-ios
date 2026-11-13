@@ -86,6 +86,10 @@ enum Migrations {
         CREATE INDEX idx_plans_status ON plans(status);
         CREATE TABLE settings (key TEXT PRIMARY KEY, payload BLOB NOT NULL) WITHOUT ROWID;
         """),
+        // v2: precision of the town-level lookup, drives the overnight refinement pass.
+        (2, """
+        ALTER TABLE asset_places ADD COLUMN precision_m REAL;
+        """),
     ]
 
     /// Optional full-text index. Created only if the SQLite build has FTS5.

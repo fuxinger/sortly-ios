@@ -1,0 +1,7 @@
+world.sortlymap is generated from Natural Earth 1:10m Admin-0 countries and Admin-1
+states/provinces (https://www.naturalearthdata.com). Natural Earth is in the public domain:
+"All versions of Natural Earth raster + vector map data found on this website are in the
+public domain. You may use the maps in any manner, including modifying the content and
+design, electronic dissemination, and offset printing."
+Made with Natural Earth. Regenerate with scripts/worldmap/build_world_map.py.
+Note: Natural Earth shows de-facto boundaries; disputed areas may differ from other sources.
