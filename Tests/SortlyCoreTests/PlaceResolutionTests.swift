@@ -1,58 +1,8 @@
 import Foundation
-import Synchronization
 import Testing
 @testable import SortlyCore
 import SortlyWorldMap
 import SortlyTestSupport
-
-/// Fake geocoder: answers from a table of nearest fixture places, records calls.
-final class FakeGeocoder: ReverseGeocoding, @unchecked Sendable {
-    let lock = Mutex<[GeoCoordinate]>([])
-    var failures: [GeocodingError] = []
-    let answers: [(GeoCoordinate, PlaceComponents)]
-
-    init(failures: [GeocodingError] = [], answers: [(GeoCoordinate, PlaceComponents)] = FakeGeocoder.defaultAnswers) {
-        self.failures = failures
-        self.answers = answers
-    }
-
-    static let defaultAnswers: [(GeoCoordinate, PlaceComponents)] = [
-        (Fixture.Places.munichHome, .init(isoCountryCode: "DE", country: "Germany", administrativeArea: "Bavaria", locality: "München")),
-        (Fixture.Places.rome, .init(isoCountryCode: "IT", country: "Italy", administrativeArea: "Lazio", locality: "Rom")),
-        (GeoCoordinate(latitude: 47.5903, longitude: 7.5893), .init(isoCountryCode: "CH", country: "Switzerland", administrativeArea: "Basel-City", locality: "Basel")),
-        (Fixture.Places.gardaLake, .init(isoCountryCode: "IT", country: "Italy", administrativeArea: "Veneto", locality: "Malcesine")),
-    ]
-
-    var calls: [GeoCoordinate] { lock.withLock { $0 } }
-
-    func reverseGeocode(_ coordinate: GeoCoordinate) async throws -> PlaceComponents? {
-        let failure: GeocodingError? = lock.withLock { calls in
-            calls.append(coordinate)
-            return failures.isEmpty ? nil : failures.removeFirst()
-        }
-        if let failure { throw failure }
-        return answers.min { GeoMath.distance(coordinate, $0.0) < GeoMath.distance(coordinate, $1.0) }?.1
-    }
-}
-
-actor MemoryPlaceCache: PlaceCaching {
-    var cells: [String: PlaceComponents] = [:]
-    func cachedPlace(cell: GeoCell) async throws -> PlaceComponents? { cells[cell.description] }
-    func cachePlace(_ components: PlaceComponents, cell: GeoCell, resolvedAt: Date) async throws { cells[cell.description] = components }
-}
-
-/// Manual time: sleeping advances the clock instantly.
-final class ManualTime: @unchecked Sendable {
-    let now = Mutex<Duration>(.zero)
-    var source: TimeSource {
-        TimeSource(elapsed: { self.now.withLock { $0 } }, sleep: { d in self.now.withLock { $0 += d } })
-    }
-}
-
-actor ResultCollector {
-    var places: [AssetID: ResolvedPlace] = [:]
-    func add(_ batch: [AssetID: ResolvedPlace]) { places.merge(batch) { $1 } }
-}
 
 @Suite("Place resolution")
 struct PlaceResolutionTests {

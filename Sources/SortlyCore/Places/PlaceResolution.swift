@@ -88,6 +88,7 @@ public actor PlaceResolutionService {
         public var onlineRequests = 0
         public var cacheHits = 0
         public var stoppedBecauseOffline = false
+        public init() {}
     }
 
     public typealias Sink = @Sendable ([AssetID: ResolvedPlace]) async throws -> Void

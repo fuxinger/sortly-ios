@@ -106,6 +106,10 @@ public actor SortlyStore: ChangePlanStoring {
         try db.query("SELECT * FROM assets WHERE analysis_version < ? ORDER BY creation_date DESC LIMIT ?", [.integer(Int64(version)), .integer(Int64(limit))]).map(Self.asset)
     }
 
+    public func countNeedingAnalysis(version: Int) throws -> Int {
+        try db.query("SELECT COUNT(*) AS n FROM assets WHERE analysis_version < ?", [.integer(Int64(version))]).first?["n"]?.int ?? 0
+    }
+
     public func markAnalyzed(_ ids: [AssetID], version: Int) throws {
         try db.transaction {
             for id in ids { try db.execute("UPDATE assets SET analysis_version = ? WHERE id = ?", [.integer(Int64(version)), .text(id.rawValue)]) }
