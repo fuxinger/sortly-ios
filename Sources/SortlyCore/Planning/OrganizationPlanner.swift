@@ -295,3 +295,31 @@ public struct OrganizationPlanner: Sendable {
         }
     }
 }
+
+extension ProposalDecision {
+    /// What "Übernehmen" does for a proposal (prompt §5.4): keep a complete album, extend a
+    /// matching one, otherwise create a new album. Ambiguous cases and unnamed personal
+    /// places/groups stay undecided until the user chooses.
+    public static func recommended(for proposal: AlbumProposal, match: MatchResult?, userTitle: String? = nil) -> ProposalDecision {
+        let title = userTitle?.trimmingCharacters(in: .whitespacesAndNewlines)
+        if proposal.requiresUserName && (title ?? "").isEmpty { return .undecided }
+        switch match?.status {
+        case .alreadyComplete:
+            if let id = match?.best?.albumID { return .keepExisting(id) }
+        case .extendable, .possibleMatch:
+            if let best = match?.best, best.isEditable { return .extendExisting(best.albumID) }
+        case .multipleMatches, .ambiguous:
+            return .undecided
+        default:
+            break
+        }
+        return .createNew(title: (title?.isEmpty ?? true) ? nil : title, folderPath: nil)
+    }
+
+    public var isAccepted: Bool {
+        switch self {
+        case .undecided, .reject: false
+        default: true
+        }
+    }
+}

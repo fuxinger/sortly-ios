@@ -43,7 +43,7 @@ public struct PlaceResolutionPolicy: Hashable, Sendable {
         self.init(
             deepestLevel: deepest,
             onlineAllowed: settings.privacy.allowOnlineGeocoding,
-            language: settings.titleLanguage == .deviceDefault ? (Locale.current.language.languageCode?.identifier == "de" ? .german : .english) : settings.titleLanguage
+            language: settings.titleLanguage
         )
     }
 
