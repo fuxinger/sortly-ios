@@ -15,6 +15,18 @@ struct OfflineWorldMapTests {
         #expect(Self.map.country(code: "IT")?.nameEN == "Italy")
     }
 
+    @Test func outlinesAreDrawableAndSimplified() throws {
+        let italy = try #require(Self.map.country(code: "IT"))
+        let full = Self.map.outline(of: italy)
+        let coarse = Self.map.outline(of: italy, minimumStepDegrees: 0.5)
+        #expect(!full.isEmpty)
+        #expect(!coarse.isEmpty)
+        let fullPoints = full.reduce(0) { $0 + $1.count }, coarsePoints = coarse.reduce(0) { $0 + $1.count }
+        #expect(coarsePoints < fullPoints / 5)
+        // All points lie in Italy's rough bounding box.
+        for ring in full { for p in ring { #expect((35.0...48.0).contains(p.latitude) && (6.0...19.0).contains(p.longitude)) } }
+    }
+
     @Test(arguments: [
         (48.1371, 11.5754, "DE", "Bayern"),      // Munich
         (41.8986, 12.4769, "IT", "Latium"),      // Rome

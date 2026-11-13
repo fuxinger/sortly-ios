@@ -100,6 +100,22 @@ struct ProposalDetailView: View {
     var proposal: AlbumProposal
     @State private var name = ""
     @State private var showAdjust = false
+    @State private var suggesting = false
+
+    /// Only trips get a creative name; places and dates keep their exact titles.
+    private var canSuggestTitle: Bool {
+        if case .trip = proposal.kind { return SmartAssistant.isAvailable && recommended.isCreatingNew }
+        return false
+    }
+
+    private func suggestTitle() async {
+        suggesting = true
+        defer { suggesting = false }
+        let details = proposal.reasons.map { ReasonText.text($0) }
+        guard let title = await SmartAssistant.tripTitle(currentTitle: proposal.title, details: details) else { return }
+        let year = proposal.dateRange.map { String(Calendar.current.component(.year, from: $0.start)) }
+        model.setUserTitle([title, year].compactMap { $0 }.joined(separator: " "), for: proposal)
+    }
 
     private var match: MatchResult? { model.match(for: proposal) }
     private var recommended: ProposalDecision {
@@ -123,7 +139,20 @@ struct ProposalDetailView: View {
                         Text("Gib diesem Ort oder dieser Gruppe einen Namen. SORTLY benennt persönliche Orte nie selbst.")
                             .font(.footnote).foregroundStyle(.secondary)
                     } else {
-                        Text(proposal.title).font(.title2.weight(.bold))
+                        Text(model.userTitles[proposal.id] ?? proposal.title).font(.title2.weight(.bold))
+                        if canSuggestTitle {
+                            Button {
+                                Task { await suggestTitle() }
+                            } label: {
+                                if suggesting {
+                                    ProgressView().controlSize(.small)
+                                } else {
+                                    Label("Namen vorschlagen", systemImage: "apple.intelligence")
+                                }
+                            }
+                            .font(.subheadline.weight(.semibold))
+                            .disabled(suggesting)
+                        }
                     }
                     ForEach(Array(proposal.reasons.enumerated()), id: \.offset) { _, reason in
                         Text(ReasonText.text(reason)).font(.body).foregroundStyle(.secondary)

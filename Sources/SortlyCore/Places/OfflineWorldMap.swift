@@ -134,6 +134,31 @@ public struct OfflineWorldMap: Sendable {
 
     public var countryCount: Int { regions.lazy.filter { $0.level == .country }.count }
 
+    /// Outline rings of a region for drawing (e.g. the travel atlas). Points closer than
+    /// `minimumStepDegrees` to the previously kept point are dropped; rings that collapse
+    /// to fewer than three points are skipped.
+    public func outline(of region: Region, minimumStepDegrees: Double = 0) -> [[GeoCoordinate]] {
+        var rings: [[GeoCoordinate]] = []
+        let step2 = minimumStepDegrees * minimumStepDegrees
+        for ring in region.firstRing..<(region.firstRing + region.ringCount) {
+            var offset = ringOffsets[ring]
+            var lat: Int64 = 0, lon: Int64 = 0
+            var points: [GeoCoordinate] = []
+            for _ in 0..<ringCounts[ring] {
+                lat += Self.unzigzag(Self.varint(pointStream, &offset))
+                lon += Self.unzigzag(Self.varint(pointStream, &offset))
+                let point = GeoCoordinate(latitude: Double(lat) / scale, longitude: Double(lon) / scale)
+                if let last = points.last {
+                    let dLat = point.latitude - last.latitude, dLon = point.longitude - last.longitude
+                    if dLat * dLat + dLon * dLon < step2 { continue }
+                }
+                points.append(point)
+            }
+            if points.count >= 3 { rings.append(points) }
+        }
+        return rings
+    }
+
     // MARK: Lookup
 
     public func lookup(_ coordinate: GeoCoordinate) -> Match {

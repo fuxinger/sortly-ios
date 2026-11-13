@@ -2,6 +2,8 @@ import Foundation
 import Photos
 import Testing
 import Vision
+import SwiftUI
+import UIKit
 import SortlyCore
 @testable import Sortly
 
@@ -65,5 +67,51 @@ struct TextTests {
             CollectionSnapshot(id: id, title: "Italien 2023", kind: .userAlbum, capabilities: .all, parentID: nil, assetIDs: [], childIDs: [])
         ])
         #expect(ConflictText.text(.albumMissing(id), inventory: inventory).contains("Italien 2023"))
+    }
+}
+
+@Suite("Atlas rendering")
+@MainActor
+struct AtlasRenderingTests {
+    static func sampleAtlas() -> TravelAtlas {
+        var atlas = TravelAtlas()
+        let codes = ["AT", "IT", "FR", "ES", "PT", "HR", "GR", "GB", "NL", "US", "TH", "JP", "MA", "NO", "IS", "CH", "CZ", "DK", "MX", "AU", "EG", "TR", "DE"]
+        atlas.countryCodes = Set(codes)
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "UTC")!
+        for (i, code) in codes.enumerated() {
+            atlas.firstVisits[code] = calendar.date(from: DateComponents(year: 2012 + i / 2, month: 1 + i % 12, day: 10))
+        }
+        atlas.cityCount = 61
+        atlas.tripCount = 48
+        atlas.sinceYear = 2012
+        atlas.longestTripDays = 16
+        atlas.favoriteTripCity = "Rom"
+        return atlas
+    }
+
+    /// Renders the share card and the atlas screen and prints them as JPEG (base64) into
+    /// the CI log, so the design can be reviewed without a Mac.
+    @Test func renderPreviews() async throws {
+        let outlines = await AtlasOutlines.shared.load(from: nil)
+        #expect(outlines.count > 200)
+        let atlas = Self.sampleAtlas()
+
+        let card = ImageRenderer(content: ShareCard(atlas: atlas, sortedPhotos: 12_480, outlines: outlines))
+        card.scale = 1
+        let cardImage = try #require(card.uiImage)
+        #expect(cardImage.size == CGSize(width: 720, height: 1280))
+        print("PREVIEW_JPEG sharecard \(cardImage.jpegData(compressionQuality: 0.8)!.base64EncodedString())")
+
+        let screen = ImageRenderer(content:
+            AtlasContent(atlas: atlas, outlines: outlines, revealed: 14)
+                .padding(16)
+                .frame(width: 393)
+                .background(AtlasStyle.background)
+                .environment(\.colorScheme, .dark)
+        )
+        screen.scale = 2
+        let screenImage = try #require(screen.uiImage)
+        print("PREVIEW_JPEG atlas \(screenImage.jpegData(compressionQuality: 0.7)!.base64EncodedString())")
     }
 }

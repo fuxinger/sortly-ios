@@ -69,7 +69,7 @@ jobs:
             -resultBundlePath ../build/TestResults.xcresult \
             CODE_SIGNING_ALLOWED=NO > ../build-log.txt 2>&1
           status=$?
-          grep -E "error:|warning: .*Sortly|Test Suite|Test case|Executed|TAXONOMY|VISION_IDENTIFIERS|\*\* " ../build-log.txt | grep -v "/SourcePackages/" | head -400
+          grep -E "error:|warning: .*Sortly|Test Suite|Test case|Executed|TAXONOMY|VISION_IDENTIFIERS|PREVIEW_JPEG|\*\* " ../build-log.txt | grep -v "/SourcePackages/" | head -400
           exit $status
       - name: Build simulator app for browser testing
         if: hashFiles('App/project.yml') != ''

@@ -5,6 +5,10 @@ import SortlyEngine
 /// User-facing texts and symbols for core values. UI strings live in the app's string
 /// catalog (German source, English translation); album titles come from the core.
 extension OrganizationArea {
+    /// Areas the app offers today. People and pets need identity grouping (opt-in), which
+    /// ships in a later version (see docs/ROADMAP.md); until then the area is not shown.
+    static var available: [OrganizationArea] { allCases.filter { $0 != .peopleAndPets } }
+
     var title: LocalizedStringKey {
         switch self {
         case .places: "Länder und Orte"
@@ -183,5 +187,12 @@ enum ReasonText {
         case .noExistingAlbum:
             return String(localized: "Es gibt noch kein passendes Album.")
         }
+    }
+}
+
+extension ProposalDecision {
+    var isCreatingNew: Bool {
+        if case .createNew = self { return true }
+        return false
     }
 }

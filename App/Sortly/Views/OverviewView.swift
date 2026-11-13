@@ -28,6 +28,7 @@ struct OverviewView: View {
                     }
                     .buttonStyle(SecondaryButtonStyle())
                 }
+                AtlasTeaser()
                 areasSection
             }
             .padding(.horizontal, Theme.Spacing.l)
@@ -67,7 +68,7 @@ struct OverviewView: View {
     }
 
     private var primaryAreasText: String {
-        let names = OrganizationArea.allCases.filter { model.settings.primaryAreas.contains($0) }.map { String(localized: $0.titleResource) }
+        let names = OrganizationArea.available.filter { model.settings.primaryAreas.contains($0) }.map { String(localized: $0.titleResource) }
         return String(localized: "Gezählt werden deine Hauptbereiche: \(names.formatted(.list(type: .and))).")
     }
 
@@ -124,7 +125,7 @@ struct OverviewView: View {
                 .padding(.top, Theme.Spacing.s)
                 .padding(.leading, Theme.Spacing.xs)
             VStack(spacing: 0) {
-                let areas = OrganizationArea.allCases.filter { model.settings.enabledAreas.contains($0) }
+                let areas = OrganizationArea.available.filter { model.settings.enabledAreas.contains($0) }
                 ForEach(Array(areas.enumerated()), id: \.element) { index, area in
                     NavigationLink {
                         ProposalListView(area: area)

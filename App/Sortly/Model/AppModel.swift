@@ -58,6 +58,8 @@ final class AppModel {
 
     let library = PhotoKitLibrary()
     private(set) var store: SortlyStore?
+    /// Offline country outlines, also used for the shareable travel atlas.
+    private(set) var worldMap: OfflineWorldMap?
     private var pipeline: AnalysisPipeline?
     private var analysisTask: Task<Void, Never>?
 
@@ -87,6 +89,7 @@ final class AppModel {
             userTitles = try await store.value([SortlyID: String].self, forKey: Key.titles) ?? [:]
             access = await library.access()
             let map = await Task.detached(priority: .userInitiated) { try? WorldMapResource.load() }.value
+            worldMap = map
             pipeline = AnalysisPipeline(
                 store: store, reader: library, analyzer: VisionAnalyzer(),
                 geocoder: SystemGeocoder(locale: Locale(identifier: settings.titleLanguage.rawValue)),
@@ -342,7 +345,23 @@ final class AppModel {
         QueryParser(vocabulary: SearchVocabulary.build(facts: facts, inventory: inventory, groups: []))
     }
 
+    /// Keywords Apple Intelligence derived from the last sentence-style query (shown in the UI).
+    var lastSearchRewrite: String?
+
     func search(_ query: String) async -> (tokens: [SearchToken], results: [AssetID]) {
+        lastSearchRewrite = nil
+        let direct = await plainSearch(query)
+        let wordCount = query.split(whereSeparator: \.isWhitespace).count
+        // Sentences ("Fotos vom Grillen letzten Sommer") get help from the on-device model.
+        guard wordCount >= 3, direct.results.isEmpty || direct.tokens.count < 2, SmartAssistant.isAvailable,
+              let keywords = await SmartAssistant.searchKeywords(for: query) else { return direct }
+        let assisted = await plainSearch(keywords)
+        guard !assisted.results.isEmpty else { return direct }
+        lastSearchRewrite = keywords
+        return assisted
+    }
+
+    private func plainSearch(_ query: String) async -> (tokens: [SearchToken], results: [AssetID]) {
         let parsed = searchParser.parse(query)
         guard !parsed.filter.isEmpty else { return (parsed.tokens, []) }
         var textHits: Set<AssetID>?

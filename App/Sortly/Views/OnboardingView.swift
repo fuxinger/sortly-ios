@@ -58,7 +58,7 @@ struct OnboardingView: View {
                 .foregroundStyle(.secondary)
             ScrollView {
                 VStack(spacing: Theme.Spacing.s) {
-                    ForEach(OrganizationArea.allCases, id: \.self) { area in
+                    ForEach(OrganizationArea.available, id: \.self) { area in
                         Toggle(isOn: Binding(
                             get: { model.settings.enabledAreas.contains(area) },
                             set: { on in

@@ -13,7 +13,7 @@ struct SettingsView: View {
         @Bindable var model = model
         Form {
             Section {
-                ForEach(OrganizationArea.allCases) { area in
+                ForEach(OrganizationArea.available) { area in
                     Toggle(isOn: areaBinding(area, \.enabledAreas)) {
                         Label { Text(area.title) } icon: { Image(systemName: area.symbol).foregroundStyle(area.tint) }
                     }
@@ -25,7 +25,7 @@ struct SettingsView: View {
             }
 
             Section {
-                ForEach(OrganizationArea.allCases.filter { model.settings.enabledAreas.contains($0) }) { area in
+                ForEach(OrganizationArea.available.filter { model.settings.enabledAreas.contains($0) }) { area in
                     Toggle(isOn: areaBinding(area, \.primaryAreas)) { Text(area.title) }
                 }
             } header: {
@@ -57,15 +57,6 @@ struct SettingsView: View {
                 Text("Datenschutz")
             } footer: {
                 Text("Die Analyse läuft immer auf deinem iPhone. Für genauere Orte sendet iOS nur Koordinaten an Apple, keine Fotos. Aus iCloud werden nur Screenshots und Dokumente geladen, nie Videos, und nur im WLAN, wenn du nichts anderes einstellst.")
-            }
-
-            Section {
-                Toggle("Haustiere erkennen", isOn: $model.settings.people.petGroupingEnabled)
-                Toggle("Gesichter gruppieren", isOn: $model.settings.people.faceGroupingEnabled)
-            } header: {
-                Text("Personen und Tiere")
-            } footer: {
-                Text("Gesichter sind besonders geschützte Daten. SORTLY gruppiert sie nur, wenn du das einschaltest, nur auf diesem iPhone, und benennt niemanden selbst.")
             }
 
             Section("Verlauf") {

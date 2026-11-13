@@ -26,6 +26,10 @@ struct SearchView: View {
                         }
                     }
                 } else {
+                    if let rewrite = model.lastSearchRewrite, !searching {
+                        Label("Verstanden als: \(rewrite)", systemImage: "apple.intelligence")
+                            .font(.footnote).foregroundStyle(.secondary)
+                    }
                     if !tokens.isEmpty {
                         FlowLayout(spacing: Theme.Spacing.xs) {
                             ForEach(Array(tokens.enumerated()), id: \.offset) { _, token in
@@ -56,7 +60,7 @@ struct SearchView: View {
         }
         .background(Theme.background)
         .navigationTitle("Suche")
-        .searchable(text: $query, prompt: Text("z. B. Hunde Italien 2023"))
+        .searchable(text: $query, prompt: SmartAssistant.isAvailable ? Text("z. B. Grillen bei Oma letzten Sommer") : Text("z. B. Hunde Italien 2023"))
         .task(id: query) {
             let text = query
             guard !text.trimmingCharacters(in: .whitespaces).isEmpty else {
