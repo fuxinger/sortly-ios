@@ -17,6 +17,17 @@ struct TextMinimizerTests {
         #expect(!TextMinimizer.storable("IBAN DE89370400440532013000").contains("370400"))
     }
 
+    /// Audit 6.4: lower-case and differently spaced IBANs (OCR, chat screenshots) are masked too,
+    /// but only with a valid checksum, so similar-looking words stay searchable.
+    @Test func lowerCaseAndSpacedIBANsAreMasked() {
+        #expect(!TextMinimizer.storable("iban de89 3704 0044 0532 0130 00").contains("3704"))
+        #expect(!TextMinimizer.storable("Konto: De89370400440532013000 danke").contains("370400"))
+        #expect(!TextMinimizer.storable("IBAN DE89\t3704\t0044\t0532\t0130\t00").contains("0532"))
+        #expect(!TextMinimizer.storable("IBAN DE89\u{00A0}3704\u{00A0}0044\u{00A0}0532\u{00A0}0130\u{00A0}00").contains("0532"))
+        let lookalike = "ab12 cdef ghij klmn"
+        #expect(TextMinimizer.storable(lookalike) == lookalike)
+    }
+
     @Test func onlyValidCardNumbersAreMasked() {
         let card = TextMinimizer.storable("Visa 4111 1111 1111 1111 gültig bis 12/29")
         #expect(!card.contains("4111 1111"))

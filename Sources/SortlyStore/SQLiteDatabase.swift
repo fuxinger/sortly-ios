@@ -47,6 +47,8 @@ final class SQLiteDatabase {
     private var handle: OpaquePointer?
     private var statementCache: [String: OpaquePointer] = [:]
 
+    private var isFile = false
+
     init(path: String?) throws {
         let target = path ?? ":memory:"
         let flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_FULLMUTEX
@@ -57,6 +59,7 @@ final class SQLiteDatabase {
             throw SQLiteError(code: rc, message: message)
         }
         try execute("PRAGMA foreign_keys = ON")
+        isFile = path != nil
         if path != nil {
             try execute("PRAGMA journal_mode = WAL")
             try execute("PRAGMA synchronous = NORMAL")
@@ -147,6 +150,17 @@ final class SQLiteDatabase {
             rows.append(row)
         }
         return rows
+    }
+
+    /// Runs `body` with `synchronous = FULL`: the commit is on disk before this returns, even
+    /// after a power loss. Used for what cannot be rebuilt from the photo library (the plan
+    /// journal, Albumist's albums, the user's own decisions). Bulk analysis writes keep the
+    /// faster `NORMAL`, they can always be redone.
+    func durably<T>(_ body: () throws -> T) throws -> T {
+        guard isFile else { return try body() }
+        try execute("PRAGMA synchronous = FULL")
+        defer { try? execute("PRAGMA synchronous = NORMAL") }
+        return try body()
     }
 
     func transaction<T>(_ body: () throws -> T) throws -> T {

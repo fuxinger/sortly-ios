@@ -333,7 +333,9 @@ public actor AnalysisPipeline {
                 // Analysis used the full text; only a minimized copy is kept on disk.
                 var stored = text
                 stored.text = TextMinimizer.storable(text.text)
-                if stored.text.isEmpty { stored.barcodePayloads = [] }
+                // Barcode contents (boarding passes, payment codes with IBAN, tickets with names)
+                // only serve the classification above and are never kept.
+                stored.barcodePayloads = []
                 result.text = stored
                 if !stored.text.isEmpty { try await store.indexText(stored.text, for: asset.id) }
                 recognized += 1

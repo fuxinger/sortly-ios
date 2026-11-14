@@ -308,7 +308,38 @@ public actor SortlyStore: ChangePlanStoring {
     // MARK: - Overrides, rules, managed albums, plans, settings
 
     public func addOverride(_ o: UserOverride) throws {
+        try db.durably { try insertOverride(o) }
+    }
+
+    private func insertOverride(_ o: UserOverride) throws {
         try db.execute("INSERT OR REPLACE INTO overrides (id, payload, created_at) VALUES (?, ?, ?)", [.text(o.id.rawValue), try json(o), Self.date(o.createdAt)])
+    }
+
+    /// Stores what a reconciliation found (the user's manual changes as overrides, and the
+    /// new last-known state of Albumist's albums) in one transaction: either both are saved or
+    /// neither, so a manual change is never marked as seen without its override.
+    public func applyReconciliation(overrides: [UserOverride], managedAlbums: [ManagedAlbumState]) throws {
+        try db.durably {
+            try db.transaction {
+                for o in overrides { try insertOverride(o) }
+                try replaceManagedAlbums(managedAlbums)
+            }
+        }
+    }
+
+    /// Everything that follows a finished plan, in one transaction: the plan (with its
+    /// finalization time), Albumist's albums and further values (decisions, the list of plans
+    /// still to finalize). A crash leaves either all of it or none.
+    public func finalize(_ plan: ChangePlan, managedAlbums: [ManagedAlbumState], values: [String: any Encodable & Sendable]) throws {
+        try db.durably {
+            try db.transaction {
+                try insertPlan(plan)
+                try replaceManagedAlbums(managedAlbums)
+                for (key, value) in values.sorted(by: { $0.key < $1.key }) {
+                    try db.execute("INSERT OR REPLACE INTO settings (key, payload) VALUES (?, ?)", [.text(key), try json(value)])
+                }
+            }
+        }
     }
 
     public func removeOverride(_ id: SortlyID) throws {
@@ -339,11 +370,13 @@ public actor SortlyStore: ChangePlanStoring {
     }
 
     public func saveManagedAlbums(_ states: [ManagedAlbumState]) throws {
-        try db.transaction {
-            try db.execute("DELETE FROM managed_albums")
-            for s in states {
-                try db.execute("INSERT INTO managed_albums (album_id, source_id, payload) VALUES (?, ?, ?)", [.text(s.albumID.rawValue), .text(s.sourceID.rawValue), try json(s)])
-            }
+        try db.durably { try db.transaction { try replaceManagedAlbums(states) } }
+    }
+
+    private func replaceManagedAlbums(_ states: [ManagedAlbumState]) throws {
+        try db.execute("DELETE FROM managed_albums")
+        for s in states {
+            try db.execute("INSERT INTO managed_albums (album_id, source_id, payload) VALUES (?, ?, ?)", [.text(s.albumID.rawValue), .text(s.sourceID.rawValue), try json(s)])
         }
     }
 
@@ -351,7 +384,12 @@ public actor SortlyStore: ChangePlanStoring {
         try db.query("SELECT payload FROM managed_albums ORDER BY album_id").compactMap { try decode(ManagedAlbumState.self, $0["payload"]) }
     }
 
+    /// The execution journal: on disk before the library is touched (synchronous = FULL).
     public func save(_ plan: ChangePlan) throws {
+        try db.durably { try insertPlan(plan) }
+    }
+
+    private func insertPlan(_ plan: ChangePlan) throws {
         try db.execute("INSERT OR REPLACE INTO plans (id, status, created_at, payload) VALUES (?, ?, ?, ?)", [
             .text(plan.id.rawValue), .text(plan.status.rawValue), Self.date(plan.createdAt), try json(plan),
         ])
@@ -367,9 +405,18 @@ public actor SortlyStore: ChangePlanStoring {
             .compactMap { try decode(ChangePlan.self, $0["payload"]) }
     }
 
-    public func planHistory(limit: Int = 50) throws -> [ChangePlan] {
-        try db.query("SELECT payload FROM plans WHERE status IN ('completed', 'completedWithErrors') ORDER BY created_at DESC LIMIT ?", [.integer(Int64(limit))])
+    /// One page of finished plans, newest first.
+    public func planHistory(limit: Int = 50, offset: Int = 0) throws -> [ChangePlan] {
+        try db.query("SELECT payload FROM plans WHERE status IN ('completed', 'completedWithErrors') ORDER BY created_at DESC LIMIT ? OFFSET ?",
+                     [.integer(Int64(limit)), .integer(Int64(offset))])
             .compactMap { try decode(ChangePlan.self, $0["payload"]) }
+    }
+
+    /// Plans that a completed undo took back, over the whole journal (not one page of it).
+    public func undoneTargets() throws -> Set<SortlyID> {
+        struct Header: Decodable { var reverts: SortlyID? }
+        return Set(try db.query("SELECT payload FROM plans WHERE status = 'completed'")
+            .compactMap { try decode(Header.self, $0["payload"])?.reverts })
     }
 
     public func setValue<T: Encodable>(_ value: T, forKey key: String) throws {
@@ -391,6 +438,9 @@ public actor SortlyStore: ChangePlanStoring {
                 try db.execute("DELETE FROM \(table)")
             }
             try db.execute("UPDATE assets SET analysis_version = 0")
+            // Results computed from the analysis (trips, places, groups, suggestions) go too,
+            // otherwise the app would keep showing them until the next run finished.
+            try db.execute("DELETE FROM settings WHERE key LIKE 'analysis.%'")
             if includingDecisions {
                 for table in ["overrides", "rules", "managed_albums", "plans", "settings"] { try db.execute("DELETE FROM \(table)") }
             }

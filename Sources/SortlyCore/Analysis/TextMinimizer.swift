@@ -26,14 +26,28 @@ public enum TextMinimizer {
 
     // MARK: Masks
 
-    nonisolated(unsafe) private static let ibanPattern = try! NSRegularExpression(
-        pattern: #"\b[A-Z]{2}[0-9]{2}(?:[ ]?[A-Z0-9]{4}){2,7}(?:[ ]?[A-Z0-9]{1,3})?\b"#)
-    nonisolated(unsafe) private static let digitRunPattern = try! NSRegularExpression(
+    /// IBAN shape in any letter case, with single spaces, tabs or no-break spaces between groups.
+    private static let ibanPattern = try! NSRegularExpression(
+        pattern: #"\b[A-Za-z]{2}[0-9]{2}(?:[ \t\u00A0]?[A-Za-z0-9]{4}){2,7}(?:[ \t\u00A0]?[A-Za-z0-9]{1,3})?\b"#)
+    private static let digitRunPattern = try! NSRegularExpression(
         pattern: #"(?<![0-9])[0-9](?:[ -]?[0-9]){12,18}(?![0-9])"#)
 
+    /// Upper-case IBAN shapes are always masked (as printed on statements). Shapes with lower-case
+    /// letters (OCR, handwriting, chat screenshots) are masked when the IBAN checksum holds, so
+    /// ordinary words that happen to look similar stay searchable.
     static func maskIBANs(_ text: String) -> String {
-        let range = NSRange(text.startIndex..., in: text)
-        return ibanPattern.stringByReplacingMatches(in: text, range: range, withTemplate: "IBAN ••••")
+        var result = text
+        let matches = ibanPattern.matches(in: text, range: NSRange(text.startIndex..., in: text))
+        for match in matches.reversed() {
+            guard let range = Range(match.range, in: result) else { continue }
+            let candidate = String(result[range])
+            let compact = candidate.uppercased().filter { $0.isLetter || $0.isNumber }
+            let isUpper = candidate == candidate.uppercased()
+            let valid = stride(from: min(compact.count, 34), through: 15, by: -1)
+                .contains { DocumentAnalyzer.isValidIBAN(String(compact.prefix($0))) }
+            if isUpper || valid { result.replaceSubrange(range, with: "IBAN ••••") }
+        }
+        return result
     }
 
     static func maskCardNumbers(_ text: String) -> String {

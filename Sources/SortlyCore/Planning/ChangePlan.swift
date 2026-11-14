@@ -48,6 +48,13 @@ public enum StepState: Hashable, Sendable, Codable {
         default: false
         }
     }
+
+    var isFailedOrSkipped: Bool {
+        switch self {
+        case .failed, .skipped: true
+        default: false
+        }
+    }
 }
 
 public struct PlanStep: Hashable, Sendable, Codable, Identifiable {
@@ -114,8 +121,70 @@ public struct ChangePlan: Hashable, Sendable, Codable, Identifiable {
     public var resolvedKeys: [String: CollectionID]
     /// Set on an undo plan: the plan whose changes it takes back.
     public var reverts: SortlyID? = nil
+    /// What execution really did, step by step (written before every library call, settled
+    /// after it). Undo, the managed-album records, the result screen and the free-album count
+    /// use it instead of the planned operations. Missing in plans saved by older versions.
+    public var record: ExecutionRecord? = nil
+    /// Albums this plan may delete only while they hold nothing but these media (undo and
+    /// removal plans). An album that got other photos meanwhile is kept; only these leave it.
+    public var deleteGuards: [CollectionID: Set<AssetID>]? = nil
+    /// Set once everything that follows a run (managed albums, decisions, free albums) is
+    /// stored. A finished plan without it is completed again at the next launch.
+    public var finalizedAt: Date? = nil
 
     public var summary: PlanSummary { PlanSummary(self) }
+    /// What really happened (planned counts for plans from older versions).
+    public var appliedSummary: PlanSummary { PlanSummary(applied: self) }
+}
+
+/// The journal of what a plan really changed.
+public struct ExecutionRecord: Hashable, Sendable, Codable {
+    /// Step id → media the step added (addAssets) or removed (removeAssets, or our media
+    /// taken out of an album that was kept instead of deleted). While a step id is in
+    /// `unverified` this is the intent written before the library call; afterwards it is
+    /// exactly what the library shows changed.
+    public var media: [String: [AssetID]] = [:]
+    /// Steps whose library call may or may not have happened (interrupted, or the read-back failed).
+    public var unverified: Set<String> = []
+    /// Planned keys whose album or folder was found after an interruption instead of being
+    /// created verifiably by this run. Albumist cannot prove it made them, so it never
+    /// deletes them; undo only takes its own media back out.
+    public var adoptedKeys: Set<String> = []
+    /// Albums this plan deleted, with what they held, so the deletion can be taken back.
+    public var deletedAlbums: [CollectionID: DeletedAlbumRecord] = [:]
+    /// Step id → number of planned media that were no longer in the library.
+    public var unavailable: [String: Int] = [:]
+
+    public init() {}
+
+    enum CodingKeys: String, CodingKey { case media, unverified, adoptedKeys, deletedAlbums, unavailable }
+
+    public init(from decoder: any Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        media = try c.decodeIfPresent([String: [AssetID]].self, forKey: .media) ?? [:]
+        unverified = try c.decodeIfPresent(Set<String>.self, forKey: .unverified) ?? []
+        adoptedKeys = try c.decodeIfPresent(Set<String>.self, forKey: .adoptedKeys) ?? []
+        deletedAlbums = try c.decodeIfPresent([CollectionID: DeletedAlbumRecord].self, forKey: .deletedAlbums) ?? [:]
+        unavailable = try c.decodeIfPresent([String: Int].self, forKey: .unavailable) ?? [:]
+    }
+
+    /// Writes the intent of a step before its library call.
+    mutating func begin(_ step: String, _ assets: [AssetID]) {
+        media[step] = assets
+        unverified.insert(step)
+    }
+
+    /// Replaces the intent with what really changed.
+    mutating func settle(_ step: String, _ assets: [AssetID]) {
+        media[step] = assets
+        unverified.remove(step)
+    }
+}
+
+public struct DeletedAlbumRecord: Hashable, Sendable, Codable {
+    public var title: String
+    public var parentID: CollectionID?
+    public var members: [AssetID]
 }
 
 /// What the final preview shows (prompt §7, Schritt 8).
@@ -131,9 +200,42 @@ public struct PlanSummary: Hashable, Sendable {
     public var distinctAssets = 0
     /// Number of album assignments (one photo in three albums = 3).
     public var totalAssignments = 0
+    /// Planned media that were no longer in the library (applied summaries only).
+    public var unavailableAssets = 0
+    /// Steps that did not complete (applied summaries only).
+    public var failedSteps = 0
     /// Structural guarantees – there is no operation type that could change these.
     public let originalsDeleted = 0
     public let originalCopiesCreated = 0
+
+    /// What really happened in an executed plan: only verified changes count. Plans from
+    /// versions without an execution record fall back to their succeeded steps.
+    public init(applied plan: ChangePlan) {
+        let record = plan.record
+        var distinct = Set<AssetID>()
+        var extended = Set<CollectionID>()
+        for step in plan.steps {
+            let succeeded: Bool = if case .succeeded = step.state { true } else { false }
+            if case .failed = step.state { failedSteps += 1 }
+            switch step.operation {
+            case .createFolder: if succeeded { newFolders += 1 }
+            case .createAlbum: if succeeded { newAlbums += 1 }
+            case .addAssets(let album, let assets):
+                let added = record?.media[step.id] ?? (succeeded ? assets : [])
+                distinct.formUnion(added)
+                totalAssignments += added.count
+                if case .existing(let id) = album, !added.isEmpty { extended.insert(id) }
+                unavailableAssets += record?.unavailable[step.id] ?? 0
+            case .renameCollection: if succeeded { renamedCollections += 1 }
+            case .moveCollection: if succeeded { movedCollections += 1 }
+            case .removeAssets(_, let assets):
+                removedMemberships += (record?.media[step.id] ?? (succeeded ? assets : [])).count
+            case .deleteCollection: if succeeded { deletedContainers += 1 }
+            }
+        }
+        extendedAlbums = extended.count
+        distinctAssets = distinct.count
+    }
 
     public init(_ plan: ChangePlan) {
         var distinct = Set<AssetID>()

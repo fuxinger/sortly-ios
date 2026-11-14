@@ -220,14 +220,28 @@ extension ManagedAlbumTracker {
         for state in states where byID[state.albumID] == nil { byID[state.albumID] = state }
         var touched: Set<CollectionID> = []
 
+        let record = plan.record
+        /// What a membership step really changed (planned media for plans from older versions).
+        func changed(_ step: PlanStep, album: CollectionID, planned: [AssetID], added: Bool) -> [AssetID] {
+            if let media = record?.media[step.id] {
+                guard record?.unverified.contains(step.id) == true else { return media }
+                let members = inventory[album]?.assetIDs ?? []
+                return media.filter { members.contains($0) == added }
+            }
+            if case .succeeded = step.state { return planned }
+            return []
+        }
+
         for step in plan.steps {
-            guard case .succeeded(let createdID, _) = step.state else { continue }
             let source = step.sourceID ?? plan.id
             switch step.operation {
             case .createAlbum(let key, let title, _):
-                guard let id = createdID ?? plan.resolvedKeys[key] else { continue }
+                guard case .succeeded(let createdID, _) = step.state, let id = createdID ?? plan.resolvedKeys[key] else { continue }
+                // An album found after an interruption may be the user's: never marked as created
+                // by Albumist, so removing it later only takes Albumist's photos out.
+                let adopted = record?.adoptedKeys.contains(key) == true
                 byID[id] = ManagedAlbumState(albumID: id, sourceID: source, lastKnownTitle: title, lastKnownParentID: nil,
-                                             lastKnownMembers: [], addedBySortly: [], createdBySortly: true)
+                                             lastKnownMembers: [], addedBySortly: [], createdBySortly: !adopted)
                 touched.insert(id)
             case .addAssets(let ref, let assets):
                 let albumID: CollectionID? = switch ref {
@@ -235,18 +249,26 @@ extension ManagedAlbumTracker {
                 case .planned(let key): plan.resolvedKeys[key]
                 }
                 guard let albumID else { continue }
+                let added = changed(step, album: albumID, planned: assets, added: true)
+                if added.isEmpty, byID[albumID] == nil, step.state.isFailedOrSkipped { continue }
                 var state = byID[albumID] ?? ManagedAlbumState(
                     albumID: albumID, sourceID: source, lastKnownTitle: inventory[albumID]?.title ?? "",
                     lastKnownParentID: nil, lastKnownMembers: [], addedBySortly: [], createdBySortly: false)
-                state.addedBySortly.formUnion(assets)
+                state.addedBySortly.formUnion(added)
                 if source != state.sourceID { state.otherSourceIDs.insert(source) }
                 byID[albumID] = state
                 touched.insert(albumID)
             case .removeAssets(let album, let assets):
-                byID[album]?.addedBySortly.subtract(assets)
+                byID[album]?.addedBySortly.subtract(changed(step, album: album, planned: assets, added: false))
                 touched.insert(album)
             case .deleteCollection(let id, _):
-                byID[id] = nil
+                if case .succeeded = step.state {
+                    byID[id] = nil
+                } else if let media = record?.media[step.id] {
+                    // Kept because the user had put photos in: only Albumist's photos left it.
+                    byID[id]?.addedBySortly.subtract(media)
+                    touched.insert(id)
+                }
             default:
                 break
             }
@@ -288,7 +310,7 @@ extension ManagedAlbumTracker {
                 if state.createdBySortly && manual > 0 { notes.append(.respectedManualRemovals(count: manual)) }
             }
         }
-        return ChangePlan(
+        var plan = ChangePlan(
             id: id,
             createdAt: now,
             confirmedAt: nil,
@@ -300,5 +322,8 @@ extension ManagedAlbumTracker {
             notes: notes,
             resolvedKeys: [:]
         )
+        // Deleted only while it still holds nothing but Albumist's photos.
+        plan.deleteGuards = [state.albumID: state.addedBySortly]
+        return plan
     }
 }

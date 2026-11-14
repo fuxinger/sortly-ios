@@ -202,6 +202,63 @@ struct StoreTests {
         #expect(try await s.overrides().isEmpty)
     }
 
+    /// Audit 3.3: a reset also drops what was computed from the analysis (suggestions, trips),
+    /// but keeps the user's own values.
+    @Test func resetDropsComputedResultsButKeepsUserValues() async throws {
+        let s = try store()
+        try await s.setValue(["trip"], forKey: "analysis.trips")
+        try await s.setValue(["snapshot"], forKey: "analysis.proposals")
+        try await s.setValue(["mine"], forKey: "user.titles")
+        try await s.resetAnalysis()
+        #expect(try await s.value([String].self, forKey: "analysis.trips") == nil)
+        #expect(try await s.value([String].self, forKey: "analysis.proposals") == nil)
+        #expect(try await s.value([String].self, forKey: "user.titles") == ["mine"])
+    }
+
+    /// Audit 1.12: the history can be paged, and "already undone" is known over the whole journal.
+    @Test func historyPagesAndUndoneTargetsCoverTheWholeJournal() async throws {
+        let s = try store()
+        var originals: [ChangePlan] = []
+        for i in 0..<60 {
+            var p = OrganizationPlanner().makePlan(from: [], inventory: CollectionInventory())
+            p.createdAt = Date(timeIntervalSince1970: TimeInterval(1_000_000 + i))
+            p.status = .completed
+            try await s.save(p)
+            originals.append(p)
+        }
+        var undo = OrganizationPlanner().makePlan(from: [], inventory: CollectionInventory())
+        undo.createdAt = Date(timeIntervalSince1970: 2_000_000)
+        undo.status = .completed
+        undo.reverts = originals[0].id // the oldest one, beyond the first page
+        try await s.save(undo)
+        let first = try await s.planHistory(limit: 50)
+        let second = try await s.planHistory(limit: 50, offset: 50)
+        #expect(first.count == 50)
+        #expect(second.count == 11)
+        #expect(Set(first.map(\.id)).isDisjoint(with: second.map(\.id)))
+        #expect(second.contains { $0.id == originals[0].id })
+        #expect(try await s.undoneTargets() == [originals[0].id])
+    }
+
+    /// Audit 3.1 / 1.7: reconciliation results and the finalization of a plan are saved in one
+    /// transaction each.
+    @Test func reconciliationAndFinalizationAreAtomic() async throws {
+        let s = try store()
+        let state = ManagedAlbumState(albumID: "a", sourceID: SortlyID("p"), lastKnownTitle: "Rom", lastKnownParentID: nil, lastKnownMembers: ["1"], addedBySortly: ["1"], createdBySortly: true)
+        let o = UserOverride(scope: .assetInAlbum("2", "a"), decision: .neverAdd)
+        try await s.applyReconciliation(overrides: [o], managedAlbums: [state])
+        #expect(try await s.overrides() == [o])
+        #expect(try await s.managedAlbums() == [state])
+
+        var plan = OrganizationPlanner().makePlan(from: [], inventory: CollectionInventory())
+        plan.status = .completed
+        plan.finalizedAt = Date(timeIntervalSince1970: 5)
+        try await s.finalize(plan, managedAlbums: [], values: ["user.decisions": ["x": 1], "execution.pendingFinalization": [String]()])
+        #expect(try await s.plan(plan.id)?.finalizedAt == Date(timeIntervalSince1970: 5))
+        #expect(try await s.managedAlbums().isEmpty)
+        #expect(try await s.value([String: Int].self, forKey: "user.decisions") == ["x": 1])
+    }
+
     @Test func storeWorksAsExecutorJournal() async throws {
         let s = try store()
         let library = InMemoryPhotoLibrary(assets: ["1", "2"])
