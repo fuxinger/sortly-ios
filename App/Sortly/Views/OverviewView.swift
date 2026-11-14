@@ -107,6 +107,9 @@ struct OverviewView: View {
                         Button { model.pauseAnalysis() } label: { TapTarget("Pause") }
                     }
                 }
+                if model.history.isEmpty && model.managedAlbums.isEmpty {
+                    ScanShow()
+                }
                 VStack(alignment: .leading, spacing: Theme.Spacing.s) {
                     ProgressView(value: model.analysis.fraction)
                         .tint(Theme.accent)

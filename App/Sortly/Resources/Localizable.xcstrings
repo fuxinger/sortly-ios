@@ -5292,6 +5292,16 @@
           }
         }
       }
+    },
+    "Schon gefunden" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Already Found"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

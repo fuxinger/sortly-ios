@@ -85,7 +85,7 @@ Quellen: **E1** Expertenrunde 14.11.2026 (Tempo, Oberfläche, Technik, Produkt) 
 | Status | Punkt | Aufwand | Quelle |
 |---|---|---|---|
 | ✅ | Fotos fliegen in Alben. | M | U |
-| 🔜 | Erster Scan als Show: Mosaik aus eigenen Fotos, gefundene Reisen springen als Karten auf. | M | U |
+| ✅ | Erster Scan als Show: Mosaik aus eigenen Fotos mit wanderndem Licht, gefundene Reisen springen als Karten auf. | M | U |
 | ✅ | Farben aus den Fotos: jeder Vorschlag und jedes Land im Atlas mit eigenem weichen Farbverlauf aus dem Titelbild. | S | U |
 | ✅ | Zoom-Übergang ins Foto (Mediathek und Atlas-Länder). | S | U |
 | 💡 | 3D-Globus im Atlas. | L | U |

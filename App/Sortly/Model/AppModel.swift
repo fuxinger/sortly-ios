@@ -302,6 +302,10 @@ final class AppModel {
                         if progress.stage == .content, model.analysis.stage != .content, model.snapshot == nil {
                             Task { await model.refreshDerived() }
                         }
+                        // First scan: the photos are known after reading the library (for the scan show).
+                        if progress.stage == .patterns, model.analysis.stage == .inventory, model.facts.isEmpty {
+                            Task { await model.refreshDerived() }
+                        }
                         AppModel.shared.analysis.stage = progress.stage
                         AppModel.shared.analysis.completed = progress.completed
                         AppModel.shared.analysis.total = progress.total
