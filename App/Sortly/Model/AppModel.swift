@@ -313,6 +313,25 @@ final class AppModel {
         }
     }
 
+    /// Plan for photos the user put into an album by hand: an existing album is extended,
+    /// otherwise a new album is created (in the SORTLY folder). Goes through the normal review.
+    func manualPlan(assets: [AssetID], target: CollectionID?, newTitle: String?) async -> ChangePlan? {
+        guard let store, !assets.isEmpty else { return nil }
+        do {
+            let current = try await library.currentInventory()
+            let title = newTitle ?? target.flatMap { current[$0]?.title } ?? ""
+            guard !title.trimmingCharacters(in: .whitespaces).isEmpty else { return nil }
+            let proposal = AlbumProposal(id: SortlyID(), kind: .rule, title: title, assetIDs: Set(assets), reliability: .certain)
+            let decision: ProposalDecision = target.map { .extendExisting($0) } ?? .createNew(title: title, folderPath: nil)
+            let overrides = OverrideSet(try await store.overrides())
+            return OrganizationPlanner(rootFolderTitle: settings.rootFolderTitle)
+                .makePlan(from: [ConfirmedProposal(proposal: proposal, decision: decision)], inventory: current, overrides: overrides)
+        } catch {
+            message = error.localizedDescription
+            return nil
+        }
+    }
+
     func undo(_ executed: ChangePlan) async {
         do {
             let current = try await library.currentInventory()

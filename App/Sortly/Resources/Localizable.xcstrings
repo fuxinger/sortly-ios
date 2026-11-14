@@ -163,6 +163,16 @@
         }
       }
     },
+    "%lld ausgewählt" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld selected"
+          }
+        }
+      }
+    },
     "%lld Bilder enthalten Text zu „%@“." : {
       "localizations" : {
         "en" : {
@@ -270,6 +280,28 @@
       }
     },
     "%lld Fotos ergänzen" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Add %lld photo"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Add %lld photos"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld Fotos hinzufügen" : {
       "localizations" : {
         "en" : {
           "variations" : {
@@ -721,6 +753,16 @@
         }
       }
     },
+    "Album suchen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search albums"
+          }
+        }
+      }
+    },
     "Album-Zuordnungen" : {
       "localizations" : {
         "en" : {
@@ -851,6 +893,16 @@
         }
       }
     },
+    "Anlegen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create"
+          }
+        }
+      }
+    },
     "Anpassen" : {
       "localizations" : {
         "en" : {
@@ -867,6 +919,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Also over cellular"
+          }
+        }
+      }
+    },
+    "Aufgenommen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Taken"
           }
         }
       }
@@ -1031,6 +1093,16 @@
         }
       }
     },
+    "Das Foto hat keinen Ort und passt zu keinem Thema. Du kannst es selbst in ein Album legen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The photo has no location and matches no topic. You can add it to an album yourself."
+          }
+        }
+      }
+    },
     "Das passiert jetzt" : {
       "localizations" : {
         "en" : {
@@ -1137,6 +1209,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "German"
+          }
+        }
+      }
+    },
+    "Die Analyse ist für dieses Foto noch nicht fertig." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The analysis isn’t finished for this photo yet."
           }
         }
       }
@@ -1251,12 +1333,32 @@
         }
       }
     },
+    "Dieses Foto ist von der Analyse ausgeschlossen, zum Beispiel weil es ausgeblendet ist." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This photo is excluded from the analysis, for example because it is hidden."
+          }
+        }
+      }
+    },
     "Dokumente" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Documents"
+          }
+        }
+      }
+    },
+    "Du hast dieses Foto ignoriert." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You ignored this photo."
           }
         }
       }
@@ -1431,6 +1533,26 @@
         }
       }
     },
+    "Es gibt schon einen Vorschlag dafür. Du findest ihn in der Übersicht." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "There is already a suggestion for it. You’ll find it in the overview."
+          }
+        }
+      }
+    },
+    "Es passt zu keinem deiner eingeschalteten Bereiche. Du kannst es selbst in ein Album legen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "It doesn’t match any of your enabled areas. You can add it to an album yourself."
+          }
+        }
+      }
+    },
     "Fertig" : {
       "localizations" : {
         "en" : {
@@ -1447,6 +1569,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Resume"
+          }
+        }
+      }
+    },
+    "Foto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Photo"
           }
         }
       }
@@ -1651,12 +1783,32 @@
         }
       }
     },
+    "Ignorieren" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ignore"
+          }
+        }
+      }
+    },
     "Ignoriert" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ignored"
+          }
+        }
+      }
+    },
+    "Ignorierte Fotos schlägt SORTLY nicht mehr vor. Am Foto selbst ändert sich nichts." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SORTLY no longer suggests ignored photos. The photo itself stays unchanged."
           }
         }
       }
@@ -1911,6 +2063,16 @@
         }
       }
     },
+    "Name des neuen Albums" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Name of the new album"
+          }
+        }
+      }
+    },
     "Namen vorschlagen" : {
       "localizations" : {
         "en" : {
@@ -2073,6 +2235,16 @@
         }
       }
     },
+    "Noch in keinem Album" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not in any album yet"
+          }
+        }
+      }
+    },
     "Noch keine Alben" : {
       "localizations" : {
         "en" : {
@@ -2179,6 +2351,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Originals are never deleted, changed or copied."
+          }
+        }
+      }
+    },
+    "Ort" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Place"
           }
         }
       }
@@ -2533,6 +2715,16 @@
         }
       }
     },
+    "Status" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Status"
+          }
+        }
+      }
+    },
     "Städte" : {
       "localizations" : {
         "en" : {
@@ -2609,6 +2801,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Partly done"
+          }
+        }
+      }
+    },
+    "Teilweise sortiert" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Partly sorted"
           }
         }
       }
@@ -2873,6 +3075,16 @@
         }
       }
     },
+    "Warum nicht sortiert?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Why isn’t it sorted?"
+          }
+        }
+      }
+    },
     "Was soll SORTLY sortieren?" : {
       "localizations" : {
         "en" : {
@@ -2929,6 +3141,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "e.g. dogs Italy 2023"
+          }
+        }
+      }
+    },
+    "Zu Album hinzufügen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add to album"
           }
         }
       }

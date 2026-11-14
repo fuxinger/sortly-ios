@@ -196,3 +196,16 @@ extension ProposalDecision {
         return false
     }
 }
+
+extension OverallStatus {
+    var label: LocalizedStringKey {
+        switch self {
+        case .fullyOrganized: "Sortiert"
+        case .partiallyOrganized: "Teilweise sortiert"
+        case .unorganized: "Nicht sortiert"
+        case .ignored: "Ignoriert"
+        case .excluded: "Ausgeschlossen"
+        case .pending: "Analyse läuft"
+        }
+    }
+}
