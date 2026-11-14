@@ -218,6 +218,9 @@ struct PrivacyView: View {
             Section("Löschen") {
                 Text("„Analyse neu aufbauen“ löscht alle Analysedaten. Wenn du die App löschst, ist alles weg. Deine Alben in Fotos bleiben.")
             }
+            Section {
+                Link("Vollständige Datenschutzerklärung", destination: AppInfo.privacyPolicyURL)
+            }
         }
         .navigationTitle("Datenschutz")
         .navigationBarTitleDisplayMode(.inline)

@@ -5282,6 +5282,16 @@
           }
         }
       }
+    },
+    "Vollständige Datenschutzerklärung" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Full Privacy Policy"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

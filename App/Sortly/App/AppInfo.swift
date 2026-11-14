@@ -9,6 +9,12 @@ enum AppInfo {
     static let refinementTaskID = "app.sortly.ios.refinement"
     static let continuedAnalysisTaskPrefix = "app.sortly.ios.analysis"
     static let supportFolderName = "Albumist"
+    /// Website from `website/` (GitHub Pages), in the app's language.
+    static var privacyPolicyURL: URL {
+        let german = Bundle.main.preferredLocalizations.first?.hasPrefix("de") ?? true
+        return URL(string: german ? "https://fuxinger.github.io/sortly-ios/de/datenschutz.html"
+                                  : "https://fuxinger.github.io/sortly-ios/en/privacy.html")!
+    }
     static var version: String {
         let info = Bundle.main.infoDictionary
         let short = info?["CFBundleShortVersionString"] as? String ?? "0"
