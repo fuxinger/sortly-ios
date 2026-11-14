@@ -377,10 +377,13 @@ private struct AlbumStack: View {
             }
             .shadow(color: .black.opacity(0.12), radius: 14, y: 8)
             Group {
+                // Two lines with reserved space: trip names with dates stay whole and the
+                // carousel does not jump between short and long names.
                 Text(album.title)
                     .font(.subheadline.weight(.semibold))
-                    .lineLimit(1)
-                    .frame(maxWidth: 160)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(2, reservesSpace: true)
+                    .frame(maxWidth: 200)
                 Text("\(album.assets.count) Fotos")
                     .font(.caption)
                     .foregroundStyle(.secondary)

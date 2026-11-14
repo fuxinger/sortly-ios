@@ -60,7 +60,7 @@ Quellen: **E1** Expertenrunde 14.11.2026 (Tempo, Oberfläche, Technik, Produkt) 
 | ✅ | Filter-Chips (Mediathek, Atlas-Jahre) liefen bei größter Schrift aus dem Bild. Bei den größten Schriftstufen jetzt ein Menü. | S | B |
 | ✅ | Übernommen nur als kleines Häkchen. Zeilen sagen jetzt „Übernommen“ oder „Nicht jetzt“ in Worten. | S | B |
 | 💡 | Atlas-Kacheln wachsen bei größter Schrift nicht ganz mit (Zahlen und Untertitel). | S | B |
-| 💡 | Albumnamen in der Sortier-Show bei langen Reisen abgekürzt („Paris · 05.10.–07.10…“). | S | B |
+| ✅ | Albumnamen in der Sortier-Show bei langen Reisen abgekürzt („Paris · 05.10.–07.10…“). Jetzt zwei Zeilen. | S | B |
 
 ## Tempo bei großen Mediatheken
 
