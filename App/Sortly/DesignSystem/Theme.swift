@@ -2,7 +2,8 @@ import SwiftUI
 
 /// Design tokens for direction A "Klar" (chosen 2026-11-13): calm, light, close to iOS.
 /// System font (SF Pro) with Dynamic Type everywhere; numbers use monospaced digits.
-/// Liquid Glass is left to the system navigation (tab bar, toolbars); content stays plain.
+/// Liquid Glass comes from the system: tab bar, toolbars and the two button styles below;
+/// content stays plain.
 enum Theme {
     enum Spacing {
         static let xs: CGFloat = 4
@@ -24,14 +25,22 @@ enum Theme {
     static let card = Color(uiColor: .secondarySystemGroupedBackground)
     static let secondaryText = Color.secondary
 
-    /// Area colors: distinct in lightness, not only hue (accessibility).
+    /// Area colors: distinct in lightness, not only hue (accessibility). Dark mode uses
+    /// lighter variants so text in these colors keeps at least 4.5:1 contrast there too.
     static func tint(for area: OrganizationAreaStyle) -> Color {
         switch area {
-        case .trips: Color(red: 0.04, green: 0.43, blue: 0.48)
-        case .places: Color(red: 0.18, green: 0.31, blue: 0.66)
-        case .documents: Color(red: 0.54, green: 0.35, blue: 0.07)
+        case .trips: adaptive(light: (0.04, 0.43, 0.48), dark: (0.32, 0.77, 0.79))
+        case .places: adaptive(light: (0.18, 0.31, 0.66), dark: (0.55, 0.67, 1.00))
+        case .documents: adaptive(light: (0.54, 0.35, 0.07), dark: (0.93, 0.70, 0.36))
         case .neutral: Color(uiColor: .secondaryLabel)
         }
+    }
+
+    private static func adaptive(light: (Double, Double, Double), dark: (Double, Double, Double)) -> Color {
+        Color(uiColor: UIColor { traits in
+            let c = traits.userInterfaceStyle == .dark ? dark : light
+            return UIColor(red: c.0, green: c.1, blue: c.2, alpha: 1)
+        })
     }
 }
 
