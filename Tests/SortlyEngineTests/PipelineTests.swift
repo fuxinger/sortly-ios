@@ -128,6 +128,24 @@ struct PipelineTests {
         #expect(s.analyzer.counts.withLock { $0.content } == 210) // nothing analyzed twice
     }
 
+    @Test func tripsAreOfferedBeforeTheImageAnalysis() async throws {
+        let s = try setup(pauseAfter: 4, batchSize: 10)
+        let first = try await s.pipeline.run()
+        #expect(first.pausedBecause != nil)
+        #expect(first.earlyProposals)
+        let early = try #require(try await s.pipeline.latestProposals())
+        #expect(early.proposals.contains { $0.title == "Rom · 12.05.–19.05.2026" })
+        #expect(!early.proposals.contains { $0.title == "Hunde" }) // needs the image analysis
+        s.conditions.set(pauseAfterChecks: nil)
+        let second = try await s.pipeline.run()
+        #expect(!second.earlyProposals)
+        let full = try #require(try await s.pipeline.latestProposals())
+        #expect(full.proposals.contains { $0.title == "Hunde" })
+        // Same id before and after, so a decision made early still applies.
+        let earlyTrip = early.proposals.first { $0.title.hasPrefix("Rom ·") }?.id
+        #expect(earlyTrip != nil && full.proposals.contains { $0.id == earlyTrip })
+    }
+
     @Test func userPauseStopsAtBatchBoundary() async throws {
         let s = try setup()
         let pipeline = s.pipeline

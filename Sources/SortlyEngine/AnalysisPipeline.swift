@@ -43,6 +43,8 @@ public actor AnalysisPipeline {
 
     public struct Report: Sendable, Hashable {
         public var completedStages: [Stage] = []
+        /// Trips and places were offered before the image analysis (first run only).
+        public var earlyProposals = false
         public var pausedBecause: PauseReason?
         public var newOrChanged = 0
         public var removed = 0
@@ -178,6 +180,15 @@ public actor AnalysisPipeline {
             featurePrint: true
         )
         let contentTotal = try await store.countNeedingAnalysis(version: Self.contentVersion)
+        // First results early: trips, countries and places need no image analysis. On a first
+        // run (no suggestions yet) they are offered right away instead of after the image
+        // analysis, which takes hours on a large library. The full set replaces them later;
+        // suggestion ids are stable, so decisions made in between stay valid.
+        if contentTotal > 0, try await latestProposals() == nil {
+            let groups = try await store.value([ObservationGroup].self, forKey: Key.groups) ?? []
+            _ = try await makeProposals(all: all, inventory: inventory, trips: trips, frequent: frequent, groups: groups, scope: scope)
+            report.earlyProposals = true
+        }
         var contentDone = 0
         var cursor: AssetSnapshot?
         while true {

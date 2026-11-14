@@ -279,6 +279,11 @@ final class AppModel {
             do {
                 let report = try await pipeline.run(mode: mode, scope: scope) { progress in
                     Task { @MainActor in
+                        let model = AppModel.shared
+                        // Trips and places are ready before the image analysis: show them now.
+                        if progress.stage == .content, model.analysis.stage != .content, model.snapshot == nil {
+                            Task { await model.refreshDerived() }
+                        }
                         AppModel.shared.analysis.stage = progress.stage
                         AppModel.shared.analysis.completed = progress.completed
                         AppModel.shared.analysis.total = progress.total
