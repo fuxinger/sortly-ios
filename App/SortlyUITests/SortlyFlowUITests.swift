@@ -183,6 +183,9 @@ final class SortlyFlowUITests: XCTestCase {
             shot("01-welcome"); audit("welcome")
             tap(button("Los geht"), "welcome")
             shot("02-areas")
+            // Cities can be chosen right at the start (off by default).
+            let cities = app.switches.matching(NSPredicate(format: "label BEGINSWITH %@", "Städte")).firstMatch
+            print(cities.waitForExistence(timeout: 3) ? "UI_STEP_OK cities switch in onboarding" : "UI_STEP_MISSING cities switch in onboarding")
             tap(button("Weiter"), "areas")
             shot("03-access")
             if button("Zugriff erlauben").waitForExistence(timeout: 5) {

@@ -85,22 +85,7 @@ struct OnboardingView: View {
                 .fixedSize(horizontal: false, vertical: true)
             VStack(spacing: Theme.Spacing.s) {
                 ForEach(OrganizationArea.available, id: \.self) { area in
-                    Toggle(isOn: Binding(
-                        get: { model.settings.enabledAreas.contains(area) },
-                        set: { on in
-                            if on { model.settings.enabledAreas.insert(area) } else { model.settings.enabledAreas.remove(area) }
-                        }
-                    )) {
-                        HStack(spacing: Theme.Spacing.m) {
-                            IconTile(systemName: area.symbol, tint: area.tint)
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(area.title).font(.body.weight(.medium))
-                                Text(area.explanation).font(.footnote).foregroundStyle(.secondary)
-                            }
-                        }
-                    }
-                    .padding(Theme.Spacing.m)
-                    .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.Radius.card - 6, style: .continuous))
+                    areaCard(area)
                 }
             }
         } footer: {
@@ -110,6 +95,46 @@ struct OnboardingView: View {
             }
             .buttonStyle(PrimaryButtonStyle())
             .disabled(model.settings.enabledAreas.isEmpty)
+        }
+    }
+
+    private func areaCard(_ area: OrganizationArea) -> some View {
+        VStack(alignment: .leading, spacing: Theme.Spacing.s) {
+            Toggle(isOn: Binding(
+                get: { model.settings.enabledAreas.contains(area) },
+                set: { on in
+                    if on { model.settings.enabledAreas.insert(area) } else { model.settings.enabledAreas.remove(area) }
+                }
+            )) {
+                HStack(spacing: Theme.Spacing.m) {
+                    IconTile(systemName: area.symbol, tint: area.tint)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(area.title).font(.body.weight(.medium))
+                        Text(area.explanation).font(.footnote).foregroundStyle(.secondary)
+                    }
+                }
+            }
+            if area == .places && model.settings.enabledAreas.contains(.places) {
+                citiesToggle
+            }
+        }
+        .padding(Theme.Spacing.m)
+        .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.Radius.card - 6, style: .continuous))
+        .animation(.default, value: model.settings.enabledAreas.contains(.places))
+    }
+
+    /// Right at the start (Fuchs, 14.11.): cities are off by default, but whoever wants
+    /// Rom and Florenz next to Italien can say so here, not only later in Settings.
+    @ViewBuilder
+    private var citiesToggle: some View {
+        @Bindable var model = model
+        Divider()
+        Toggle(isOn: $model.settings.places.includesCities) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Städte als eigene Alben").font(.subheadline.weight(.medium))
+                Text("Zum Beispiel Rom und Florenz zusätzlich zu Italien.")
+                    .font(.footnote).foregroundStyle(.secondary)
+            }
         }
     }
 

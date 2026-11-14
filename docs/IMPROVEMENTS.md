@@ -57,6 +57,7 @@ Quellen: **E1** Expertenrunde 14.11.2026 (Tempo, Oberfläche, Technik, Produkt) 
 | ✅ | „0 Alben gefunden“ wirkte wie ein Fehler. Nur noch „N davon in deinen Alben“, wenn es welche gibt. | S | B |
 | ✅ | Ring zeigte bei größter Schrift „6…“. Ring wächst mit der Schrift, Zahl bleibt lesbar. | S | B |
 | ✅ | Zu viele Alben auf einmal: Land + Stadt + Reise ergab schnell 40 Alben. Entscheidung Fuchs 14.11.: standardmäßig nur Länder und Reisen, Städte per Schalter „Städte als eigene Alben“ in den Einstellungen. | S | B (3 von 5) |
+| ✅ | Städte schon beim Einrichten wählbar: Schalter „Städte als eigene Alben“ unter „Länder und Orte“ (vorher nur in den Einstellungen). | S | Fuchs 14.11. |
 | 💡 | Bereich „Kinder und Familie“ (Gesichter). Mit Personen-Erkennung in Update 1.1. | L | B |
 | 💡 | Fertig-Bildschirm mit Collage der neuen Alben statt nur Zahlen. | M | B |
 | 💡 | Länderseite im Atlas mit kleiner Karte der Orte. | M | B |

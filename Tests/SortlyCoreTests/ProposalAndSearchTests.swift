@@ -210,3 +210,15 @@ struct SearchTests {
         #expect(SearchFilter().isEmpty)
     }
 }
+
+@Suite("Cities switch")
+struct CitiesSwitchTests {
+    @Test func switchTurnsCityAlbumsOnAndOff() {
+        var places = PlaceSettings()
+        #expect(!places.includesCities)
+        places.includesCities = true
+        #expect(places.levels == [.country, .locality])
+        places.includesCities = false
+        #expect(places.levels == [.country])
+    }
+}

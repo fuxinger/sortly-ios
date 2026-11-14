@@ -70,6 +70,13 @@ public struct PlaceSettings: Hashable, Sendable, Codable {
         }
     }
 
+    /// The switch "Städte als eigene Alben" (onboarding and Settings): countries alone, or
+    /// countries with a folder of city albums inside.
+    public var includesCities: Bool {
+        get { levels.contains(.locality) }
+        set { levels = newValue ? Preset.countriesAndCities.levels : Preset.countries.levels }
+    }
+
     public init() {}
 }
 
