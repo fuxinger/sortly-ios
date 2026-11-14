@@ -313,6 +313,26 @@ final class AppModel {
         }
     }
 
+    /// Plan for one proposal only, so "Album anlegen" in a suggestion does it right away
+    /// (still through the normal preview, with undo).
+    func singlePlan(for proposal: AlbumProposal) async -> ChangePlan? {
+        guard let store else { return nil }
+        do {
+            let current = try await library.currentInventory()
+            let overrides = OverrideSet(try await store.overrides())
+            var decision = decisions[proposal.id] ?? .undecided
+            if case .createNew(nil, let path) = decision, let title = userTitles[proposal.id], !title.isEmpty {
+                decision = .createNew(title: title, folderPath: path)
+            }
+            let plan = OrganizationPlanner(rootFolderTitle: settings.rootFolderTitle)
+                .makePlan(from: [ConfirmedProposal(proposal: proposal, decision: decision)], inventory: current, overrides: overrides)
+            return plan.steps.isEmpty ? nil : plan
+        } catch {
+            message = error.localizedDescription
+            return nil
+        }
+    }
+
     func execute(_ plan: ChangePlan) async {
         guard let store else { return }
         var confirmed = plan

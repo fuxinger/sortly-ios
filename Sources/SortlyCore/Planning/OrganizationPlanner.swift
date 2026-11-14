@@ -322,4 +322,10 @@ extension ProposalDecision {
         default: true
         }
     }
+
+    /// The album already holds everything: accepting changes nothing in Photos.
+    public var isKeepExisting: Bool {
+        if case .keepExisting = self { return true }
+        return false
+    }
 }

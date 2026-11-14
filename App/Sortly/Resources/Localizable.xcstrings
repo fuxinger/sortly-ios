@@ -3656,6 +3656,16 @@
           }
         }
       }
+    },
+    "Für später vormerken" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apply Later"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

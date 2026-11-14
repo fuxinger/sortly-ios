@@ -102,6 +102,10 @@ struct ProposalDetailView: View {
     @State private var name = ""
     @State private var showAdjust = false
     @State private var suggesting = false
+    @State private var directPlan: ChangePlan?
+    @State private var showDirect = false
+    @State private var preparing = false
+    @State private var applied = false
 
     /// Only trips get a creative name; places and dates keep their exact titles.
     private var canSuggestTitle: Bool {
@@ -185,6 +189,16 @@ struct ProposalDetailView: View {
             NavigationStack { AdjustProposalView(proposal: proposal) }
                 .presentationDetents([.medium, .large])
         }
+        .navigationDestination(isPresented: $showDirect) {
+            PlanReviewView(prebuilt: directPlan)
+        }
+        .onChange(of: model.execution.finished) { _, finished in
+            if showDirect && finished != nil { applied = true }
+        }
+        .onChange(of: showDirect) { _, showing in
+            // Back from the finished preview: the suggestion is done, return to the list.
+            if !showing && applied { dismiss() }
+        }
     }
 
     @ViewBuilder
@@ -206,13 +220,17 @@ struct ProposalDetailView: View {
 
     private var actions: some View {
         VStack(spacing: Theme.Spacing.s) {
-            Button(primaryTitle) {
-                if proposal.requiresUserName { model.setUserTitle(name, for: proposal) }
-                model.setDecision(recommended, for: proposal)
-                dismiss()
+            Button {
+                Task { await applyNow() }
+            } label: {
+                if preparing {
+                    ProgressView().frame(maxWidth: .infinity)
+                } else {
+                    Text(primaryTitle)
+                }
             }
             .buttonStyle(PrimaryButtonStyle())
-            .disabled(!recommended.isAccepted)
+            .disabled(!recommended.isAccepted || preparing)
 
             HStack(spacing: Theme.Spacing.s) {
                 Button("Anpassen") { showAdjust = true }.buttonStyle(SecondaryButtonStyle())
@@ -222,8 +240,31 @@ struct ProposalDetailView: View {
                 }
                 .buttonStyle(SecondaryButtonStyle())
             }
+            if recommended.isAccepted && !recommended.isKeepExisting {
+                Button("Für später vormerken") { accept(); dismiss() }
+                    .font(.subheadline.weight(.semibold))
+                    .padding(.top, Theme.Spacing.xs)
+            }
         }
         .padding(.top, Theme.Spacing.s)
+    }
+
+    private func accept() {
+        if proposal.requiresUserName { model.setUserTitle(name, for: proposal) }
+        model.setDecision(recommended, for: proposal)
+    }
+
+    /// Applies this one suggestion right away (preview, then the album exists in Photos).
+    private func applyNow() async {
+        accept()
+        preparing = true
+        defer { preparing = false }
+        if let plan = await model.singlePlan(for: proposal) {
+            directPlan = plan
+            showDirect = true
+        } else {
+            dismiss() // nothing to change (album already complete or kept as it is)
+        }
     }
 
     private var primaryTitle: LocalizedStringKey {
