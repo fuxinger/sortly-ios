@@ -1,0 +1,38 @@
+# Einstellungen für die Website
+# ------------------------------------------------------------
+# Hier trägst du deine Daten EINMAL ein. Beim Veröffentlichen
+# werden sie automatisch in alle Seiten eingesetzt.
+#
+# So geht's: Rechts vom Gleichheitszeichen den Wert ersetzen.
+# Alles in [eckigen Klammern] musst du noch ausfüllen.
+# Zeilen mit # sind nur Erklärungen.
+# Leer lassen = die Zeile wird auf der Website weggelassen.
+# ------------------------------------------------------------
+
+# Name der App. "SORTLY" ist im App Store schon vergeben,
+# also hier später den neuen Namen eintragen.
+APP_NAME=SORTLY
+
+# Für Impressum und Datenschutz (Pflicht in Deutschland).
+# Deine echte Anschrift, kein Postfach.
+OWNER_NAME=[Vorname Nachname]
+STREET=[Straße Hausnummer]
+CITY=[PLZ Ort]
+COUNTRY_DE=Deutschland
+COUNTRY_EN=Germany
+EMAIL=[deine.adresse@beispiel.de]
+
+# Optional. Leer lassen, wenn du keine Telefonnummer zeigen willst.
+PHONE=
+
+# Nur wenn du eine Umsatzsteuer-ID hast (z. B. DE123456789).
+# Als Kleinunternehmer ohne USt-ID einfach leer lassen.
+VAT_ID=
+
+# Link zur App im App Store, sobald sie online ist.
+# Solange leer, steht auf der Startseite "Bald im App Store".
+APP_STORE_URL=
+
+# Datum der letzten Änderung der Datenschutzerklärung.
+UPDATED_DE=14. November 2026
+UPDATED_EN=November 14, 2026
