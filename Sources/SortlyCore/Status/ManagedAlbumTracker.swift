@@ -176,3 +176,96 @@ public struct OverrideSet: Sendable {
     public func isRejected(_ source: SortlyID) -> Bool { rejectedSources.contains(source) }
     public func mustNotRecreate(_ source: SortlyID) -> Bool { deletedSources.contains(source) }
 }
+
+// MARK: - Recording executed plans
+
+extension ManagedAlbumTracker {
+    /// Updates the managed-album states after a plan ran: albums SORTLY created or extended
+    /// are remembered together with exactly the media SORTLY added, so they can be listed,
+    /// removed again and checked for manual changes later. `inventory` is read after the run.
+    public func record(_ plan: ChangePlan, into states: [ManagedAlbumState], inventory: CollectionInventory) -> [ManagedAlbumState] {
+        var byID: [CollectionID: ManagedAlbumState] = [:]
+        for state in states where byID[state.albumID] == nil { byID[state.albumID] = state }
+        var touched: Set<CollectionID> = []
+
+        for step in plan.steps {
+            guard case .succeeded(let createdID, _) = step.state else { continue }
+            let source = step.sourceID ?? plan.id
+            switch step.operation {
+            case .createAlbum(let key, let title, _):
+                guard let id = createdID ?? plan.resolvedKeys[key] else { continue }
+                byID[id] = ManagedAlbumState(albumID: id, sourceID: source, lastKnownTitle: title, lastKnownParentID: nil,
+                                             lastKnownMembers: [], addedBySortly: [], createdBySortly: true)
+                touched.insert(id)
+            case .addAssets(let ref, let assets):
+                let albumID: CollectionID? = switch ref {
+                case .existing(let id): id
+                case .planned(let key): plan.resolvedKeys[key]
+                }
+                guard let albumID else { continue }
+                var state = byID[albumID] ?? ManagedAlbumState(
+                    albumID: albumID, sourceID: source, lastKnownTitle: inventory[albumID]?.title ?? "",
+                    lastKnownParentID: nil, lastKnownMembers: [], addedBySortly: [], createdBySortly: false)
+                state.addedBySortly.formUnion(assets)
+                byID[albumID] = state
+                touched.insert(albumID)
+            case .removeAssets(let album, let assets):
+                byID[album]?.addedBySortly.subtract(assets)
+                touched.insert(album)
+            case .deleteCollection(let id, _):
+                byID[id] = nil
+            default:
+                break
+            }
+        }
+
+        var result: [ManagedAlbumState] = []
+        for var state in byID.values {
+            if touched.contains(state.albumID) {
+                // Only albums this plan changed are refreshed; the others keep their last
+                // known state so manual changes are still detected by `reconcile`.
+                guard let album = inventory[state.albumID] else { continue }
+                state.lastKnownTitle = album.title
+                state.lastKnownParentID = album.parentID
+                state.lastKnownMembers = album.assetIDs
+                state.addedBySortly.formIntersection(album.assetIDs)
+                if state.addedBySortly.isEmpty { continue }
+            }
+            result.append(state)
+        }
+        return result.sorted { ($0.lastKnownTitle, $0.albumID.rawValue) < ($1.lastKnownTitle, $1.albumID.rawValue) }
+    }
+
+    /// Plan that takes back what SORTLY did to one album: an album SORTLY created is deleted
+    /// if it only holds media SORTLY added, otherwise only SORTLY's additions leave the album.
+    /// Media the user added by hand always stay. Originals are never touched.
+    public func removalPlan(for state: ManagedAlbumState, current: CollectionInventory, id: SortlyID = SortlyID(), now: Date = Date()) -> ChangePlan {
+        var steps: [PlanStep] = []
+        var notes: [PlanNote] = []
+        func append(_ op: PlannedOperation) {
+            steps.append(PlanStep(id: "\(id.rawValue)-\(steps.count)-\(StableHash.hex(String(describing: op)).prefix(12))", operation: op, sourceID: state.sourceID))
+        }
+        if let album = current[state.albumID], album.isEditableAlbum {
+            let ours = album.assetIDs.intersection(state.addedBySortly)
+            if state.createdBySortly && album.assetIDs.isSubset(of: state.addedBySortly) {
+                append(.deleteCollection(album.id, title: album.title))
+            } else if !ours.isEmpty {
+                append(.removeAssets(album: album.id, assets: ours.sorted()))
+                let manual = album.assetIDs.subtracting(ours).count
+                if state.createdBySortly && manual > 0 { notes.append(.respectedManualRemovals(count: manual)) }
+            }
+        }
+        return ChangePlan(
+            id: id,
+            createdAt: now,
+            confirmedAt: nil,
+            status: .draft,
+            baseline: current[state.albumID].map { [$0.id: $0.fingerprint] } ?? [:],
+            baselineCollectionIDs: Set(current.collections.keys),
+            steps: steps,
+            conflicts: [],
+            notes: notes,
+            resolvedKeys: [:]
+        )
+    }
+}

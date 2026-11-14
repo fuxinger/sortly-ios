@@ -23,17 +23,17 @@ struct ProposalListView: View {
                                        description: Text("Für diesen Bereich gibt es gerade nichts zu tun."))
             }
             ForEach(proposals) { proposal in
-                NavigationLink(value: proposal.id) {
+                // Destination-based link: this list is itself pushed by a destination-based
+                // link, and a value-based link here found no destination (row did nothing,
+                // a yellow warning triangle appeared on the way back).
+                NavigationLink {
+                    ProposalDetailView(proposal: proposal)
+                } label: {
                     ProposalRow(proposal: proposal)
                 }
             }
         }
         .navigationTitle(area?.title ?? "Vorschläge")
-        .navigationDestination(for: SortlyID.self) { id in
-            if let proposal = model.proposals.first(where: { $0.id == id }) {
-                ProposalDetailView(proposal: proposal)
-            }
-        }
         .toolbar {
             if !proposals.isEmpty {
                 ToolbarItem(placement: .topBarTrailing) {

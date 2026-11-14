@@ -44,7 +44,7 @@ public struct ProposalEngine: Sendable {
         if areas.contains(.documents) { result += documentProposals(usable) }
         if areas.contains(.messenger) { result += messengerProposals(usable) }
         if areas.contains(.peopleAndPets) { result += groupProposals(analysis.groups) }
-        return result.filter { !overrides.isRejected($0.id) }
+        return result.filter { !overrides.isRejected($0.id) && !overrides.mustNotRecreate($0.id) }
     }
 
     // MARK: Places (4.1)

@@ -227,4 +227,68 @@ struct PlanningExecutionTests {
         #expect(inv[parisID]?.assetIDs == ["a-299"]) // user content kept
         #expect(await library.assets == allAssets)
     }
+
+    @Test func managedAlbumsAreRecordedAndCanBeRemovedAgain() async throws {
+        let existing = CollectionSnapshot(id: "sommer", title: "Sommerurlaub", assetIDs: ids("a", 0..<5))
+        let library = InMemoryPhotoLibrary(assets: allAssets, collections: [existing])
+        let items = [
+            ConfirmedProposal(proposal: proposal("g", .trip, "Garda", [], ids("a", 0..<10)), decision: .extendExisting("sommer")),
+            ConfirmedProposal(proposal: proposal("r", .trip, "Rom", ["Reisen"], ids("a", 100..<110)), decision: .createNew(title: nil, folderPath: nil)),
+        ]
+        let plan = confirmed(planner.makePlan(from: items, inventory: try await library.currentInventory()))
+        let executed = try await ChangeExecutor(library: library, store: InMemoryPlanStore()).execute(plan)
+        let tracker = ManagedAlbumTracker()
+        var states = tracker.record(executed, into: [], inventory: try await library.currentInventory())
+        #expect(states.count == 2)
+        let sommer = try #require(states.first { $0.albumID == "sommer" })
+        #expect(!sommer.createdBySortly)
+        #expect(sommer.addedBySortly == ids("a", 5..<10))
+        #expect(sommer.sourceID == SortlyID("g"))
+        let rom = try #require(states.first { $0.createdBySortly })
+        #expect(rom.lastKnownTitle == "Rom")
+        #expect(rom.addedBySortly == ids("a", 100..<110))
+
+        // Nothing changed by hand: reconciliation reports nothing.
+        #expect(tracker.reconcile(states, with: try await library.currentInventory()).changes.isEmpty)
+
+        // Removing both: the extended album keeps the user's photos, the created one is deleted.
+        for state in states {
+            let removal = confirmed(tracker.removalPlan(for: state, current: try await library.currentInventory()))
+            let done = try await ChangeExecutor(library: library, store: InMemoryPlanStore()).execute(removal)
+            #expect(done.status == .completed)
+            states = tracker.record(done, into: states, inventory: try await library.currentInventory())
+        }
+        let inv = try await library.currentInventory()
+        #expect(inv["sommer"]?.assetIDs == ids("a", 0..<5))
+        #expect(inv["sommer"]?.title == "Sommerurlaub")
+        #expect(inv[rom.albumID] == nil)
+        #expect(states.isEmpty)
+        #expect(await library.assets == allAssets)
+    }
+
+    @Test func removalKeepsPhotosTheUserAddedToACreatedAlbum() async throws {
+        let library = InMemoryPhotoLibrary(assets: allAssets, collections: [])
+        let items = [ConfirmedProposal(proposal: proposal("p", .trip, "Paris", [], ids("a", 200..<210)), decision: .createNew(title: nil, folderPath: nil))]
+        let plan = confirmed(planner.makePlan(from: items, inventory: try await library.currentInventory()))
+        let executed = try await ChangeExecutor(library: library, store: InMemoryPlanStore()).execute(plan)
+        let tracker = ManagedAlbumTracker()
+        let states = tracker.record(executed, into: [], inventory: try await library.currentInventory())
+        let paris = try #require(states.first)
+        await library.userEdit { inv in
+            var p = inv[paris.albumID]!
+            p.assetIDs.insert("a-299")
+            inv.upsert(p)
+        }
+        let removal = confirmed(tracker.removalPlan(for: paris, current: try await library.currentInventory()))
+        _ = try await ChangeExecutor(library: library, store: InMemoryPlanStore()).execute(removal)
+        #expect(try await library.currentInventory()[paris.albumID]?.assetIDs == ["a-299"])
+    }
+
+    @Test func deletedManagedAlbumIsNotSuggestedAgain() async throws {
+        let state = ManagedAlbumState(albumID: "gone", sourceID: SortlyID("trip-1"), lastKnownTitle: "Rom", lastKnownParentID: nil,
+                                      lastKnownMembers: ids("a", 0..<3), addedBySortly: ids("a", 0..<3), createdBySortly: true)
+        let result = ManagedAlbumTracker().reconcile([state], with: CollectionInventory([]))
+        let overrides = OverrideSet(result.newOverrides)
+        #expect(overrides.mustNotRecreate(SortlyID("trip-1")))
+    }
 }

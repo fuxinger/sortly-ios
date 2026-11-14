@@ -52,6 +52,8 @@ final class AppModel {
     var inventory = CollectionInventory()
     var mergeSuggestions: [AlbumOverlapAnalyzer.MergeSuggestion] = []
     var history: [ChangePlan] = []
+    /// Albums SORTLY created or extended, with exactly the media it added.
+    var managedAlbums: [ManagedAlbumState] = []
     var plan: ChangePlan?
     var execution = ExecutionState()
     var message: String?
@@ -202,6 +204,7 @@ final class AppModel {
 
     func refreshDerived() async {
         guard let store, let pipeline else { return }
+        await reconcileManagedAlbums()
         do {
             snapshot = try await pipeline.latestProposals()
             facts = try await pipeline.currentFacts()
@@ -297,6 +300,7 @@ final class AppModel {
                 }
             }
             execution.finished = result
+            await recordManagedAlbums(after: result)
             let used = result.summary
             Purchases.shared.recordUsage(albums: used.newAlbums + used.extendedAlbums)
             // Applied proposals leave the open list; other accepted ones stay accepted.
@@ -347,6 +351,57 @@ final class AppModel {
             message = error.localizedDescription
             return nil
         }
+    }
+
+    // MARK: Albums created by SORTLY
+
+    /// Remembers which albums the plan created or extended (and which media it added).
+    private func recordManagedAlbums(after result: ChangePlan) async {
+        guard let store else { return }
+        do {
+            let after = try await library.currentInventory()
+            let states = ManagedAlbumTracker().record(result, into: try await store.managedAlbums(), inventory: after)
+            try await store.saveManagedAlbums(states)
+            managedAlbums = states
+        } catch {
+            message = error.localizedDescription
+        }
+    }
+
+    /// Detects changes the user made in the Photos app (renamed, deleted, photos removed)
+    /// and turns them into overrides, so SORTLY never undoes a manual decision.
+    private func reconcileManagedAlbums() async {
+        guard let store, let stored = try? await store.managedAlbums() else { return }
+        // Only with full access: a limited library would look like deleted albums and photos.
+        guard !stored.isEmpty, !execution.isRunning, await library.access() == .full,
+              let current = try? await library.currentInventory(), !current.albums.isEmpty else {
+            managedAlbums = stored
+            return
+        }
+        let result = ManagedAlbumTracker().reconcile(stored, with: current)
+        if !result.changes.isEmpty {
+            for override in result.newOverrides { try? await store.addOverride(override) }
+            try? await store.saveManagedAlbums(result.updatedStates)
+        }
+        managedAlbums = result.updatedStates
+    }
+
+    /// Plan that takes SORTLY's additions back out of one album (shown in the normal review).
+    func removalPlan(for state: ManagedAlbumState) async -> ChangePlan? {
+        do {
+            let current = try await library.currentInventory()
+            let plan = ManagedAlbumTracker().removalPlan(for: state, current: current)
+            return plan.steps.isEmpty ? nil : plan
+        } catch {
+            message = error.localizedDescription
+            return nil
+        }
+    }
+
+    /// After a removal the suggestion behind the album is not offered again.
+    func forgetProposal(_ source: SortlyID) async {
+        try? await store?.addOverride(UserOverride(scope: .source(source), decision: .rejectProposal))
+        await refreshDerived()
     }
 
     func undo(_ executed: ChangePlan) async {
