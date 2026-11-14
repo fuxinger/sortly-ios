@@ -971,6 +971,16 @@
         }
       }
     },
+    "Code einlösen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Redeem code"
+          }
+        }
+      }
+    },
     "Das Album wurde inzwischen gelöscht oder verschoben." : {
       "localizations" : {
         "en" : {

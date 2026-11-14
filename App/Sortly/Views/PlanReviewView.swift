@@ -212,6 +212,7 @@ enum ConflictText {
 struct UnlockCard: View {
     @Environment(Purchases.self) private var purchases
     var albumsInPlan: Int
+    @State private var redeeming = false
 
     var body: some View {
         Card {
@@ -231,9 +232,15 @@ struct UnlockCard: View {
             }
             .buttonStyle(PrimaryButtonStyle())
             .disabled(purchases.isPurchasing)
-            Button("Kauf wiederherstellen") { Task { await purchases.restore() } }
-                .font(.subheadline)
-                .frame(maxWidth: .infinity)
+            HStack {
+                Button("Kauf wiederherstellen") { Task { await purchases.restore() } }
+                Spacer()
+                Button("Code einlösen") { redeeming = true }
+            }
+            .font(.subheadline)
+            .offerCodeRedemption(isPresented: $redeeming) { _ in
+                Task { await purchases.refreshEntitlements() }
+            }
             Text("Tipp: Du kannst auch weniger Vorschläge auf einmal übernehmen.")
                 .font(.footnote).foregroundStyle(.secondary)
             if let error = purchases.lastError {

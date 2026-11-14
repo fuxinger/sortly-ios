@@ -8,6 +8,7 @@ struct SettingsView: View {
     @Environment(Purchases.self) private var purchases
     @Environment(\.dismiss) private var dismiss
     @State private var confirmReset = false
+    @State private var redeeming = false
 
     var body: some View {
         @Bindable var model = model
@@ -80,7 +81,11 @@ struct SettingsView: View {
                 } else {
                     LabeledContent("Noch kostenlos", value: "\(purchases.remainingFreeAlbums) Alben")
                     Button("Kauf wiederherstellen") { Task { await purchases.restore() } }
+                    Button("Code einlösen") { redeeming = true }
                 }
+            }
+            .offerCodeRedemption(isPresented: $redeeming) { _ in
+                Task { await purchases.refreshEntitlements() }
             }
 
             Section("Über") {
