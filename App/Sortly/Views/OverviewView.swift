@@ -369,7 +369,7 @@ struct LimitedAccessCard: View {
     var body: some View {
         Card {
             Label("Nur ausgewählte Fotos", systemImage: "photo.badge.checkmark").font(.headline)
-            Text("Albumist sieht nur die \(model.progress.total) Fotos, die du freigegeben hast. Für Alben aus deiner ganzen Mediathek braucht Albumist vollen Zugriff.")
+            Text("Albumist sieht nur die \(model.progress.allPhotos) Fotos, die du freigegeben hast. Für Alben aus deiner ganzen Mediathek braucht Albumist vollen Zugriff.")
                 .font(.subheadline).foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
             #if targetEnvironment(simulator)

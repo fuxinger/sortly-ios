@@ -90,6 +90,13 @@ public struct OrganizationStatusResolver: Sendable {
         return AssetOrganizationState(assetID: assetID, areas: areas, isUncertain: uncertain)
     }
 
+    /// No main area applies to this photo, and the user did not ignore or exclude it.
+    public func isOutsideMainAreas(_ state: AssetOrganizationState) -> Bool {
+        let statuses = state.areas.filter { primaryAreas.contains($0.key) }.map(\.value)
+        guard !statuses.isEmpty, !statuses.contains(.excluded), !statuses.contains(.ignored) else { return false }
+        return statuses.allSatisfy { $0 == .notApplicable || $0 == .analysisImpossible }
+    }
+
     public func overall(_ state: AssetOrganizationState) -> OverallStatus {
         let statuses = state.areas.filter { primaryAreas.contains($0.key) }.map(\.value)
         if statuses.contains(.excluded) { return .excluded }
@@ -130,6 +137,12 @@ public struct OrganizationStatusResolver: Sendable {
         public var pending = 0
         public var ignored = 0
         public var excluded = 0
+        /// Photos none of the main areas applies to (a screenshot without a place when only
+        /// places and trips count). Not part of `total`: "13 von 246 sortiert" before anything
+        /// was done confused testers (Fuchs, 14.11.).
+        public var outsideMainAreas = 0
+        /// Every photo the app sees.
+        public var allPhotos: Int { total + outsideMainAreas }
 
         public var fullyShare: Double { total == 0 ? 0 : Double(fully) / Double(total) }
         public var partiallyShare: Double { total == 0 ? 0 : Double(partially) / Double(total) }
@@ -138,6 +151,10 @@ public struct OrganizationStatusResolver: Sendable {
     public func progress<S: Sequence>(_ states: S) -> Progress where S.Element == AssetOrganizationState {
         var p = Progress()
         for s in states {
+            if isOutsideMainAreas(s) {
+                p.outsideMainAreas += 1
+                continue
+            }
             p.total += 1
             switch overall(s) {
             case .fullyOrganized: p.fully += 1

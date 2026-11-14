@@ -52,6 +52,14 @@ struct StatusTests {
         let p = resolver.progress(states)
         #expect(p.total == 3 && p.fully == 1 && p.unorganized == 1 && p.pending == 1)
     }
+
+    @Test func photosOutsideTheMainAreasDoNotCountAsSorted() {
+        let resolver = OrganizationStatusResolver(primaryAreas: [.trips, .places])
+        let screenshot = resolver.state(for: "s", facts: [.trips: AreaFacts(applicable: false), .places: AreaFacts(applicable: false)])
+        let open = resolver.state(for: "o", facts: [.trips: AreaFacts(), .places: AreaFacts()])
+        let p = resolver.progress([screenshot, open])
+        #expect(p.total == 1 && p.fully == 0 && p.outsideMainAreas == 1 && p.allPhotos == 2)
+    }
 }
 
 @Suite("Rules and automation")
