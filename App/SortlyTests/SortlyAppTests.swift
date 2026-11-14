@@ -91,7 +91,13 @@ struct AtlasRenderingTests {
     }
 
     /// CI logs drop very long lines, so the image is printed in numbered chunks.
-    static func emit(_ name: String, _ data: Data) {
+    /// `data` is nil when the simulator's JPEG encoder fails ("session write failed", seen on
+    /// CI once): the preview is skipped instead of crashing the whole test run.
+    static func emit(_ name: String, _ data: Data?) {
+        guard let data else {
+            print("PREVIEW_SKIPPED \(name): JPEG encoding failed")
+            return
+        }
         let text = data.base64EncodedString()
         let size = 4000
         let total = (text.count + size - 1) / size
@@ -142,7 +148,7 @@ struct AtlasRenderingTests {
             card.scale = 1
             let cardImage = try #require(card.uiImage)
             #expect(cardImage.size == CGSize(width: 720, height: 1280))
-            Self.emit(name, cardImage.jpegData(compressionQuality: 0.8)!)
+            Self.emit(name, cardImage.jpegData(compressionQuality: 0.8))
         }
 
         for scheme in [ColorScheme.light, .dark] {
@@ -155,7 +161,7 @@ struct AtlasRenderingTests {
             )
             screen.scale = 2
             let screenImage = try #require(screen.uiImage)
-            Self.emit(scheme == .light ? "atlas" : "atlas-dark", screenImage.jpegData(compressionQuality: 0.7)!)
+            Self.emit(scheme == .light ? "atlas" : "atlas-dark", screenImage.jpegData(compressionQuality: 0.7))
         }
     }
 }
