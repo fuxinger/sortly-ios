@@ -16,7 +16,25 @@
 - Englische Übersetzung (App, Info.plist, Kurzbefehle).
 - Optional mit Apple Intelligence: Suche in ganzen Sätzen, Namensvorschläge für Reisen.
 - CI: Tests auf Linux und macOS, App-Build im Simulator, Simulator-ZIP und automatischer Upload zu Appetize (mit Secret `APPETIZE_TOKEN`).
+- Atlas: Land antippen zeigt seine Fotos, nach Jahren, mit den meistfotografierten Orten und
+  dem passenden Albumvorschlag.
+- „Album passt nicht“: ein vorgeschlagenes vorhandenes Album lässt sich ausschließen; unter
+  „Anpassen“ ist jedes bearbeitbare Album wählbar.
+- Siri, Kurzbefehle und Spotlight: „Fotos aus Italien in SORTLY“, „Offene Vorschläge“,
+  Vorschlag öffnen; Spotlight findet Länder und offene Vorschläge.
+- iOS-26-Glasknöpfe (`glassProminent`/`glass`), Vibration beim Fertigwerden und bei Fehlern.
+- Logiktest des ganzen Entscheidungs-Ablaufs (übernehmen, umsetzen, rückgängig, löschen,
+  ablehnen, 40 zufällige Abläufe mit Invarianten).
+- Anleitung und Skript für eine unabhängige Code-Prüfung (`docs/review/`, `tools/make_review_zip.sh`).
 ### Korrigiert
+- Reise-Erkennung: Wer zu Hause wenig fotografiert, bekam nur eine Reise; das Zuhause
+  braucht jetzt Fotos über mindestens drei Wochen verteilt.
+- Umgesetzte Vorschläge kamen als „mehrere passende Alben“ zurück, wenn zwei Alben dieselben
+  Fotos hatten, oder wenn zwei Vorschläge in ein Album gingen. Beides bleibt jetzt erledigt.
+- Die Wahl unter „Anpassen“ wurde beim Übernehmen durch die Empfehlung ersetzt.
+- Deutsche Einzahl („1 Reise“ statt „1 Reisen“) über Pluralformen im Katalog.
+- Bereichsfarben haben im Dunkelmodus hellere Varianten (Kontrast).
+- Kleine Vorschaubilder von Screenshots und Dokumenten wirkten abgeschnitten; Hochformat-Raster.
 - Datumswerte verlieren beim Speichern keine Millisekunden mehr.
 - Bilderkennungs-Begriffe an die tatsächliche Vision-Liste angepasst.
 - Namenskonflikt `Observation` mit Apples Observation-Framework behoben.

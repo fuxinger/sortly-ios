@@ -39,9 +39,7 @@ struct PlanReviewView: View {
         .background(Theme.background)
         .navigationTitle("Umsetzen")
         .navigationBarTitleDisplayMode(.inline)
-        // Haptic feedback when the changes are done, or when something went wrong.
-        .sensoryFeedback(.success, trigger: model.execution.finished) { old, new in old == nil && new != nil }
-        .sensoryFeedback(.error, trigger: model.execution.failure) { old, new in old == nil && new != nil }
+        .modifier(ExecutionHaptics(execution: model.execution))
         .task {
             if !model.execution.isRunning {
                 if let prebuilt { model.plan = prebuilt } else { await model.buildPlan() }
@@ -145,6 +143,22 @@ struct PlanReviewView: View {
 }
 
 /// Result of an executed plan with undo.
+/// Haptic feedback when the changes are done, or when something went wrong.
+/// (A separate modifier keeps the screen's body quick to type-check.)
+private struct ExecutionHaptics: ViewModifier {
+    var execution: AppModel.ExecutionState
+
+    func body(content: Content) -> some View {
+        content
+            .sensoryFeedback(.success, trigger: execution.finished?.id) { (old: SortlyID?, new: SortlyID?) in
+                old == nil && new != nil
+            }
+            .sensoryFeedback(.error, trigger: execution.failure) { (old: String?, new: String?) in
+                old == nil && new != nil
+            }
+    }
+}
+
 struct ResultCard: View {
     @Environment(AppModel.self) private var model
     @Environment(\.requestReview) private var requestReview
