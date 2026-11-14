@@ -344,6 +344,14 @@ public actor AnalysisPipeline {
         all: [AssetSnapshot], inventory: CollectionInventory, trips: [Trip], frequent: [FrequentPlace],
         groups: [ObservationGroup], scope: OrganizationScope
     ) async throws -> ProposalSnapshot {
+        // The albums are read again: a plan applied while this run was busy (minutes or hours
+        // on a large library) created albums the matching must see, or it would suggest them
+        // a second time.
+        var inventory = inventory
+        if let fresh = try? await reader.currentInventory(), fresh != inventory {
+            inventory = fresh
+            try await store.saveInventory(fresh)
+        }
         let facts = try await currentFacts(all: all, inventory: inventory, trips: trips, frequent: frequent, groups: groups)
             .filter { scope.includes($0, calendar: calendar) }
         let overrides = OverrideSet(try await store.overrides())

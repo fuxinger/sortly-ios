@@ -70,7 +70,7 @@ struct ProposalRow: View {
                 .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.tile, style: .continuous))
             VStack(alignment: .leading, spacing: 3) {
                 Text(model.userTitles[proposal.id] ?? proposal.title).font(.body.weight(.medium)).lineLimit(typeSize.isAccessibilitySize ? 5 : 2)
-                Text("\(proposal.assetIDs.count) Aufnahmen").font(.footnote).foregroundStyle(.secondary)
+                Text("\(proposal.assetIDs.count - (model.removedFromProposals[proposal.id]?.count ?? 0)) Aufnahmen").font(.footnote).foregroundStyle(.secondary)
                 if let status = model.match(for: proposal)?.status {
                     StatusBadge(text: status.label, tint: status.tint)
                 }
@@ -136,8 +136,15 @@ struct ProposalDetailView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: Theme.Spacing.m) {
                 // Two rows: with more, the actions fell below the tab bar on a 6.1" iPhone.
-                ThumbnailGrid(ids: proposal.assetIDs.sorted(), columns: 4, limit: 8,
-                              portrait: [.screenshots, .documents, .messenger].contains(proposal.kind.area))
+                // Spread over the whole time span, oldest first; a tap shows all photos.
+                NavigationLink {
+                    ProposalPhotosView(proposal: proposal)
+                } label: {
+                    ThumbnailGrid(ids: model.previewIDs(for: proposal), total: model.members(of: proposal).count, columns: 4, limit: 8,
+                                  portrait: [.screenshots, .documents, .messenger].contains(proposal.kind.area))
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(Text("Alle \(model.members(of: proposal).count) Fotos ansehen"))
 
                 VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
                     Text("\(Text(proposal.kind.area.title)) · \(Text(proposal.reliability.label))")
@@ -393,5 +400,92 @@ struct AlbumPickerView: View {
         .searchable(text: $query, prompt: Text("Album suchen"))
         .navigationTitle("Album wählen")
         .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+/// Every photo of one suggestion, oldest first. Photos that do not belong can be taken out of
+/// this suggestion; they stay in the library and in other suggestions.
+struct ProposalPhotosView: View {
+    @Environment(AppModel.self) private var model
+    var proposal: AlbumProposal
+    @State private var selecting = false
+    @State private var selected: Set<AssetID> = []
+    @State private var confirmRemove = false
+    private let columns = [GridItem(.adaptive(minimum: 96), spacing: 3)]
+
+    var body: some View {
+        let members = model.members(of: proposal)
+        ScrollView {
+            LazyVGrid(columns: columns, spacing: 3) {
+                ForEach(members, id: \.self) { id in
+                    tile(id)
+                }
+            }
+        }
+        .navigationTitle(Text("\(members.count) Fotos"))
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button(selecting ? "Fertig" : "Auswählen") {
+                    withAnimation(.snappy) {
+                        selecting.toggle()
+                        selected = []
+                    }
+                }
+            }
+            if selecting {
+                ToolbarItem(placement: .bottomBar) {
+                    Button(role: .destructive) {
+                        confirmRemove = true
+                    } label: {
+                        Text("\(selected.count) aus Vorschlag entfernen")
+                    }
+                    .disabled(selected.isEmpty)
+                }
+            }
+        }
+        .confirmationDialog("Fotos aus diesem Vorschlag entfernen?", isPresented: $confirmRemove, titleVisibility: .visible) {
+            Button("Entfernen", role: .destructive) {
+                let chosen = selected
+                Task {
+                    await model.removeFromProposal(chosen, proposal: proposal)
+                    withAnimation(.snappy) {
+                        selected = []
+                        selecting = false
+                    }
+                }
+            }
+        } message: {
+            Text("Sie kommen nicht in dieses Album. In deiner Mediathek und in anderen Vorschlägen bleiben sie.")
+        }
+    }
+
+    private func traits(selected isSelected: Bool) -> AccessibilityTraits {
+        guard selecting else { return [] }
+        return isSelected ? [.isButton, .isSelected] : [.isButton]
+    }
+
+    private func tile(_ id: AssetID) -> some View {
+        let isSelected = selected.contains(id)
+        return AssetThumbnail(id: id, side: 120)
+            .aspectRatio(1, contentMode: .fill)
+            .clipped()
+            .overlay(alignment: .bottomTrailing) {
+                if selecting {
+                    Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                        .font(.title3)
+                        .symbolRenderingMode(.palette)
+                        .foregroundStyle(.white, isSelected ? Theme.accent : Color.black.opacity(0.25))
+                        .padding(5)
+                        .accessibilityHidden(true)
+                }
+            }
+            .opacity(selecting && !isSelected ? 0.85 : 1)
+            .contentShape(Rectangle())
+            .onTapGesture {
+                guard selecting else { return }
+                if isSelected { selected.remove(id) } else { selected.insert(id) }
+            }
+            .accessibilityAddTraits(traits(selected: isSelected))
     }
 }

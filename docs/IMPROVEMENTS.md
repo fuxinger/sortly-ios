@@ -13,7 +13,7 @@ Quellen: **E1** Expertenrunde 14.11.2026 (Tempo, Oberfläche, Technik, Produkt) 
 |---|---|---|---|
 | ✅ | Rückgängig löscht nie einen Ordner, in dem noch Alben liegen (Fotos würde sie mitlöschen). Ausführung und PhotoKit verweigern das Löschen nicht leerer Ordner. | S | E1 Technik |
 | 🔜 | Abgebrochenes Umsetzen (App beendet) beim nächsten Start fortsetzen oder rückgängig machen; Verlauf zeigt auch halbe Pläne; bereits angelegte Alben werden gemerkt. | M | E1 Technik |
-| 🔜 | Umsetzen während einer laufenden Analyse: Albenliste vor dem Abgleich neu lesen, damit kein doppeltes Album entsteht. | M | E1 Technik |
+| ✅ | Umsetzen während einer laufenden Analyse: Albenliste vor dem Abgleich neu lesen, damit kein doppeltes Album entsteht. | M | E1 Technik |
 | ✅ | „Ausgewählte Fotos“-Zugriff: vor dem Umsetzen klarer Hinweis „Voller Zugriff nötig“ mit Link zu Einstellungen statt Fehlermeldung. | S | E1 Technik |
 | ✅ | Bereits rückgängig gemachte Pläne nicht nochmal rückgängig machen; Rückgängig-Läufe nicht als eigene Einträge zeigen. | S | E1 Technik |
 | 💡 | Fehlender Elternordner (zweites Gerät hat ihn gelöscht): nie oben auf der Mediathek-Ebene anlegen, sondern abbrechen. | S | E1 Technik |
@@ -48,7 +48,8 @@ Quellen: **E1** Expertenrunde 14.11.2026 (Tempo, Oberfläche, Technik, Produkt) 
 | ✅ | „Nicht jetzt“ ist umkehrbar: später doch anlegen geht; in den Einstellungen „Abgelehnte Vorschläge wieder zeigen“. | M | E1 Oberfläche |
 | ✅ | Bibliothek und Atlas aktualisieren sich zuverlässig (Zwischenspeicher meldet Änderungen). | S | E1 Oberfläche |
 | ✅ | Nach „Rückgängig“ eine passende Meldung statt „Fertig, 0 neue Alben“. | S | E1 Oberfläche |
-| 🔜 | Vorschau-Fotos nach Datum, schönstes Foto als Titelbild; alle Fotos ansehen und einzelne entfernen. | M | E1 Oberfläche/Produkt |
+| ✅ | Vorschau-Fotos über die ganze Zeitspanne verteilt, nach Datum; Antippen zeigt alle Fotos; einzelne Fotos aus dem Vorschlag entfernen. | M | E1 Oberfläche/Produkt |
+| 💡 | Schönstes Foto als Titelbild (Bildqualität aus der Analyse nutzen). | S | E1 Produkt |
 | 🔜 | Ein Fortschrittsbalken über alle Schritte statt Neustart bei jeder Stufe. | S | E1 Oberfläche |
 | 💡 | Zoom-Übergang vom Vorschaubild ins Foto, Kontextmenüs, Wischaktionen. | M | E1 Oberfläche, U |
 | 💡 | Suche: Treffer antippbar, für VoiceOver lesbar, „Als Album anlegen“. | S | E1 Oberfläche |

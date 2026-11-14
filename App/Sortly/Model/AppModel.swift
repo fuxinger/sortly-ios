@@ -46,7 +46,7 @@ final class AppModel {
     var snapshot: ProposalSnapshot?
     var decisions: [SortlyID: ProposalDecision] = [:]
     var userTitles: [SortlyID: String] = [:]
-    var facts: [AssetFacts] = [] { didSet { bucketCache = [:]; atlasCache = [:]; atlasYearsCache = nil; countryCache = [:] } }
+    var facts: [AssetFacts] = [] { didSet { bucketCache = [:]; atlasCache = [:]; atlasYearsCache = nil; countryCache = [:]; datesCache = nil } }
     var states: [AssetID: AssetOrganizationState] = [:] { didSet { bucketCache = [:] } }
     /// Filtered and sorted library buckets; rebuilt only when facts or states change, not on
     /// every redraw of the library (a selection tap redraws it).
@@ -74,6 +74,40 @@ final class AppModel {
     }
 
     @ObservationIgnored private var countryCache: [String: CountryPhotos] = [:]
+    @ObservationIgnored private var datesCache: [AssetID: Date]?
+
+    /// Capture date of every photo, for time-ordered previews.
+    var creationDates: [AssetID: Date] {
+        access(keyPath: \.facts)
+        if let datesCache { return datesCache }
+        let dates = Dictionary(facts.compactMap { f in f.asset.creationDate.map { (f.id, $0) } }, uniquingKeysWith: { first, _ in first })
+        datesCache = dates
+        return dates
+    }
+
+    /// Photos the user took out of a suggestion ("Aus Vorschlag entfernen").
+    var removedFromProposals: [SortlyID: Set<AssetID>] = [:]
+
+    /// The photos of a suggestion as the user sees them: without removed ones, oldest first.
+    func members(of proposal: AlbumProposal) -> [AssetID] {
+        PreviewPicker.chronological(proposal.assetIDs.subtracting(removedFromProposals[proposal.id] ?? []), dates: creationDates)
+    }
+
+    /// Preview photos spread over the suggestion's time span, with the cover photo.
+    func previewIDs(for proposal: AlbumProposal, count: Int = 8) -> [AssetID] {
+        PreviewPicker.pick(proposal.assetIDs.subtracting(removedFromProposals[proposal.id] ?? []),
+                           dates: creationDates, cover: proposal.coverAssetID, count: count)
+    }
+
+    /// Takes photos out of one suggestion only; they stay in the library and in other suggestions.
+    func removeFromProposal(_ assets: Set<AssetID>, proposal: AlbumProposal) async {
+        guard let store, !assets.isEmpty else { return }
+        removedFromProposals[proposal.id, default: []].formUnion(assets)
+        for asset in assets {
+            try? await store.addOverride(UserOverride(scope: .assetInSource(asset, proposal.id), decision: .neverAdd))
+        }
+        if let rematched = try? await pipeline?.rematch() { snapshot = rematched }
+    }
 
     /// The photos of one atlas country (all years or one year), newest first.
     func countryPhotos(_ code: String, year: Int? = nil) -> CountryPhotos {
@@ -291,7 +325,13 @@ final class AppModel {
             history = plans.filter { $0.reverts == nil }
             undonePlans = Set(plans.filter { $0.status == .completed }.compactMap(\.reverts))
             let analyzed = Set(try await store.results(ContentAnalysis.self, kind: "content").keys)
-            let overrides = OverrideSet(try await store.overrides())
+            let stored = try await store.overrides()
+            let overrides = OverrideSet(stored)
+            var removed: [SortlyID: Set<AssetID>] = [:]
+            for o in stored where o.decision == .neverAdd {
+                if case .assetInSource(let asset, let source) = o.scope { removed[source, default: []].insert(asset) }
+            }
+            removedFromProposals = removed
             let facts = facts, snapshot = snapshot, settings = settings
             let computed = await Task.detached(priority: .userInitiated) {
                 LibraryStatus.compute(facts: facts, snapshot: snapshot, settings: settings, overrides: overrides, contentAnalyzed: analyzed)

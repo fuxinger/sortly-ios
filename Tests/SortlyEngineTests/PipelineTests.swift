@@ -70,6 +70,39 @@ struct PipelineTests {
         #expect(s.analyzer.counts.withLock { $0.text } == 5)
     }
 
+    /// Returns no albums on the first read and the Rome album afterwards, like a plan that
+    /// was applied while the analysis was running.
+    actor AlbumAppearsDuringRun: PhotoLibraryReading {
+        let assets: [AssetSnapshot]
+        let later: CollectionInventory
+        var reads = 0
+        init(assets: [AssetSnapshot], later: CollectionInventory) { self.assets = assets; self.later = later }
+        func access() async -> LibraryAccess { .full }
+        func fetchAssets(includeHidden: Bool) async throws -> [AssetSnapshot] { assets }
+        func currentInventory() async throws -> CollectionInventory {
+            reads += 1
+            return reads == 1 ? CollectionInventory() : later
+        }
+    }
+
+    @Test func albumsCreatedDuringTheRunAreMatched() async throws {
+        let s = try setup()
+        let assets = try await s.reader.fetchAssets(includeHidden: false)
+        let album = CollectionSnapshot(id: "rom", title: "Rom", assetIDs: Set(s.ids.rome))
+        let reader = AlbumAppearsDuringRun(assets: assets, later: CollectionInventory([album]))
+        var settings = OrganizationSettings()
+        settings.titleLanguage = .german
+        let pipeline = AnalysisPipeline(
+            store: s.store, reader: reader, analyzer: s.analyzer, geocoder: s.geocoder, map: Self.map,
+            conditions: s.conditions, settings: settings, calendar: Fixture.calendar, time: ManualTime().source
+        )
+        _ = try await pipeline.run()
+        let snapshot = try #require(try await pipeline.latestProposals())
+        let trip = try #require(snapshot.proposals.first { $0.title.hasPrefix("Rom ·") })
+        #expect(snapshot.matches[trip.id]?.best?.albumID == "rom")
+        #expect(try await s.store.loadInventory()["rom"] != nil)
+    }
+
     @Test func secondRunIsIncremental() async throws {
         let s = try setup()
         _ = try await s.pipeline.run()

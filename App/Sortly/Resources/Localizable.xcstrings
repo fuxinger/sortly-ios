@@ -4940,6 +4940,98 @@
           }
         }
       }
+    },
+    "Alle %lld Fotos ansehen" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "See %lld Photo"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "See All %lld Photos"
+                }
+              }
+            }
+          }
+        },
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Foto ansehen"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Alle %lld Fotos ansehen"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld aus Vorschlag entfernen" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Remove %lld from Suggestion"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Remove %lld from Suggestion"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Fotos aus diesem Vorschlag entfernen?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove Photos from This Suggestion?"
+          }
+        }
+      }
+    },
+    "Entfernen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove"
+          }
+        }
+      }
+    },
+    "Sie kommen nicht in dieses Album. In deiner Mediathek und in anderen Vorschlägen bleiben sie." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "They won’t go into this album. They stay in your library and in other suggestions."
+          }
+        }
+      }
     }
   },
   "version" : "1.0"
