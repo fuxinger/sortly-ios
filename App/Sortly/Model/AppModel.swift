@@ -166,6 +166,8 @@ final class AppModel {
     var plan: ChangePlan?
     /// A plan that stopped half way because the app was closed while it ran.
     var interruptedPlan: ChangePlan?
+    /// The user's own trip splits and merges (I07), for the settings.
+    private(set) var tripCorrections = TripCorrections()
     var execution = ExecutionState()
     var message: String?
     /// Where Siri, Shortcuts or a Spotlight result wants to go; the overview opens it.
@@ -239,6 +241,7 @@ final class AppModel {
                 map: map, conditions: DeviceConditions(), settings: settings,
                 foregroundOnlineBudget: 60
             )
+            tripCorrections = (try? await pipeline?.tripCorrections()) ?? TripCorrections()
             await refreshDerived()
             // A plan that finished right before the app was closed stores its results now.
             await finishPendingFinalizations()
@@ -737,6 +740,57 @@ final class AppModel {
         for (id, decision) in decisions where decision == .reject { decisions[id] = nil }
         persistDecisions()
         startAnalysis(userInitiated: true)
+    }
+
+    // MARK: Trip workshop (I07)
+
+    /// A trip can be split or merged while Albumist has not made its album yet: an album that
+    /// exists would lose the trip it stands for (take it back first, then reshape).
+    func canReshape(_ proposal: AlbumProposal) -> Bool {
+        guard case .trip = proposal.kind, proposal.dateRange != nil else { return false }
+        return !managedAlbums.contains { $0.allSourceIDs.contains(proposal.id) }
+    }
+
+    /// The trips right before and after this one that it could be merged with.
+    func tripNeighbours(of proposal: AlbumProposal) -> (before: AlbumProposal?, after: AlbumProposal?) {
+        guard let span = proposal.dateRange else { return (nil, nil) }
+        let trips = proposals.filter { canReshape($0) }
+        let around = TripWorkshop.neighbours(of: span, among: trips.compactMap(\.dateRange))
+        return (around.before.map { trips[$0] }, around.after.map { trips[$0] })
+    }
+
+    /// "Reise teilen": a new trip starts on `day`. The analysis runs again right away.
+    func splitTrip(at day: TripWorkshop.Day) async -> Bool {
+        await changeTrips { $0.splitting(at: TripWorkshop.splitInstant(before: day)) }
+    }
+
+    /// "Zusammenlegen": two neighbouring trips become one, also in every later analysis.
+    func mergeTrips(_ a: AlbumProposal, _ b: AlbumProposal) async -> Bool {
+        guard let first = a.dateRange, let second = b.dateRange else { return false }
+        let interval = TripWorkshop.mergeInterval(first, second, members: Array(a.assetIDs) + Array(b.assetIDs), dates: creationDates)
+        return await changeTrips { $0.merging(interval) }
+    }
+
+    /// "Reisen wieder automatisch erkennen" in the settings.
+    func resetTripCorrections() async {
+        _ = await changeTrips { $0.withoutSplitsAndMerges() }
+    }
+
+    /// Stores the change (it is part of the decisions copy in the backup) and starts the
+    /// analysis that applies it. Not while an analysis already read the old corrections.
+    private func changeTrips(_ change: (TripCorrections) -> TripCorrections) async -> Bool {
+        guard let pipeline, !analysis.isRunning, !execution.isRunning else { return false }
+        do {
+            let updated = change(try await pipeline.tripCorrections())
+            try await pipeline.setTripCorrections(updated)
+            tripCorrections = updated
+            saveSafetyBackup()
+            startAnalysis()
+            return true
+        } catch {
+            message = error.localizedDescription
+            return false
+        }
     }
 
     /// Overrides for planning. A suggestion the user accepted after "Nicht jetzt" is not

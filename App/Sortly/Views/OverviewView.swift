@@ -161,7 +161,7 @@ struct OverviewView: View {
                         if let date = model.analysis.lastRun {
                             Text("Zuletzt \(date.formatted(.relative(presentation: .named)))").font(.subheadline).foregroundStyle(.secondary)
                         } else {
-                            Text("Neue Fotos werden beim nächsten Start erkannt.").font(.subheadline).foregroundStyle(.secondary)
+                            Text("Neue Fotos erkennt Albumist von selbst.").font(.subheadline).foregroundStyle(.secondary)
                         }
                     }
                     if !typeSize.isAccessibilitySize { Spacer() }

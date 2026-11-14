@@ -35,6 +35,9 @@ mit eingeschränkten Rechten: nur lesend.
   Entscheidungen zurück, nicht Alben und Verlauf. Mit eingeschränktem Fotozugriff wartet die
   Prüfung, bis Albumist alle Fotos sehen darf. Auf echten Geräten (Backup und Wiederherstellen)
   ist das noch ungetestet.
+- Reise-Werkstatt (I07): Teilen und Zusammenlegen geht nur, solange Albumist das Reise-Album
+  noch nicht angelegt hat (sonst erst rückgängig machen). Tage richten sich nach der Zeitzone des
+  Geräts, nicht nach der am Reiseort.
 - Reiseart (Tagesausflug, Wochenende) richtet sich nach der Zielzeitzone nur, wenn die
   Online-Ortsbestimmung sie geliefert hat; sonst nach dem Gerätekalender.
 - Eine Änderung nur der GPS-Genauigkeit eines Fotos wird nicht als Ortsänderung erkannt.

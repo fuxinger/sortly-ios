@@ -171,6 +171,46 @@
         }
       }
     },
+    "%lld Fotos mit Ort" : {
+      "localizations" : {
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Foto mit Ort"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Fotos mit Ort"
+                }
+              }
+            }
+          }
+        },
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld photo with a location"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld photos with a location"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld Fotos waren beim Umsetzen nicht mehr in deiner Mediathek und wurden nicht einsortiert." : {
       "localizations" : {
         "en" : {
@@ -364,6 +404,46 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "%lld Schritte konnten nicht ausgeführt werden."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld Tage" : {
+      "localizations" : {
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Tag"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Tage"
+                }
+              }
+            }
+          }
+        },
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld day"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld days"
                 }
               }
             }
@@ -1341,6 +1421,16 @@
         }
       }
     },
+    "Albumist analysiert oder ändert gerade deine Mediathek. Versuche es gleich noch einmal." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Albumist is analysing or changing your library right now. Try again in a moment."
+          }
+        }
+      }
+    },
     "Albumist beginnt dann neu und holt deine Entscheidungen aus der Sicherung zurück. Deine Fotos, Alben und dein Kauf bleiben, wie sie sind." : {
       "localizations" : {
         "en" : {
@@ -1391,12 +1481,52 @@
         }
       }
     },
+    "Albumist hält sich an deine Änderungen, auch bei jeder neuen Analyse." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Albumist sticks to your changes, in every new analysis too."
+          }
+        }
+      }
+    },
+    "Albumist legt die Reisen zusammen und plant die Vorschläge neu …" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Albumist is merging the trips and planning the suggestions again …"
+          }
+        }
+      }
+    },
     "Albumist ordnet Fotos nur Alben zu. Löschen, Bearbeiten oder Kopieren von Fotos gibt es in Albumist nicht. Ein Album verweist nur auf deine Fotos." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Albumist only assigns photos to albums. Deleting, editing or copying photos does not exist in Albumist. An album only points to your photos."
+          }
+        }
+      }
+    },
+    "Albumist teilt die Reise und plant die Vorschläge neu …" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Albumist is splitting the trip and planning the suggestions again …"
+          }
+        }
+      }
+    },
+    "Albumist vergisst, welche Reisen du geteilt oder zusammengelegt hast. Schon angelegte Alben bleiben, wie sie sind." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Albumist forgets which trips you split or merged. Albums already created stay as they are."
           }
         }
       }
@@ -1477,6 +1607,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Create as new album"
+          }
+        }
+      }
+    },
+    "An einem Tag teilen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Split at a day"
           }
         }
       }
@@ -1581,6 +1721,16 @@
         }
       }
     },
+    "Aus einer Reise sind zwei geworden." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "One trip is now two."
+          }
+        }
+      }
+    },
     "Ausgeblendete Fotos einbeziehen" : {
       "localizations" : {
         "en" : {
@@ -1607,6 +1757,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Select"
+          }
+        }
+      }
+    },
+    "Automatisch erkennen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Detect automatically"
+          }
+        }
+      }
+    },
+    "Beginn der Reise" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start of the trip"
           }
         }
       }
@@ -1717,6 +1887,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Redeem code"
+          }
+        }
+      }
+    },
+    "Daraus werden zwei Reisen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This makes two trips"
           }
         }
       }
@@ -2011,6 +2191,16 @@
         }
       }
     },
+    "Die Vorschläge sind schon angepasst. Albumist hält sich daran, auch bei jeder neuen Analyse. Zurücknehmen kannst du es in den Einstellungen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The suggestions are already updated. Albumist sticks to it in every new analysis too. You can take it back in Settings."
+          }
+        }
+      }
+    },
     "Die erste Analyse kann bei großen Mediatheken eine Weile dauern. Sie läuft weiter, auch wenn du die App verlässt, und zeigt den Fortschritt auf dem Sperrbildschirm. Wenn du magst, sagt Albumist dir Bescheid, sobald sie fertig ist." : {
       "localizations" : {
         "en" : {
@@ -2047,6 +2237,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "The selected areas count as your main sorting. You can change this at any time."
+          }
+        }
+      }
+    },
+    "Die zwei Reisen sind jetzt eine." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The two trips are now one."
           }
         }
       }
@@ -2187,6 +2387,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "A folder or album that should have been created first was missing."
+          }
+        }
+      }
+    },
+    "Ein Teil hat weniger als %lld Fotos mit Ort. Er wird kein eigener Reise-Vorschlag; seine Fotos bleiben in den Länder- und Orte-Alben." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "One part has fewer than %lld photos with a location. It will not become a trip suggestion of its own; its photos stay in the countries and places albums."
           }
         }
       }
@@ -2541,6 +2751,26 @@
         }
       }
     },
+    "Für eine Reise mit Pause, zum Beispiel ein Wochenende zu Hause zwischen zwei Stationen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "For a trip with a break, for example a weekend at home between two stops."
+          }
+        }
+      }
+    },
+    "Gerade nicht möglich" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not possible right now"
+          }
+        }
+      }
+    },
     "Geschichte über" : {
       "localizations" : {
         "en" : {
@@ -2597,6 +2827,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Forming groups"
+          }
+        }
+      }
+    },
+    "Hat Albumist hier zwei Reisen zusammengefasst oder eine Reise zerschnitten? Das korrigierst du hier. Albumist merkt es sich auch für jede spätere Analyse." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Did Albumist put two trips together here, or cut one trip apart? Fix it here. Albumist remembers it for every later analysis."
           }
         }
       }
@@ -2951,6 +3191,26 @@
         }
       }
     },
+    "Mit der Reise danach zusammenlegen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Merge with the trip after"
+          }
+        }
+      }
+    },
+    "Mit der Reise davor zusammenlegen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Merge with the trip before"
+          }
+        }
+      }
+    },
     "Möglich" : {
       "localizations" : {
         "en" : {
@@ -3041,12 +3301,12 @@
         }
       }
     },
-    "Neue Fotos werden beim nächsten Start erkannt." : {
+    "Neue Fotos erkennt Albumist von selbst." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "New photos are detected on the next launch."
+            "value" : "Albumist notices new photos on its own."
           }
         }
       }
@@ -3057,6 +3317,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "New folders"
+          }
+        }
+      }
+    },
+    "Neue Reise ab diesem Tag" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New trip from this day"
+          }
+        }
+      }
+    },
+    "Neue Reise ab hier" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New trip from here"
           }
         }
       }
@@ -3467,6 +3747,36 @@
         }
       }
     },
+    "Reise anpassen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adjust trip"
+          }
+        }
+      }
+    },
+    "Reise teilen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Split trip"
+          }
+        }
+      }
+    },
+    "Reise teilen oder zusammenlegen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Split or merge trip"
+          }
+        }
+      }
+    },
     "Reise-Atlas" : {
       "localizations" : {
         "en" : {
@@ -3503,6 +3813,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Detecting trips"
+          }
+        }
+      }
+    },
+    "Reisen wieder automatisch erkennen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Detect trips automatically again"
+          }
+        }
+      }
+    },
+    "Reisen wieder automatisch erkennen?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Detect trips automatically again?"
           }
         }
       }
@@ -3583,6 +3913,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Screenshots by content: orders, tickets, recipes …"
+          }
+        }
+      }
+    },
+    "Selbst geteilt oder zusammengelegt" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Split or merged by you"
           }
         }
       }
@@ -3867,6 +4207,16 @@
         }
       }
     },
+    "Tippe auf den Tag, an dem die zweite Reise beginnt." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap the day the second trip starts."
+          }
+        }
+      }
+    },
     "Titel" : {
       "localizations" : {
         "en" : {
@@ -3933,6 +4283,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "What was missing is done by now, or the album no longer exists."
+          }
+        }
+      }
+    },
+    "Zu den Reisen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Back to trips"
+          }
+        }
+      }
+    },
+    "Zu einer Reise zusammenlegen?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Merge into one trip?"
+          }
+        }
+      }
+    },
+    "Zusammenlegen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Merge"
           }
         }
       }
@@ -4353,6 +4733,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "“%@” can’t be edited."
+          }
+        }
+      }
+    },
+    "„%@“ und „%@“ werden eine Reise mit %lld Fotos." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%1$@” and “%2$@” become one trip with %3$lld photos."
           }
         }
       }

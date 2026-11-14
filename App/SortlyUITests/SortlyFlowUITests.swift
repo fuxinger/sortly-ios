@@ -297,6 +297,7 @@ final class SortlyFlowUITests: XCTestCase {
                 back(); sleep(1)
                 shot("08d-back-to-trips")
             }
+            tripWorkshop()
             back(); sleep(1)
         }
 
@@ -483,6 +484,85 @@ final class SortlyFlowUITests: XCTestCase {
                 tap(button("Fertig"), "close settings")
             }
         }
+
+        // The trip changes from the workshop can be taken back in the settings.
+        if tap(app.buttons["Einstellungen"], "settings for trip reset") {
+            sleep(1)
+            let reset = app.buttons["settings.resetTrips"]
+            let list = app.collectionViews.firstMatch
+            var swipes = 0
+            while !(reset.exists && reset.isHittable) && swipes < 8 {
+                (list.exists ? list : app).swipeUp()
+                swipes += 1
+            }
+            if tap(reset, "reset trip changes", timeout: 5) {
+                shot("66-settings-trips")
+                let confirm = app.buttons["Automatisch erkennen"]
+                if tap(confirm, "confirm trip reset", timeout: 5) {
+                    let gone = waitGone(reset, timeout: 20)
+                    print(gone ? "UI_STEP_OK trip changes reset" : "UI_STEP_MISSING trip changes reset")
+                    XCTAssertTrue(gone, "Resetting the trip changes did not clear them")
+                }
+            }
+            tap(button("Fertig"), "close settings after trip reset")
+            _ = waitStable("analysis after trip reset", timeout: 180) { analysisIdle }
+        }
+    }
+
+    /// Reise-Werkstatt (I07), from the trip list: split the newest trip at its second day,
+    /// then merge the two parts again, so the rest of the run sees the trips as before.
+    private func tripWorkshop() {
+        func openWorkshop(_ step: String) -> Bool {
+            guard tap(suggestionRow(), "open trip for " + step, timeout: 10) else { return false }
+            let reshape = app.buttons["proposal.reshapeTrip"]
+            if reshape.waitForExistence(timeout: 5) && !reshape.isHittable { app.swipeUp(); sleep(1) }
+            return tap(reshape, "open trip workshop for " + step, timeout: 5)
+        }
+        func finish(_ step: String, shotName: String) {
+            let done = app.buttons["workshop.done"]
+            let finished = done.waitForExistence(timeout: 180)
+            print(finished ? "UI_STEP_OK trip \(step)" : "UI_STEP_MISSING trip \(step)")
+            XCTAssertTrue(finished, "The trip \(step) did not finish")
+            sleep(1)
+            shot(shotName)
+            if finished { done.tap(); sleep(3) }
+        }
+
+        guard openWorkshop("split") else { return }
+        sleep(2)
+        shot("60-trip-workshop"); audit("trip workshop")
+        // Day buttons start with the second day (the first one cannot start a new trip).
+        let day = app.buttons.matching(identifier: "workshop.day").element(boundBy: 0)
+        guard tap(day, "choose split day", timeout: 5) else { back(); return }
+        sleep(1)
+        let split = app.buttons["workshop.split"]
+        var swipes = 0
+        while split.exists && !split.isHittable && swipes < 4 { app.swipeUp(); swipes += 1 }
+        sleep(1)
+        shot("61-split-preview"); audit("split preview")
+        guard tap(split, "split trip") else { return }
+        finish("split", shotName: "62-split-done")
+        let list = app.navigationBars["Reisen"].waitForExistence(timeout: 5)
+        print(list ? "UI_STEP_OK back to trips after split" : "UI_STEP_MISSING back to trips after split")
+        shot("63-trips-after-split")
+
+        // The newest trip is now the second part; it merges with the part before it.
+        guard openWorkshop("merge") else { return }
+        sleep(1)
+        let merge = app.buttons["workshop.merge.before"]
+        swipes = 0
+        while merge.exists && !merge.isHittable && swipes < 4 { app.swipeUp(); swipes += 1 }
+        guard tap(merge, "merge with trip before", timeout: 5) else { return }
+        sleep(1)
+        shot("64-merge-question")
+        let confirm = app.buttons.matching(identifier: "Zusammenlegen").allElementsBoundByIndex.first(where: \.isHittable)
+        guard let confirm else {
+            print("UI_STEP_MISSING confirm merge")
+            XCTFail("Missing: confirm merge")
+            return
+        }
+        confirm.tap()
+        finish("merge", shotName: "65-merge-done")
     }
 
     /// Same app state, but with the largest accessibility text size in dark mode.

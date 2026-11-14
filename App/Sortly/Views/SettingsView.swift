@@ -10,6 +10,7 @@ struct SettingsView: View {
     @State private var confirmReset = false
     @State private var redeeming = false
     @State private var rejectedCount = 0
+    @State private var confirmTripReset = false
 
     var body: some View {
         @Bindable var model = model
@@ -88,6 +89,25 @@ struct SettingsView: View {
                     }
                 } footer: {
                     Text("\(rejectedCount) Vorschläge hast du mit „Nicht jetzt“ beiseitegelegt. Sie erscheinen nach der nächsten Analyse wieder.")
+                }
+            }
+
+            // Reise-Werkstatt (I07): the user's own splits and merges, and the way back.
+            if model.tripCorrections.changeCount > 0 {
+                Section {
+                    LabeledContent("Selbst geteilt oder zusammengelegt", value: model.tripCorrections.changeCount.formatted())
+                    Button("Reisen wieder automatisch erkennen") { confirmTripReset = true }
+                        .disabled(model.analysis.isRunning || model.execution.isRunning)
+                        .accessibilityIdentifier("settings.resetTrips")
+                        .confirmationDialog("Reisen wieder automatisch erkennen?", isPresented: $confirmTripReset, titleVisibility: .visible) {
+                            Button("Automatisch erkennen") { Task { await model.resetTripCorrections() } }
+                        } message: {
+                            Text("Albumist vergisst, welche Reisen du geteilt oder zusammengelegt hast. Schon angelegte Alben bleiben, wie sie sind.")
+                        }
+                } header: {
+                    Text("Reisen")
+                } footer: {
+                    Text("Albumist hält sich an deine Änderungen, auch bei jeder neuen Analyse.")
                 }
             }
 

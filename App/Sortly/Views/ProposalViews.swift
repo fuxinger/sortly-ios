@@ -162,6 +162,9 @@ struct ProposalDetailView: View {
     /// Set by "Album anlegen" for its preview only; undone when the user comes back without creating.
     @State private var previewSelection: AppModel.PreviewSelection?
     @State private var explainReliability = false
+    @State private var showWorkshop = false
+    /// Set when the trip was split or merged: this suggestion is gone, back to the list.
+    @State private var reshaped = false
 
     /// Only trips get a creative name; places and dates keep their exact titles.
     private var canSuggestTitle: Bool {
@@ -266,6 +269,17 @@ struct ProposalDetailView: View {
                 }
 
                 actions
+
+                // Reise-Werkstatt (I07): only before Albumist made the trip's album.
+                if model.canReshape(proposal) {
+                    Button { showWorkshop = true } label: {
+                        Label("Reise teilen oder zusammenlegen", systemImage: "scissors")
+                            .font(.subheadline.weight(.semibold))
+                            .frame(maxWidth: .infinity, minHeight: 44)
+                            .contentShape(Rectangle())
+                    }
+                    .accessibilityIdentifier("proposal.reshapeTrip")
+                }
             }
             .padding(Theme.Spacing.l)
         }
@@ -284,6 +298,9 @@ struct ProposalDetailView: View {
         .sheet(isPresented: $showAdjust) {
             NavigationStack { AdjustProposalView(proposal: proposal) }
                 .presentationDetents([.medium, .large])
+        }
+        .sheet(isPresented: $showWorkshop, onDismiss: { if reshaped { dismiss() } }) {
+            NavigationStack { TripWorkshopView(proposal: proposal) { reshaped = true } }
         }
         .navigationDestination(isPresented: $showDirect) {
             PlanReviewView(prebuilt: directPlan)
@@ -323,9 +340,12 @@ struct ProposalDetailView: View {
                 }
                 // "Passt nicht" names one album; with several albums the choice happens under "Album auswählen".
                 if let best = match.best, best.isEditable, ![.newAlbumRequired, .multipleMatches].contains(match.status) {
-                    Button("„\(best.albumTitle)“ passt nicht") { rejectingMatch = true }
-                        .font(.subheadline.weight(.semibold))
-                        .frame(minHeight: 44)
+                    Button { rejectingMatch = true } label: {
+                        Text("„\(best.albumTitle)“ passt nicht")
+                            .font(.subheadline.weight(.semibold))
+                            .frame(minHeight: 44)
+                            .contentShape(Rectangle())
+                    }
                         .confirmationDialog("Dieses Album passt nicht?", isPresented: $rejectingMatch, titleVisibility: .visible) {
                             Button("Nicht mehr für diesen Vorschlag anbieten") {
                                 Task { await model.rejectMatch(best.albumID, for: proposal) }

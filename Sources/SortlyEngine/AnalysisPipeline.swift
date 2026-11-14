@@ -496,6 +496,16 @@ public actor AnalysisPipeline {
     }
 
     /// Facts for every asset from the stored results (also used by search and status).
+    /// The trips the user split or merged (I07). Kept in time, so they hold for every
+    /// later analysis; the next run applies them.
+    public func tripCorrections() async throws -> TripCorrections {
+        try await store.value(TripCorrections.self, forKey: Key.tripCorrections) ?? TripCorrections()
+    }
+
+    public func setTripCorrections(_ corrections: TripCorrections) async throws {
+        try await store.setValue(corrections, forKey: Key.tripCorrections)
+    }
+
     public func currentFacts() async throws -> [AssetFacts] {
         try await currentFacts(
             all: try await store.allAssets(),
