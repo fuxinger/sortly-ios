@@ -48,6 +48,19 @@ struct AlbumsView: View {
                 }
             }
 
+            let fromSortly = model.managedAlbums.compactMap { model.inventory[$0.albumID] }
+            if !fromSortly.isEmpty {
+                Section {
+                    ForEach(fromSortly.sorted(by: Self.order)) { collection in
+                        CollectionRow(collection: collection)
+                    }
+                } header: {
+                    Text("Von SORTLY angelegt oder ergänzt")
+                } footer: {
+                    Text("Neue Alben liegen in Fotos im Ordner „\(model.settings.rootFolderTitle)“.")
+                }
+            }
+
             Section("Deine Alben") {
                 if topLevel.isEmpty {
                     Text("Noch keine Alben").foregroundStyle(.secondary)

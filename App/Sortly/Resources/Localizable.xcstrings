@@ -3586,6 +3586,76 @@
           }
         }
       }
+    },
+    "Vorschläge für dieses Foto" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suggestions for This Photo"
+          }
+        }
+      }
+    },
+    "Tippe auf einen Vorschlag, um ihn anzusehen und zu übernehmen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap a suggestion to view and accept it."
+          }
+        }
+      }
+    },
+    "%lld Vorschläge für %@ Fotos und Videos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld suggestions for %2$@ photos and videos"
+          }
+        }
+      }
+    },
+    "Keine offenen Vorschläge" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No Open Suggestions"
+          }
+        }
+      }
+    },
+    "Alle Vorschläge sind entschieden." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You have decided on all suggestions."
+          }
+        }
+      }
+    },
+    "Von SORTLY angelegt oder ergänzt" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Created or Extended by SORTLY"
+          }
+        }
+      }
+    },
+    "Neue Alben liegen in Fotos im Ordner „%@“." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New albums are in the “%@” folder in Photos."
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

@@ -20,7 +20,7 @@ struct LibraryView: View {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: Theme.Spacing.s) {
                         ForEach(Self.buckets, id: \.self) { b in
-                            Button { bucket = b; selection = [] } label: {
+                            Button { bucket = b; selection = []; if b == .suggestions { selecting = false } } label: {
                                 Text(b.label)
                                     .font(.subheadline.weight(.semibold))
                                     .padding(.horizontal, 14).padding(.vertical, 8)
@@ -32,10 +32,18 @@ struct LibraryView: View {
                         }
                     }
                 }
-                Text("\(members.count.formatted()) Fotos und Videos")
-                    .font(.footnote).foregroundStyle(.secondary).monospacedDigit()
+                if bucket == .suggestions {
+                    Text("\(model.openProposals.count) Vorschläge für \(members.count.formatted()) Fotos und Videos")
+                        .font(.footnote).foregroundStyle(.secondary).monospacedDigit()
+                } else {
+                    Text("\(members.count.formatted()) Fotos und Videos")
+                        .font(.footnote).foregroundStyle(.secondary).monospacedDigit()
+                }
 
-                if members.isEmpty {
+                if bucket == .suggestions {
+                    // Photos with a suggestion: show the suggestions themselves, ready to open.
+                    proposalList
+                } else if members.isEmpty {
                     ContentUnavailableView(emptyTitle, systemImage: "photo.on.rectangle",
                                            description: Text(emptyDescription))
                 } else {
@@ -48,10 +56,12 @@ struct LibraryView: View {
         .background(Theme.background)
         .navigationTitle("Mediathek")
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button(selecting ? "Fertig" : "Auswählen") {
-                    selecting.toggle()
-                    selection = []
+            if bucket != .suggestions {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(selecting ? "Fertig" : "Auswählen") {
+                        selecting.toggle()
+                        selection = []
+                    }
                 }
             }
         }
@@ -78,6 +88,34 @@ struct LibraryView: View {
             }
         }
         .refreshable { await model.refreshDerived() }
+    }
+
+    @ViewBuilder
+    private var proposalList: some View {
+        let open = model.openProposals.sorted { ($0.assetIDs.count, $1.title) > ($1.assetIDs.count, $0.title) }
+        if open.isEmpty {
+            ContentUnavailableView("Keine offenen Vorschläge", systemImage: "checkmark.circle",
+                                   description: Text("Alle Vorschläge sind entschieden."))
+        } else {
+            VStack(spacing: 0) {
+                ForEach(Array(open.enumerated()), id: \.element.id) { index, proposal in
+                    NavigationLink {
+                        ProposalDetailView(proposal: proposal)
+                    } label: {
+                        HStack {
+                            ProposalRow(proposal: proposal)
+                            Image(systemName: "chevron.right").font(.footnote.weight(.semibold)).foregroundStyle(.tertiary)
+                        }
+                        .padding(.horizontal, Theme.Spacing.l)
+                        .padding(.vertical, Theme.Spacing.s)
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    if index < open.count - 1 { Divider().padding(.leading, 84) }
+                }
+            }
+            .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous))
+        }
     }
 
     private func grid(_ members: [AssetFacts]) -> some View {
@@ -196,7 +234,22 @@ struct AssetDetailView: View {
                 } header: {
                     Text("Alben")
                 }
-                if let reason = reasonText {
+                let suggestions = model.proposals(containing: facts.id)
+                if !suggestions.isEmpty {
+                    Section {
+                        ForEach(suggestions.prefix(6)) { proposal in
+                            NavigationLink {
+                                ProposalDetailView(proposal: proposal)
+                            } label: {
+                                ProposalRow(proposal: proposal)
+                            }
+                        }
+                    } header: {
+                        Text("Vorschläge für dieses Foto")
+                    } footer: {
+                        Text("Tippe auf einen Vorschlag, um ihn anzusehen und zu übernehmen.")
+                    }
+                } else if let reason = reasonText {
                     Section("Warum nicht sortiert?") {
                         Text(reason).foregroundStyle(.secondary)
                     }

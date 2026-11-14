@@ -260,6 +260,12 @@ final class AppModel {
         ProposalDecision.recommended(for: proposal, match: match(for: proposal), userTitle: userTitles[proposal.id])
     }
 
+    /// Proposals that contain this photo (shown on the photo so it can be opened directly).
+    func proposals(containing id: AssetID) -> [AlbumProposal] {
+        proposals.filter { $0.assetIDs.contains(id) }
+            .sorted { ($0.reliability, $0.assetIDs.count) > ($1.reliability, $1.assetIDs.count) }
+    }
+
     var openProposals: [AlbumProposal] {
         proposals.filter { decisions[$0.id] == nil && match(for: $0)?.status != .alreadyComplete }
     }
@@ -381,6 +387,9 @@ final class AppModel {
         guard let store else { return }
         do {
             let after = try await library.currentInventory()
+            // New albums show up under "Alben" right away, not only after the next analysis.
+            try await store.saveInventory(after)
+            inventory = after
             let states = ManagedAlbumTracker().record(result, into: try await store.managedAlbums(), inventory: after)
             try await store.saveManagedAlbums(states)
             managedAlbums = states
