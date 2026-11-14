@@ -5252,6 +5252,36 @@
           }
         }
       }
+    },
+    "Albumist beginnt dann neu. Deine Fotos, Alben und dein Kauf bleiben, wie sie sind." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Albumist then starts over. Your photos, albums and purchase stay as they are."
+          }
+        }
+      }
+    },
+    "Der Kauf konnte nicht bestätigt werden. Tippe auf „Kauf wiederherstellen“ oder versuche es später noch einmal." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The purchase could not be verified. Tap “Restore purchase” or try again later."
+          }
+        }
+      }
+    },
+    "Der Kauf wartet noch auf eine Bestätigung, zum Beispiel durch die Familienfreigabe. Albumist schaltet sich danach von selbst frei." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The purchase is waiting for approval, for example through Family Sharing. Albumist unlocks itself afterwards."
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

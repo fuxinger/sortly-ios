@@ -13,6 +13,13 @@ struct RootView: View {
                 Label("Albumist konnte nicht starten", systemImage: "exclamationmark.triangle")
             } description: {
                 Text(message)
+            } actions: {
+                // A damaged database is no dead end: Albumist's own data can always be rebuilt
+                // from the library. Photos, albums and the purchase are not affected.
+                Button("Neu aufbauen") { Task { await model.rebuildAfterFailure() } }
+                    .buttonStyle(.borderedProminent)
+                Text("Albumist beginnt dann neu. Deine Fotos, Alben und dein Kauf bleiben, wie sie sind.")
+                    .font(.footnote).foregroundStyle(.secondary)
             }
         case .onboarding:
             OnboardingView()

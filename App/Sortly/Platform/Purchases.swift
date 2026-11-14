@@ -49,9 +49,13 @@ final class Purchases {
         guard updates == nil else { return }
         updates = Task {
             for await result in Transaction.updates {
-                if case .verified(let transaction) = result {
+                switch result {
+                case .verified(let transaction):
                     await transaction.finish()
                     await refreshEntitlements()
+                    lastError = nil
+                case .unverified(let transaction, _):
+                    await transaction.finish()
                 }
             }
         }
@@ -91,11 +95,20 @@ final class Purchases {
         do {
             switch try await product.purchase() {
             case .success(let verification):
-                if case .verified(let transaction) = verification {
+                switch verification {
+                case .verified(let transaction):
                     await transaction.finish()
                     isUnlocked = true
+                    lastError = nil
+                case .unverified(let transaction, _):
+                    // Never unlock on an unverified receipt, but close the transaction so
+                    // it does not come back on every launch.
+                    await transaction.finish()
+                    lastError = String(localized: "Der Kauf konnte nicht bestätigt werden. Tippe auf „Kauf wiederherstellen“ oder versuche es später noch einmal.")
                 }
-            case .pending, .userCancelled:
+            case .pending:
+                lastError = String(localized: "Der Kauf wartet noch auf eine Bestätigung, zum Beispiel durch die Familienfreigabe. Albumist schaltet sich danach von selbst frei.")
+            case .userCancelled:
                 break
             @unknown default:
                 break

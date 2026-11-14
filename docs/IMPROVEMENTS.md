@@ -20,8 +20,8 @@ Quellen: **E1** Expertenrunde 14.11.2026 (Tempo, Oberfläche, Technik, Produkt) 
 | 💡 | Fehlender Elternordner (zweites Gerät hat ihn gelöscht): nie oben auf der Mediathek-Ebene anlegen, sondern abbrechen. | S | E1 Technik |
 | 💡 | Fotos nur in iCloud: nicht als „erledigt“ markieren, später erneut versuchen. | M | E1 Technik |
 | 💡 | Ausgeblendete Fotos in Alben mitzählen, damit Rückgängig nichts Fremdes löscht. | S | E1 Technik |
-| 💡 | Beschädigte Datenbank: „Neu aufbauen“-Knopf statt Sackgasse. | S | E1 Technik |
-| 💡 | StoreKit: nicht geprüfte Käufe sauber abschließen und Fehlermeldung zeigen. | S | E1 Technik |
+| ✅ | Beschädigte Datenbank: „Neu aufbauen“-Knopf statt Sackgasse. | S | E1 Technik |
+| ✅ | StoreKit: nicht geprüfte Käufe sauber abschließen und Fehlermeldung zeigen; wartende Käufe (Familienfreigabe) erklären. | S | E1 Technik |
 
 ## Tempo bei großen Mediatheken
 

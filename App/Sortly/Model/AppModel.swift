@@ -214,6 +214,22 @@ final class AppModel {
         }
     }
 
+    /// "Neu aufbauen" on the start error screen: the damaged database is set aside (one copy
+    /// is kept for support) and Albumist starts fresh. Photos and albums are not touched.
+    func rebuildAfterFailure() async {
+        guard case .failed = phase else { return }
+        if let url = try? Self.databaseURL() {
+            let fm = FileManager.default
+            let damaged = url.deletingLastPathComponent().appendingPathComponent("sortly.damaged.sqlite")
+            try? fm.removeItem(at: damaged)
+            try? fm.moveItem(at: url, to: damaged)
+            for suffix in ["-wal", "-shm"] { try? fm.removeItem(atPath: url.path + suffix) }
+        }
+        bootstrapTask = nil
+        phase = .loading
+        await bootstrap()
+    }
+
     static func databaseURL() throws -> URL {
         let base = try FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
             .appendingPathComponent(AppInfo.supportFolderName, isDirectory: true)
