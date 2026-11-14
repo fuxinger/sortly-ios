@@ -11,7 +11,7 @@ final class Purchases {
 
     /// Albums Albumist may create or extend before the unlock is needed. Change here only.
     static let freeAlbumLimit = 10
-    static let unlockProductID = "app.sortly.ios.unlock"
+    static let unlockProductID = "app.albumist.ios.unlock"
     private static let usedKey = "purchases.albumsUsed"
 
     private(set) var isUnlocked = false

@@ -16,7 +16,7 @@ final class NetworkStatus: @unchecked Sendable {
             let wifi = (path.usesInterfaceType(.wifi) || path.usesInterfaceType(.wiredEthernet)) && !path.isExpensive
             state.value = (path.status == .satisfied, wifi)
         }
-        monitor.start(queue: DispatchQueue(label: "app.sortly.network"))
+        monitor.start(queue: DispatchQueue(label: "app.albumist.network"))
     }
 
     var isOnline: Bool { state.value.online }

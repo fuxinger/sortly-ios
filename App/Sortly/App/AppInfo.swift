@@ -5,9 +5,9 @@ import Foundation
 /// The display name lives here and in project.yml (Info.plist).
 enum AppInfo {
     static let name = "Albumist"
-    static let bundleID = "app.sortly.ios"
-    static let refinementTaskID = "app.sortly.ios.refinement"
-    static let continuedAnalysisTaskPrefix = "app.sortly.ios.analysis"
+    static let bundleID = "app.albumist.ios"
+    static let refinementTaskID = "app.albumist.ios.refinement"
+    static let continuedAnalysisTaskPrefix = "app.albumist.ios.analysis"
     static let supportFolderName = "Albumist"
     /// Website from `website/` (GitHub Pages), in the app's language.
     static var privacyPolicyURL: URL {
