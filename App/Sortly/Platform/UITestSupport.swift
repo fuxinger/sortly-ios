@@ -11,4 +11,8 @@ enum UITestSupport {
         false
         #endif
     }()
+
+    /// `-SortlyUITestDark`: dark mode for the large-text screenshots (the simulator's own
+    /// appearance switch does not reach the app reliably on the CI machines).
+    static let forcesDarkMode: Bool = isRunning && ProcessInfo.processInfo.arguments.contains("-SortlyUITestDark")
 }

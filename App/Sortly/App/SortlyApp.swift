@@ -14,6 +14,7 @@ struct SortlyApp: App {
             RootView()
                 .environment(model)
                 .environment(purchases)
+                .preferredColorScheme(UITestSupport.forcesDarkMode ? .dark : nil)
                 .task {
                     purchases.start()
                     await model.bootstrap()

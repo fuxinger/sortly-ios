@@ -76,7 +76,10 @@ struct OverviewView: View {
     }
 
     private var primaryAreasText: String {
-        let names = OrganizationArea.available.filter { model.settings.primaryAreas.contains($0) }.map { String(localized: $0.titleResource) }
+        // Quoted, so "Länder und Orte" and "Reisen" do not read as one list of three.
+        let open = Locale.current.quotationBeginDelimiter ?? "\"", close = Locale.current.quotationEndDelimiter ?? "\""
+        let names = OrganizationArea.available.filter { model.settings.primaryAreas.contains($0) }
+            .map { open + String(localized: $0.titleResource) + close }
         return String(localized: "Gezählt werden deine Hauptbereiche: \(names.formatted(.list(type: .and))).")
     }
 

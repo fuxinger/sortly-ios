@@ -73,6 +73,10 @@ struct ProgressRing: View {
             Text(fraction, format: .percent.precision(.fractionLength(0)))
                 .font(.title3.weight(.bold))
                 .monospacedDigit()
+                // Large text sizes shrink the number to fit inside the ring instead of "6…".
+                .lineLimit(1)
+                .minimumScaleFactor(0.4)
+                .padding(lineWidth)
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Text("Organisiert"))

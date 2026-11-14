@@ -347,7 +347,7 @@ final class SortlyFlowUITests: XCTestCase {
     func test2_LargeTextDarkMode() {
         continueAfterFailure = true
         XCUIDevice.shared.appearance = .dark
-        launch(["-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"])
+        launch(["-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL", "-SortlyUITestDark"])
         sleep(5)
         shot("30-overview-xxxl-dark"); audit("overview xxxl dark")
         if tap(button("Reise-Atlas"), "open atlas xxxl", timeout: 20) {
