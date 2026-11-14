@@ -153,7 +153,7 @@ struct ThumbnailGrid: View {
     var portrait = false
 
     var body: some View {
-        let total = total ?? ids.count
+        let all = total ?? ids.count
         let shown = Array(ids.prefix(limit))
         let count = min(columns, max(shown.count, 2))
         LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 3), count: count), spacing: 3) {
@@ -161,9 +161,9 @@ struct ThumbnailGrid: View {
                 AssetThumbnail(id: id, side: count <= 2 ? 200 : (count == 3 ? 140 : 100), anchor: portrait ? .top : .center)
                     .aspectRatio(portrait ? 0.75 : 1, contentMode: .fill)
                     .overlay {
-                        if index == shown.count - 1 && total > shown.count {
+                        if index == shown.count - 1 && all > shown.count {
                             Color.black.opacity(0.45)
-                            Text("+\(total - shown.count + 1)").font(.headline).foregroundStyle(.white)
+                            Text("+\(all - shown.count + 1)").font(.headline).foregroundStyle(.white)
                         }
                     }
             }
