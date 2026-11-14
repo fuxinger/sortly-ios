@@ -140,7 +140,7 @@ Funktionsliste; nichts, was Fotos löscht oder ohne Bestätigung ändert.
 
 | Status | Punkt | Aufwand | Quelle |
 |---|---|---|---|
-| 🔜 | **I01 Änderungsbeleg:** pro Plan eine Seite „Das hat Albumist geändert“ mit echten Zahlen aus dem neuen Ausführungsjournal und „Originale unverändert“. Grundlage ist jetzt da (Journal mit echten Änderungen). | M | G I01 |
+| ✅ | **I01 Änderungsbeleg:** pro Plan eine Seite „Das hat Albumist geändert“ mit nachgeprüften Zahlen aus dem Ausführungsjournal, jedem Album (neu, ergänzt, übernommen, entfernt, +/− Fotos), „Deine Originale“ (0 gelöscht, 0 bearbeitet, 0 Kopien), nicht Erledigtem und dem Rückgängigmachen; als Text teilbar. Erreichbar über Einstellungen › Verlauf und nach dem Umsetzen. | M | G I01 |
 | ✅ | **I12 Sicherung der Entscheidungen:** Ausnahmen, Regeln, Einstellungen, eigene Namen, verwaltete Alben und Verlauf liegen zusätzlich in einer kleinen Datei im Geräte-Backup; Wiederherstellen nach Neuaufbau der Datenbank oder auf einem neuen Gerät, Alben und Verlauf nur bei passender Mediathek. Schließt die Restlücke von Befund 3.2. | M | G I12 |
 | 💡 | **I12b Sicherung auf neuem iPhone mit iCloud-Fotos:** Album- und Foto-Kennungen zusätzlich als iCloud-Kennung (`PHCloudIdentifier`) sichern und beim Wiederherstellen umrechnen, damit auch Alben, Verlauf und Ausnahmen auf einem neuen Gerät zurückkommen. | M | I12 |
 | 🔜 | **I16 Geführte Reparatur:** bei unterbrochenen oder fehlgeschlagenen Plänen ein klarer Weg „Fortsetzen / Rückgängig / so lassen“ plus Diagnose-Export ohne Fotos und Namen. | M | G I16 |

@@ -459,6 +459,16 @@ public actor SortlyStore: ChangePlanStoring {
             .compactMap { try decode(ChangePlan.self, $0["payload"]) }
     }
 
+    /// The finished undo plans that took back `id`, newest first (for the change receipt).
+    public func reverts(of id: SortlyID) throws -> [ChangePlan] {
+        struct Header: Decodable { var reverts: SortlyID? }
+        return try db.query("SELECT payload FROM plans WHERE status IN ('completed', 'completedWithErrors') ORDER BY created_at DESC")
+            .compactMap { row -> ChangePlan? in
+                guard try decode(Header.self, row["payload"])?.reverts == id else { return nil }
+                return try decode(ChangePlan.self, row["payload"])
+            }
+    }
+
     /// Plans that a completed undo took back, over the whole journal (not one page of it).
     public func undoneTargets() throws -> Set<SortlyID> {
         struct Header: Decodable { var reverts: SortlyID? }

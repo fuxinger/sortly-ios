@@ -1143,6 +1143,12 @@ final class AppModel {
         }
     }
 
+    /// The change receipt of an executed plan (I01) and, if it was taken back, of its undo.
+    func receipt(for plan: ChangePlan) async -> (plan: PlanReceipt, undo: PlanReceipt?) {
+        let undo = try? await store?.reverts(of: plan.id).first
+        return (PlanReceipt(plan: plan, inventory: inventory), undo.map { PlanReceipt(plan: $0, inventory: inventory) })
+    }
+
     /// "Ältere anzeigen" in the history.
     func loadMoreHistory() async {
         historyLimit += 50

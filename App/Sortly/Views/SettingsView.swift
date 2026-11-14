@@ -189,39 +189,29 @@ struct SettingsView: View {
     }
 }
 
+/// One executed plan; opens its change receipt (with "Rückgängig machen" there).
 struct HistoryRow: View {
     @Environment(AppModel.self) private var model
     var plan: ChangePlan
-    @State private var confirmUndo = false
 
     var body: some View {
-        let summary = plan.appliedSummary
-        HStack {
-            VStack(alignment: .leading, spacing: 2) {
-                Text((plan.confirmedAt ?? plan.createdAt).formatted(date: .abbreviated, time: .shortened))
-                Text(Counted.historyLine(summary))
-                    .font(.footnote).foregroundStyle(.secondary)
-            }
-            Spacer()
-            if model.undonePlans.contains(plan.id) {
-                Text("Rückgängig gemacht")
-                    .font(.subheadline).foregroundStyle(.secondary)
-            } else if plan.status == .completed || plan.status == .completedWithErrors {
-                Button("Rückgängig") { confirmUndo = true }
-                    .font(.subheadline)
-                    .disabled(model.execution.isRunning)
-            }
-        }
-        .confirmationDialog("Diese Änderungen rückgängig machen?", isPresented: $confirmUndo, titleVisibility: .visible) {
-            Button("Rückgängig machen", role: .destructive) {
-                Task {
-                    await model.undo(plan)
-                    await model.refreshDerived()
+        NavigationLink {
+            PlanReceiptView(plan: plan)
+        } label: {
+            HStack {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text((plan.confirmedAt ?? plan.createdAt).formatted(date: .abbreviated, time: .shortened))
+                    Text(Counted.historyLine(plan.appliedSummary))
+                        .font(.footnote).foregroundStyle(.secondary)
+                }
+                Spacer()
+                if model.undonePlans.contains(plan.id) {
+                    Text("Rückgängig gemacht")
+                        .font(.subheadline).foregroundStyle(.secondary)
                 }
             }
-        } message: {
-            Text("Alben und Zuordnungen von Albumist werden entfernt. Deine Fotos bleiben unverändert.")
         }
+        .accessibilityIdentifier("history.row")
     }
 }
 

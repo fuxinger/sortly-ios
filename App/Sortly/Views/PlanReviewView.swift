@@ -274,6 +274,14 @@ struct ResultCard: View {
                 Button("In Fotos ansehen") { openURL(photos) }
                     .buttonStyle(PrimaryButtonStyle())
             }
+            NavigationLink {
+                PlanReceiptView(plan: plan)
+            } label: {
+                Text("Änderungsbeleg ansehen")
+                    .font(.subheadline.weight(.semibold))
+                    .frame(maxWidth: .infinity, minHeight: 44)
+            }
+            .accessibilityIdentifier("result.receipt")
             if !isUndo && !model.undonePlans.contains(plan.id) {
                 Button("Rückgängig machen") { confirmUndo = true }
                     .buttonStyle(SecondaryButtonStyle())

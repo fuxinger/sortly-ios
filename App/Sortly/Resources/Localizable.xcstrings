@@ -171,6 +171,126 @@
         }
       }
     },
+    "%lld Fotos waren beim Umsetzen nicht mehr in deiner Mediathek und wurden nicht einsortiert." : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld photo was no longer in your library when the plan ran and was not sorted."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld photos were no longer in your library when the plan ran and were not sorted."
+                }
+              }
+            }
+          }
+        },
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Foto war beim Umsetzen nicht mehr in deiner Mediathek und wurde nicht einsortiert."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Fotos waren beim Umsetzen nicht mehr in deiner Mediathek und wurden nicht einsortiert."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld Originale bearbeitet" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld original edited"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld originals edited"
+                }
+              }
+            }
+          }
+        },
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Original bearbeitet"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Originale bearbeitet"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld Schritte konnte Albumist in der Mediathek nicht nachprüfen. Sie zählen hier nicht mit." : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Albumist could not verify %lld step in the library. It is not counted here."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Albumist could not verify %lld steps in the library. They are not counted here."
+                }
+              }
+            }
+          }
+        },
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Schritt konnte Albumist in der Mediathek nicht nachprüfen. Er zählt hier nicht mit."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Schritte konnte Albumist in der Mediathek nicht nachprüfen. Sie zählen hier nicht mit."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld ausgewählt" : {
       "localizations" : {
         "en" : {
@@ -961,6 +1081,46 @@
         }
       }
     },
+    "+%lld Fotos" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "+%lld photo"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "+%lld photos"
+                }
+              }
+            }
+          }
+        },
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "+%lld Foto"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "+%lld Fotos"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "Abbrechen" : {
       "localizations" : {
         "en" : {
@@ -1137,6 +1297,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Albumist restored your decisions, settings, albums and history from the copy of %@. Your photos are being analyzed again."
+          }
+        }
+      }
+    },
+    "Albumist ordnet Fotos nur Alben zu. Löschen, Bearbeiten oder Kopieren von Fotos gibt es in Albumist nicht. Ein Album verweist nur auf deine Fotos." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Albumist only assigns photos to albums. Deleting, editing or copying photos does not exist in Albumist. An album only points to your photos."
+          }
+        }
+      }
+    },
+    "Albumist – Änderungsbeleg" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Albumist – Change Receipt"
           }
         }
       }
@@ -1371,6 +1551,16 @@
         }
       }
     },
+    "Beleg teilen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Share Receipt"
+          }
+        }
+      }
+    },
     "Bereiche" : {
       "localizations" : {
         "en" : {
@@ -1461,6 +1651,16 @@
         }
       }
     },
+    "Das hat Albumist geändert" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What Albumist Changed"
+          }
+        }
+      }
+    },
     "Das passiert jetzt" : {
       "localizations" : {
         "en" : {
@@ -1547,6 +1747,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Your photos, finally sorted."
+          }
+        }
+      }
+    },
+    "Deine Originale" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your Originals"
           }
         }
       }
@@ -1801,6 +2011,36 @@
         }
       }
     },
+    "Entfernt" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Removed"
+          }
+        }
+      }
+    },
+    "Entfernt nur die neuen Alben und Zuordnungen dieses Umsetzens. Deine Fotos bleiben." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Removes only the new albums and assignments of this run. Your photos stay."
+          }
+        }
+      }
+    },
+    "Entfernte Alben und Ordner" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Removed albums and folders"
+          }
+        }
+      }
+    },
     "Entscheidungen zurückgeholt" : {
       "localizations" : {
         "en" : {
@@ -1971,6 +2211,16 @@
         }
       }
     },
+    "Fotos herausgenommen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Photos taken out"
+          }
+        }
+      }
+    },
     "Fotos sortiert" : {
       "localizations" : {
         "en" : {
@@ -2057,6 +2307,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Counted are your main areas: %@."
+          }
+        }
+      }
+    },
+    "Gezählt wird nur, was Albumist danach in deiner Mediathek nachgeprüft hat." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Only what Albumist verified in your library afterwards is counted."
           }
         }
       }
@@ -2247,6 +2507,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No suggestions"
+          }
+        }
+      }
+    },
+    "Kopien angelegt" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copies created"
           }
         }
       }
@@ -2451,6 +2721,16 @@
         }
       }
     },
+    "Namen wie beim Umsetzen. Was du danach in Fotos geändert hast, respektiert Albumist." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Names as they were when the plan ran. Albumist respects what you changed in Photos afterwards."
+          }
+        }
+      }
+    },
     "Neu aufbauen" : {
       "localizations" : {
         "en" : {
@@ -2551,6 +2831,16 @@
         }
       }
     },
+    "Nicht erledigt" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not Done"
+          }
+        }
+      }
+    },
     "Nicht jetzt" : {
       "localizations" : {
         "en" : {
@@ -2561,12 +2851,32 @@
         }
       }
     },
+    "Nicht nachgeprüft" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not verified"
+          }
+        }
+      }
+    },
     "Nicht sortiert" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Not sorted"
+          }
+        }
+      }
+    },
+    "Nicht vollständig umgesetzt" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not fully applied"
           }
         }
       }
@@ -2727,6 +3037,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Folder"
+          }
+        }
+      }
+    },
+    "Originale bearbeitet" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Originals edited"
+          }
+        }
+      }
+    },
+    "Originale gelöscht" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Originals deleted"
           }
         }
       }
@@ -2907,6 +3237,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Undo"
+          }
+        }
+      }
+    },
+    "Rückgängig gemacht: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Undone: %@"
           }
         }
       }
@@ -3181,6 +3521,16 @@
         }
       }
     },
+    "Teilweise umgesetzt" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Partly Applied"
+          }
+        }
+      }
+    },
     "Text auf Screenshots wird gelesen" : {
       "localizations" : {
         "en" : {
@@ -3261,6 +3611,26 @@
         }
       }
     },
+    "Vollständig umgesetzt" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fully Applied"
+          }
+        }
+      }
+    },
+    "Was Albumist nicht zurücknehmen konnte, bleibt, wie es ist." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What Albumist could not take back stays as it is."
+          }
+        }
+      }
+    },
     "unterwegs seit" : {
       "localizations" : {
         "en" : {
@@ -3286,7 +3656,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Postponed"
+            "value" : "Moved"
           }
         }
       }
@@ -3571,6 +3941,26 @@
         }
       }
     },
+    "Änderungsbeleg" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Change Receipt"
+          }
+        }
+      }
+    },
+    "Änderungsbeleg ansehen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View Change Receipt"
+          }
+        }
+      }
+    },
     "Öffnet Albumist und sucht nach neuen Fotos, für die es Vorschläge gibt." : {
       "localizations" : {
         "en" : {
@@ -3587,6 +3977,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "About"
+          }
+        }
+      }
+    },
+    "Übernommen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adopted"
           }
         }
       }
@@ -5909,6 +6309,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Show more results"
+          }
+        }
+      }
+    },
+    "−%lld Fotos" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "−%lld photo"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "−%lld photos"
+                }
+              }
+            }
+          }
+        },
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "−%lld Foto"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "−%lld Fotos"
+                }
+              }
+            }
           }
         }
       }

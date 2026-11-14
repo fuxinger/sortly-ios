@@ -238,6 +238,9 @@ struct StoreTests {
         #expect(Set(first.map(\.id)).isDisjoint(with: second.map(\.id)))
         #expect(second.contains { $0.id == originals[0].id })
         #expect(try await s.undoneTargets() == [originals[0].id])
+        // The change receipt finds the undo of a plan.
+        #expect(try await s.reverts(of: originals[0].id).map(\.id) == [undo.id])
+        #expect(try await s.reverts(of: originals[1].id).isEmpty)
     }
 
     /// Audit 3.1 / 1.7: reconciliation results and the finalization of a plan are saved in one

@@ -321,6 +321,18 @@ final class SortlyFlowUITests: XCTestCase {
                 print("UI_TIMING apply \(Int(Date().timeIntervalSince(applied))) s")
                 sleep(1)
                 shot("11-result"); audit("result")
+                // The change receipt: what really changed, from the execution journal.
+                let receipt = app.buttons["result.receipt"]
+                if !receipt.isHittable { app.swipeUp(); sleep(1) }
+                if tap(receipt, "open change receipt", timeout: 10) {
+                    sleep(2)
+                    let checked = anything("0 Originale gelöscht").waitForExistence(timeout: 5)
+                    print(checked ? "UI_STEP_OK receipt shows originals untouched" : "UI_STEP_MISSING receipt shows originals untouched")
+                    shot("11a-receipt"); audit("receipt")
+                    app.swipeUp(); sleep(1)
+                    shot("11b-receipt-albums")
+                    back(); sleep(1)
+                }
             }
             back(); sleep(2)
         }
@@ -410,14 +422,22 @@ final class SortlyFlowUITests: XCTestCase {
                 sleep(1)
                 shot("21-settings"); audit("settings")
                 // The history sits far down in a lazy list: its rows exist only once scrolled to.
-                let undo = app.buttons["Rückgängig"].firstMatch
+                let row = app.buttons["history.row"].firstMatch
                 let list = app.collectionViews.firstMatch
                 var swipes = 0
-                while !undo.exists && swipes < 10 {
+                while !(row.exists && row.isHittable) && swipes < 10 {
                     (list.exists ? list : app).swipeUp()
                     swipes += 1
                 }
-                if tap(undo, "undo in history", timeout: 10) {
+                // A history row opens the plan's change receipt; undo lives there.
+                let opened = tap(row, "history row opens receipt", timeout: 10)
+                if opened { sleep(2); shot("21a-history-receipt") }
+                let undo = app.buttons["receipt.undo"]
+                if opened && !undo.exists {
+                    var more = 0
+                    while !undo.exists && more < 6 { app.swipeUp(); more += 1 }
+                }
+                if opened, tap(undo, "undo in receipt", timeout: 10) {
                     // Another "Rückgängig machen" (the result card further back) can exist in
                     // the hierarchy; tap the one in the dialog that is really on screen.
                     let dialog = app.staticTexts["Diese Änderungen rückgängig machen?"].waitForExistence(timeout: 5)
@@ -457,6 +477,7 @@ final class SortlyFlowUITests: XCTestCase {
                     XCTAssertTrue(undone, "Undo did not finish")
                     shot("22-after-undo")
                 }
+                if opened { back(); sleep(1) }
                 tap(button("Fertig"), "close settings")
             }
         }
