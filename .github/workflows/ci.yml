@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Navigation rule
         # Navigation uses destination-based links only. A value-based link inside a screen that
         # was itself pushed by a destination-based link leads nowhere (dead row, warning triangle).
@@ -46,7 +46,7 @@ jobs:
     container: swift:6.2-noble
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Install SQLite headers
         run: apt-get update -qq && apt-get install -y -qq libsqlite3-dev
       - name: Build and test
@@ -61,7 +61,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - run: python3 .github/scripts/name_check.py docs/launch/name-candidates.txt
 
   ios:
@@ -69,7 +69,7 @@ jobs:
     runs-on: macos-26
     timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Select newest Xcode
         run: |
           ls -d /Applications/Xcode*.app
@@ -121,14 +121,14 @@ jobs:
           find ../build/loc -name "*.xliff" -exec sh -c 'base64 -i "$1" | tr -d "\n" | fold -w 4000 | sed "s/^/XLIFF /"' _ {} \;
       - name: Upload strings
         if: success() && hashFiles('build/loc/**') != ''
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: localizations
           path: build/loc
           retention-days: 7
       - name: Upload logs
         if: always() && hashFiles('build-log.txt') != ''
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ios-build-log
           path: |
@@ -142,7 +142,7 @@ jobs:
     runs-on: macos-26
     timeout-minutes: 40
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Select newest Xcode
         run: |
           XCODE=$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)
@@ -168,7 +168,7 @@ jobs:
           ls -la ../../../../Sortly-simulator.zip
       - name: Upload simulator app
         if: success() && hashFiles('build/Sortly-simulator.zip') != ''
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: Sortly-simulator-app
           path: build/Sortly-simulator.zip
