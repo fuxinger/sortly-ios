@@ -26,19 +26,19 @@ final class DemoLibrary {
     static let home = Spot(lat: 48.1374, lon: 11.5755)          // München
     static let grandma = Spot(lat: 48.3520, lon: 11.7930)       // a second frequent place
     static let trips: [Trip] = [
-        Trip(spot: Spot(lat: 48.8566, lon: 2.3522), year: 2018, month: 10, day: 5, days: 3, photos: 8),      // Paris
-        Trip(spot: Spot(lat: 41.3874, lon: 2.1686), year: 2019, month: 6, day: 20, days: 5, photos: 10),     // Barcelona
-        Trip(spot: Spot(lat: 40.7128, lon: -74.0060), year: 2019, month: 11, day: 2, days: 6, photos: 12),   // New York
-        Trip(spot: Spot(lat: 48.2082, lon: 16.3738), year: 2020, month: 2, day: 21, days: 2, photos: 6),     // Wien
-        Trip(spot: Spot(lat: 62.1008, lon: 7.2059), year: 2021, month: 7, day: 12, days: 5, photos: 12),     // Geiranger
-        Trip(spot: Spot(lat: 43.5081, lon: 16.4402), year: 2021, month: 8, day: 20, days: 7, photos: 10),    // Split
-        Trip(spot: Spot(lat: 38.7223, lon: -9.1393), year: 2022, month: 4, day: 14, days: 4, photos: 10),    // Lissabon
-        Trip(spot: Spot(lat: 43.7696, lon: 11.2558), year: 2022, month: 9, day: 3, days: 3, photos: 8),      // Florenz
-        Trip(spot: Spot(lat: 55.6761, lon: 12.5683), year: 2023, month: 5, day: 18, days: 3, photos: 7),     // Kopenhagen
-        Trip(spot: Spot(lat: 64.1466, lon: -21.9426), year: 2023, month: 8, day: 1, days: 4, photos: 10),    // Reykjavík
-        Trip(spot: Spot(lat: 63.4186, lon: -19.0060), year: 2023, month: 8, day: 5, days: 3, photos: 8),     // Vík
-        Trip(spot: Spot(lat: 41.8902, lon: 12.4922), year: 2024, month: 5, day: 10, days: 5, photos: 16),    // Rom
-        Trip(spot: Spot(lat: 35.0116, lon: 135.7681), year: 2024, month: 10, day: 8, days: 6, photos: 12),   // Kyoto
+        Trip(spot: Spot(lat: 48.8566, lon: 2.3522), year: 2018, month: 10, day: 5, days: 3, photos: 12),      // Paris
+        Trip(spot: Spot(lat: 41.3874, lon: 2.1686), year: 2019, month: 6, day: 20, days: 5, photos: 14),     // Barcelona
+        Trip(spot: Spot(lat: 40.7128, lon: -74.0060), year: 2019, month: 11, day: 2, days: 6, photos: 16),   // New York
+        Trip(spot: Spot(lat: 48.2082, lon: 16.3738), year: 2020, month: 2, day: 21, days: 2, photos: 10),     // Wien
+        Trip(spot: Spot(lat: 62.1008, lon: 7.2059), year: 2021, month: 7, day: 12, days: 5, photos: 14),     // Geiranger
+        Trip(spot: Spot(lat: 43.5081, lon: 16.4402), year: 2021, month: 8, day: 20, days: 7, photos: 14),    // Split
+        Trip(spot: Spot(lat: 38.7223, lon: -9.1393), year: 2022, month: 4, day: 14, days: 4, photos: 12),    // Lissabon
+        Trip(spot: Spot(lat: 43.7696, lon: 11.2558), year: 2022, month: 9, day: 3, days: 3, photos: 11),      // Florenz
+        Trip(spot: Spot(lat: 55.6761, lon: 12.5683), year: 2023, month: 5, day: 18, days: 3, photos: 10),     // Kopenhagen
+        Trip(spot: Spot(lat: 64.1466, lon: -21.9426), year: 2023, month: 8, day: 1, days: 4, photos: 12),    // Reykjavík
+        Trip(spot: Spot(lat: 63.4186, lon: -19.0060), year: 2023, month: 8, day: 5, days: 3, photos: 10),     // Vík
+        Trip(spot: Spot(lat: 41.8902, lon: 12.4922), year: 2024, month: 5, day: 10, days: 5, photos: 20),    // Rom
+        Trip(spot: Spot(lat: 35.0116, lon: 135.7681), year: 2024, month: 10, day: 8, days: 6, photos: 16),   // Kyoto
     ]
 
     static let screenshots: [[String]] = [
