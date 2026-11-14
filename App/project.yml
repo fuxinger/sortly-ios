@@ -80,6 +80,18 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: app.sortly.ios.tests
         GENERATE_INFOPLIST_FILE: YES
+  SortlyUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: SortlyUITests
+    dependencies:
+      - target: Sortly
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.sortly.ios.uitests
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_TARGET_NAME: Sortly
 schemes:
   Sortly:
     build:
@@ -89,4 +101,13 @@ schemes:
     test:
       targets:
         - SortlyTests
+      gatherCoverageData: false
+  SortlyUI:
+    build:
+      targets:
+        Sortly: all
+        SortlyUITests: [test]
+    test:
+      targets:
+        - SortlyUITests
       gatherCoverageData: false

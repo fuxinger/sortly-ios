@@ -27,7 +27,16 @@ final class Purchases {
     var remainingFreeAlbums: Int { max(0, Self.freeAlbumLimit - albumsUsed) }
 
     /// True if a plan touching `albums` albums may run without the unlock.
-    func allows(albums: Int) -> Bool { isUnlocked || albums <= remainingFreeAlbums }
+    func allows(albums: Int) -> Bool { isUnlocked || Self.unlockedForUITests || albums <= remainingFreeAlbums }
+
+    /// Debug builds only: the end-to-end UI test runs without the purchase sheet.
+    static let unlockedForUITests: Bool = {
+        #if DEBUG
+        ProcessInfo.processInfo.arguments.contains("-SortlyUITestUnlocked")
+        #else
+        false
+        #endif
+    }()
 
     func recordUsage(albums: Int) {
         guard albums > 0 else { return }

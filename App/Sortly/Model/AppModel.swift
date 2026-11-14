@@ -105,12 +105,24 @@ final class AppModel {
     static func databaseURL() throws -> URL {
         let base = try FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
             .appendingPathComponent(AppInfo.supportFolderName, isDirectory: true)
-        try FileManager.default.createDirectory(at: base, withIntermediateDirectories: true)
-        var url = base.appendingPathComponent("sortly.sqlite")
-        // The analysis can be rebuilt from the library; keep it out of iCloud backups.
+        // The database holds recognized text of screenshots and documents: encrypted at rest
+        // once the device was unlocked after boot (needed so background analysis still works).
+        let protection: [FileAttributeKey: Any] = [.protectionKey: FileProtectionType.completeUntilFirstUserAuthentication]
+        try FileManager.default.createDirectory(at: base, withIntermediateDirectories: true, attributes: protection)
+        try? FileManager.default.setAttributes(protection, ofItemAtPath: base.path)
+        // The analysis can be rebuilt from the library; keep the whole folder out of backups.
+        // (Set on the folder: a resource value on a file that does not exist yet is lost.)
+        var folder = base
         var values = URLResourceValues()
         values.isExcludedFromBackup = true
-        try? url.setResourceValues(values)
+        try? folder.setResourceValues(values)
+        let url = base.appendingPathComponent("sortly.sqlite")
+        for suffix in ["", "-wal", "-shm"] {
+            let path = url.path + suffix
+            if FileManager.default.fileExists(atPath: path) {
+                try? FileManager.default.setAttributes(protection, ofItemAtPath: path)
+            }
+        }
         return url
     }
 

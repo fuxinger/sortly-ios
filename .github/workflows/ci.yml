@@ -148,3 +148,50 @@ jobs:
           key=$(jq -r '.publicKey' appetize.json)
           echo "APPETIZE_LINK https://appetize.io/app/$key"
           echo "### Im Browser testen: https://appetize.io/app/$key" >> "$GITHUB_STEP_SUMMARY"
+
+  ui-flow:
+    # End-to-end run with the demo library: screenshots, timings and accessibility audit in the log.
+    name: UI flow and accessibility (simulator)
+    runs-on: macos-26
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+      - name: Select newest Xcode
+        run: |
+          XCODE=$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)
+          sudo xcode-select -s "$XCODE"
+      - name: Generate Xcode project
+        run: |
+          brew install xcodegen
+          cd App && xcodegen generate
+      - name: Prepare simulator
+        id: sim
+        run: |
+          UDID=$(xcrun simctl list devices available -j | python3 -c '
+          import json,sys
+          d=json.load(sys.stdin)["devices"]
+          best=None
+          for rt,devs in d.items():
+              if "iOS" not in rt: continue
+              for x in devs:
+                  if x["name"].startswith("iPhone") and "Pro" in x["name"] and "Max" not in x["name"]:
+                      best=x["udid"]
+          print(best)')
+          echo "udid=$UDID" >> "$GITHUB_OUTPUT"
+          xcrun simctl boot "$UDID" || true
+          xcrun simctl bootstatus "$UDID" -b
+          xcrun simctl privacy "$UDID" grant photos app.sortly.ios || echo "privacy grant failed"
+          xcrun simctl status_bar "$UDID" override --time "9:41" --batteryState charged --batteryLevel 100 --cellularBars 4 --wifiBars 3 || true
+      - name: Run UI flow
+        run: |
+          set +e
+          cd App
+          xcodebuild test \
+            -project Sortly.xcodeproj \
+            -scheme SortlyUI \
+            -destination "id=${{ steps.sim.outputs.udid }}" \
+            -resultBundlePath ../build/UITestResults.xcresult \
+            CODE_SIGNING_ALLOWED=NO > ../ui-log.txt 2>&1
+          status=$?
+          grep -aE "error:|UI_STEP|UI_TIMING|A11Y_|PREVIEW_JPEG|Test Case|Executed|\*\* " ../ui-log.txt | grep -v "/SourcePackages/" | head -6000
+          exit $status
