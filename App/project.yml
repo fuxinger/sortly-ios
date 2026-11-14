@@ -36,6 +36,8 @@ targets:
       path: Sortly/Resources/Info.plist
       properties:
         CFBundleDisplayName: Albumist
+        # Short name (the target is still called Sortly): Appetize and some system lists show it.
+        CFBundleName: Albumist
         CFBundleShortVersionString: "0.1.0"
         CFBundleVersion: "1"
         LSRequiresIPhoneOS: true
