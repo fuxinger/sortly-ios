@@ -1,4 +1,5 @@
 import Foundation
+import Synchronization
 import Testing
 @testable import SortlyEngine
 import SortlyCore
@@ -144,6 +145,23 @@ struct PipelineTests {
         // Same id before and after, so a decision made early still applies.
         let earlyTrip = early.proposals.first { $0.title.hasPrefix("Rom ·") }?.id
         #expect(earlyTrip != nil && full.proposals.contains { $0.id == earlyTrip })
+    }
+
+    @Test func overallProgressNeverGoesBack() async throws {
+        let s = try setup()
+        let seen = Mutex<[Double]>([])
+        let report = try await s.pipeline.run { progress in
+            let value = AnalysisPipeline.Progress.overall(stage: progress.stage, completed: progress.completed, total: progress.total)
+            seen.withLock { $0.append(value) }
+        }
+        #expect(report.isComplete)
+        let values = seen.withLock { $0 }
+        #expect(!values.isEmpty)
+        #expect(zip(values, values.dropFirst()).allSatisfy { $0 <= $1 + 1e-9 })
+        #expect(values.allSatisfy { (0...1).contains($0) })
+        #expect(abs(AnalysisPipeline.Stage.allCases.reduce(0) { $0 + $1.share } - 1) < 1e-9)
+        #expect(AnalysisPipeline.Progress.overall(stage: .proposals, completed: 1, total: 1) > 0.999)
+        #expect(AnalysisPipeline.Stage.content.number == 4)
     }
 
     @Test func userPauseStopsAtBatchBoundary() async throws {

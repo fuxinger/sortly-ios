@@ -1,5 +1,6 @@
 import BackgroundTasks
 import Foundation
+import SortlyEngine
 import UIKit
 import UserNotifications
 
@@ -49,12 +50,15 @@ enum ContinuedAnalysis {
                 while !Task.isCancelled {
                     if model.analysis.isRunning {
                         idleChecks = 0
+                        // One bar over all stages, so the lock screen never jumps back to zero.
                         let total = max(model.analysis.total, 1)
                         let done = min(model.analysis.completed, total)
-                        box.task.progress.totalUnitCount = Int64(total)
-                        box.task.progress.completedUnitCount = Int64(done)
+                        box.task.progress.totalUnitCount = 1000
+                        box.task.progress.completedUnitCount = Int64(model.analysis.overall * 1000)
+                        let step = model.analysis.stage?.number ?? 1
+                        let steps = AnalysisPipeline.Stage.allCases.count
                         box.task.updateTitle(String(localized: "Albumist analysiert deine Fotos"),
-                                             subtitle: String(localized: "\(done) von \(total)"))
+                                             subtitle: String(localized: "Schritt \(step) von \(steps) · \(done.formatted()) von \(total.formatted())"))
                     } else {
                         idleChecks += 1
                         if idleChecks > 3 { break }

@@ -51,7 +51,7 @@ Quellen: **E1** Expertenrunde 14.11.2026 (Tempo, Oberfläche, Technik, Produkt) 
 | ✅ | Nach „Rückgängig“ eine passende Meldung statt „Fertig, 0 neue Alben“. | S | E1 Oberfläche |
 | ✅ | Vorschau-Fotos über die ganze Zeitspanne verteilt, nach Datum; Antippen zeigt alle Fotos; einzelne Fotos aus dem Vorschlag entfernen. | M | E1 Oberfläche/Produkt |
 | 💡 | Schönstes Foto als Titelbild (Bildqualität aus der Analyse nutzen). | S | E1 Produkt |
-| 🔜 | Ein Fortschrittsbalken über alle Schritte statt Neustart bei jeder Stufe. | S | E1 Oberfläche |
+| ✅ | Ein Fortschrittsbalken über alle Schritte statt Neustart bei jeder Stufe („Schritt 4 von 7“), auch auf dem Sperrbildschirm. | S | E1 Oberfläche |
 | ✅ | Zoom-Übergang vom Vorschaubild ins Foto. | S | E1 Oberfläche, U |
 | 💡 | Kontextmenüs und Wischaktionen. | M | E1 Oberfläche |
 | ✅ | Suche: Treffer antippbar (mit Zoom), für VoiceOver lesbar, „Als Album anlegen“. | S | E1 Oberfläche |

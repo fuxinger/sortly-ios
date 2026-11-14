@@ -27,6 +27,10 @@ final class AppModel {
         var lastRun: Date?
 
         var fraction: Double { total == 0 ? 0 : min(1, Double(completed) / Double(total)) }
+        /// Progress over all stages: one bar that fills once instead of restarting per stage.
+        var overall: Double {
+            stage.map { AnalysisPipeline.Progress.overall(stage: $0, completed: completed, total: total) } ?? 0
+        }
     }
 
     struct ExecutionState: Equatable {

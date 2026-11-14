@@ -111,11 +111,19 @@ struct OverviewView: View {
                     ScanShow()
                 }
                 VStack(alignment: .leading, spacing: Theme.Spacing.s) {
-                    ProgressView(value: model.analysis.fraction)
+                    ProgressView(value: model.analysis.overall)
                         .tint(Theme.accent)
-                    if model.analysis.total > 0 {
-                        Text("\(model.analysis.completed.formatted()) von \(model.analysis.total.formatted())")
-                            .font(.footnote).foregroundStyle(.secondary).monospacedDigit()
+                        .animation(.smooth, value: model.analysis.overall)
+                    if let stage = model.analysis.stage {
+                        let steps = AnalysisPipeline.Stage.allCases.count
+                        Group {
+                            if model.analysis.total > 0 {
+                                Text("Schritt \(stage.number) von \(steps) · \(model.analysis.completed.formatted()) von \(model.analysis.total.formatted())")
+                            } else {
+                                Text("Schritt \(stage.number) von \(steps)")
+                            }
+                        }
+                        .font(.footnote).foregroundStyle(.secondary).monospacedDigit()
                     }
                 }
                 .accessibilityElement(children: .combine) // one element: bar plus "150 von 240"

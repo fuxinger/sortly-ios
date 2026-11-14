@@ -26,6 +26,22 @@ public struct ProposalSnapshot: Sendable, Codable, Hashable {
 public actor AnalysisPipeline {
     public enum Stage: String, CaseIterable, Sendable, Codable {
         case inventory, patterns, places, content, text, groups, proposals
+
+        /// Rough share of a full first run; the image analysis takes most of the time.
+        public var share: Double {
+            switch self {
+            case .inventory: 0.05
+            case .patterns: 0.03
+            case .places: 0.12
+            case .content: 0.6
+            case .text: 0.12
+            case .groups: 0.03
+            case .proposals: 0.05
+            }
+        }
+
+        /// 1-based position, for "Schritt 4 von 7".
+        public var number: Int { (Self.allCases.firstIndex(of: self) ?? 0) + 1 }
     }
 
     public enum Mode: String, Sendable, Codable {
@@ -39,6 +55,13 @@ public actor AnalysisPipeline {
         public var stage: Stage
         public var completed: Int
         public var total: Int
+
+        /// One value for the whole run (0…1), so a bar never jumps back when the next stage starts.
+        public static func overall(stage: Stage, completed: Int, total: Int) -> Double {
+            let before = Stage.allCases.prefix { $0 != stage }.reduce(0) { $0 + $1.share }
+            let within = total > 0 ? min(1, max(0, Double(completed) / Double(total))) : 0
+            return min(1, before + stage.share * within)
+        }
     }
 
     public struct Report: Sendable, Hashable {
