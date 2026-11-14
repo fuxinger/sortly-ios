@@ -11,6 +11,8 @@ struct SearchView: View {
     @State private var searching = false
     @State private var detail: AssetFacts?
     @State private var addingToAlbum: [AssetID]?
+    /// The field is shown and focused when the tab opens; testers did not find a hidden one.
+    @State private var searchActive = false
     @Namespace private var zoom
 
     private let examples: [String] = ["Strand 2024", "Italien", "Rechnungen", "Videos", "Nicht sortiert", "Screenshots Bestellung"]
@@ -79,7 +81,7 @@ struct SearchView: View {
             .padding(.horizontal, Theme.Spacing.l)
         }
         .background(Theme.background)
-        .navigationTitle("Suche")
+        .navigationTitle("Suchen")
         .sheet(item: $detail) { facts in
             AssetDetailView(facts: facts) { addingToAlbum = [facts.id] }
                 .navigationTransition(.zoom(sourceID: facts.id, in: zoom))
@@ -87,7 +89,9 @@ struct SearchView: View {
         .sheet(isPresented: Binding(get: { addingToAlbum != nil }, set: { if !$0 { addingToAlbum = nil } })) {
             AddToAlbumSheet(assets: addingToAlbum ?? []) {}
         }
-        .searchable(text: $query, prompt: SmartAssistant.isAvailable ? Text("z. B. Grillen bei Oma letzten Sommer") : Text("z. B. Hunde Italien 2023"))
+        .searchable(text: $query, isPresented: $searchActive,
+                    prompt: SmartAssistant.isAvailable ? Text("z. B. Grillen bei Oma letzten Sommer") : Text("z. B. Hunde Italien 2023"))
+        .onAppear { if query.isEmpty { searchActive = true } }
         .task(id: query) {
             let text = query
             guard !text.trimmingCharacters(in: .whitespaces).isEmpty else {

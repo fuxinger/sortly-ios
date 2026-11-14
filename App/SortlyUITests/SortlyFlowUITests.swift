@@ -244,8 +244,7 @@ final class SortlyFlowUITests: XCTestCase {
                 XCTAssertTrue(list, "Back from a suggestion did not return to the list")
                 shot("08b-back-to-list")
             }
-            if tap(app.buttons["Weitere Aktionen"], "more actions") {
-                tap(button("Alle sicheren übernehmen"), "accept all safe")
+            if tap(button("empfohlene übernehmen"), "accept recommended") {
                 sleep(1)
                 shot("09-accepted")
             }

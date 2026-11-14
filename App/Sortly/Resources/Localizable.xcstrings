@@ -5332,6 +5332,176 @@
           }
         }
       }
+    },
+    "%lld empfohlene übernehmen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accept %lld Recommended"
+          }
+        }
+      }
+    },
+    "Empfohlen sind sichere und wahrscheinliche Vorschläge ohne persönliche Themen. Angelegt wird erst beim Umsetzen, vorher siehst du alles noch einmal." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recommended means certain and likely suggestions without personal topics. Nothing is created until you apply them, and you see everything once more first."
+          }
+        }
+      }
+    },
+    "%lld Vorschläge übernommen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld suggestions accepted"
+          }
+        }
+      }
+    },
+    "Übernehmen und später anlegen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accept and Create Later"
+          }
+        }
+      }
+    },
+    "Sicher heißt: Die Fotos gehören eindeutig zusammen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Certain means: the photos clearly belong together."
+          }
+        }
+      }
+    },
+    "Wahrscheinlich heißt: Es passt fast sicher. Ein kurzer Blick auf die Fotos lohnt sich." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Likely means: it almost certainly fits. A quick look at the photos is worth it."
+          }
+        }
+      }
+    },
+    "Möglich heißt: Es könnte passen. Bitte die Fotos kurz prüfen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Possible means: it might fit. Please check the photos briefly."
+          }
+        }
+      }
+    },
+    "Unsicher heißt: Hier entscheidest du. Albumist übernimmt das nie von selbst." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uncertain means: you decide. Albumist never accepts this on its own."
+          }
+        }
+      }
+    },
+    "Animation überspringen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skip Animation"
+          }
+        }
+      }
+    },
+    "von %lld Alben fertig" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "of %lld albums done"
+          }
+        }
+      }
+    },
+    "%lld von %lld Alben fertig, %lld Fotos einsortiert" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld of %2$lld albums done, %3$lld photos sorted"
+          }
+        }
+      }
+    },
+    "Auch später möglich unter Einstellungen › Verlauf. Rückgängig entfernt nur die neuen Alben und Zuordnungen, deine Fotos bleiben." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Also possible later in Settings › History. Undo only removes the new albums and assignments; your photos stay."
+          }
+        }
+      }
+    },
+    "Kostenlos. Danach hast du noch %lld von %lld Gratis-Alben." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Free. Afterwards you have %1$lld of %2$lld free albums left."
+          }
+        }
+      }
+    },
+    "%lld davon in deinen Alben" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld already in your albums"
+          }
+        }
+      }
+    },
+    "Suchen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search"
+          }
+        }
+      }
+    },
+    "Albumist löscht und verändert nie ein Foto. Es legt nur Alben an, und jeder Schritt lässt sich rückgängig machen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Albumist never deletes or changes a photo. It only creates albums, and every step can be undone."
+          }
+        }
+      }
+    },
+    "Womit soll Albumist anfangen?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Where should Albumist start?"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

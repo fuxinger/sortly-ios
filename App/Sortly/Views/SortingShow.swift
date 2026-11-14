@@ -7,7 +7,7 @@ import SortlyCore
 /// The show follows the real work and never runs ahead of it: an album only fills once its
 /// step has really finished. With fast work it lasts about 2 s for one album and about 5–7 s
 /// for many; when the work is slower, it waits on the next album and photos fly for nearly
-/// every one. A backlog of finished albums is riffled through. "Überspringen" ends the show
+/// every one. A backlog of finished albums is riffled through. "Animation überspringen" ends the show
 /// at once. With Reduce Motion only the current album is shown and cross-fades; nothing flies.
 struct SortingShow: View {
     struct Album: Identifiable, Equatable {
@@ -59,9 +59,11 @@ struct SortingShow: View {
             .dynamicTypeSize(...DynamicTypeSize.xxLarge)
             .accessibilityHidden(true)
 
-            Button("Überspringen", action: onFinish)
+            // Ends only the animation; the albums keep being created in the background.
+            Button("Animation überspringen", action: onFinish)
                 .font(.subheadline.weight(.semibold))
-                .frame(minHeight: 44)
+                .buttonStyle(.glass)
+                .controlSize(.large)
         }
         // iPad: a focused column instead of a small cluster in a wide band.
         .frame(maxWidth: 520)
@@ -80,23 +82,25 @@ struct SortingShow: View {
 
     private var header: some View {
         VStack(spacing: Theme.Spacing.xs) {
-            Text(counted, format: .number)
+            // Albums count up steadily; the photo count would stand still while photos that
+            // are already sorted get a second album (a country holds its trips).
+            Text(landed.count, format: .number)
                 .font(.system(size: 56, weight: .bold, design: .rounded))
                 .monospacedDigit()
-                .contentTransition(reduceMotion ? .opacity : .numericText(value: Double(counted)))
-            Text("Fotos einsortiert")
+                .contentTransition(reduceMotion ? .opacity : .numericText(value: Double(landed.count)))
+            Text("von \(albums.count) Alben fertig")
                 .font(.headline)
                 .foregroundStyle(.secondary)
-            Text("Album \(min(current + 1, albums.count)) von \(albums.count)")
+            Text("\(counted) Fotos einsortiert")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .monospacedDigit()
-                .contentTransition(reduceMotion ? .opacity : .numericText())
+                .contentTransition(reduceMotion ? .opacity : .numericText(value: Double(counted)))
         }
         .frame(maxWidth: .infinity)
         .accessibilityElement(children: .combine)
         .accessibilityLabel(Text("Fotos werden einsortiert"))
-        .accessibilityValue(Text("\(counted) von \(totalPhotos)"))
+        .accessibilityValue(Text("\(landed.count) von \(albums.count) Alben fertig, \(counted) Fotos einsortiert"))
         .accessibilityAddTraits(.updatesFrequently)
     }
 

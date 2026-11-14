@@ -10,10 +10,21 @@ struct ProposalListView: View {
     private var proposals: [AlbumProposal] {
         model.proposals
             .filter { area == nil || $0.kind.area == area }
+            // A stable order: rows never jump when one is accepted. Trips newest first,
+            // everything else by size.
             .sorted { lhs, rhs in
-                let l = model.decisions[lhs.id] == nil ? 0 : 1, r = model.decisions[rhs.id] == nil ? 0 : 1
-                return (l, -lhs.assetIDs.count, lhs.title) < (r, -rhs.assetIDs.count, rhs.title)
+                if area == .trips, let l = lhs.dateRange?.start, let r = rhs.dateRange?.start, l != r { return l > r }
+                return (-lhs.assetIDs.count, lhs.title) < (-rhs.assetIDs.count, rhs.title)
             }
+    }
+
+    /// Open suggestions that may be accepted in one go: at least "likely", no name needed,
+    /// a clear recommended action, never sensitive ones (prompt §8).
+    private var recommendable: [AlbumProposal] {
+        proposals.filter { p in
+            model.decisions[p.id] == nil && p.reliability >= .likely && !p.isSensitive && !p.requiresUserName
+                && model.recommendedDecision(for: p).isAccepted
+        }
     }
 
     var body: some View {
@@ -21,6 +32,16 @@ struct ProposalListView: View {
             if proposals.isEmpty {
                 ContentUnavailableView("Keine Vorschläge", systemImage: "checkmark.circle",
                                        description: Text("Für diesen Bereich gibt es gerade nichts zu tun."))
+            }
+            if !recommendable.isEmpty {
+                Section {
+                    Button { acceptRecommended() } label: { Text("\(recommendable.count) empfohlene übernehmen") }
+                        .buttonStyle(PrimaryButtonStyle())
+                        .listRowBackground(Color.clear)
+                        .listRowInsets(EdgeInsets())
+                } footer: {
+                    Text("Empfohlen sind sichere und wahrscheinliche Vorschläge ohne persönliche Themen. Angelegt wird erst beim Umsetzen, vorher siehst du alles noch einmal.")
+                }
             }
             ForEach(proposals) { proposal in
                 // Destination-based link: this list is itself pushed by a destination-based
@@ -34,27 +55,25 @@ struct ProposalListView: View {
             }
         }
         .navigationTitle(area?.title ?? "Vorschläge")
-        .toolbar {
-            if !proposals.isEmpty {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Menu {
-                        Button("Alle sicheren übernehmen") { acceptAllSafe() }
-                    } label: {
-                        Image(systemName: "ellipsis")
-                    }
-                    .accessibilityLabel("Weitere Aktionen")
+        // Accepted suggestions are created together: the way there is always in reach.
+        .safeAreaInset(edge: .bottom) {
+            if !model.acceptedProposals.isEmpty {
+                NavigationLink {
+                    PlanReviewView()
+                } label: {
+                    Text("\(model.acceptedProposals.count) übernommene Vorschläge umsetzen")
                 }
+                .buttonStyle(PrimaryButtonStyle())
+                .padding(.horizontal, Theme.Spacing.l)
+                .padding(.bottom, Theme.Spacing.s)
             }
         }
     }
 
-    /// Accepts only proposals that are at least "likely", need no name and have a clear
-    /// recommended action – never sensitive ones (prompt §8).
-    private func acceptAllSafe() {
-        for p in proposals where model.decisions[p.id] == nil && p.reliability >= .likely && !p.isSensitive && !p.requiresUserName {
-            let decision = model.recommendedDecision(for: p)
-            if decision.isAccepted { model.setDecision(decision, for: p) }
-        }
+    private func acceptRecommended() {
+        let accepted = recommendable
+        for p in accepted { model.setDecision(model.recommendedDecision(for: p), for: p) }
+        AccessibilityNotification.Announcement(Text("\(accepted.count) Vorschläge übernommen")).post()
     }
 }
 
@@ -107,6 +126,7 @@ struct ProposalDetailView: View {
     @State private var preparing = false
     @State private var applied = false
     @State private var rejectingMatch = false
+    @State private var explainReliability = false
 
     /// Only trips get a creative name; places and dates keep their exact titles.
     private var canSuggestTitle: Bool {
@@ -147,10 +167,28 @@ struct ProposalDetailView: View {
                 .accessibilityLabel(Text("Alle \(model.members(of: proposal).count) Fotos ansehen"))
 
                 VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
-                    Text("\(Text(proposal.kind.area.title)) · \(Text(proposal.reliability.label))")
-                        .textCase(.uppercase)
+                    // Tapping the label explains what "Sicher" or "Wahrscheinlich" means.
+                    Button { explainReliability = true } label: {
+                        HStack(spacing: 4) {
+                            Text("\(Text(proposal.kind.area.title)) · \(Text(proposal.reliability.label))")
+                                .textCase(.uppercase)
+                            Image(systemName: "info.circle")
+                        }
                         .font(.footnote.weight(.semibold))
                         .foregroundStyle(Theme.accent)
+                        .frame(minHeight: 32, alignment: .leading)
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityHint(Text(proposal.reliability.explanation))
+                    .popover(isPresented: $explainReliability) {
+                        Text(proposal.reliability.explanation)
+                            .font(.subheadline)
+                            .padding()
+                            .frame(idealWidth: 300)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .presentationCompactAdaptation(.popover)
+                    }
                     if proposal.requiresUserName {
                         TextField(proposal.title, text: $name)
                             .font(.title2.weight(.bold))
@@ -276,9 +314,9 @@ struct ProposalDetailView: View {
                 .buttonStyle(SecondaryButtonStyle())
             }
             if recommended.isAccepted && !recommended.isKeepExisting {
-                Button("Für später vormerken") { accept(); dismiss() }
+                Button("Übernehmen und später anlegen") { accept(); dismiss() }
                     .font(.subheadline.weight(.semibold))
-                    .padding(.top, Theme.Spacing.xs)
+                    .frame(minHeight: 44)
             }
         }
         .padding(.top, Theme.Spacing.s)

@@ -6,6 +6,8 @@ import SortlyEngine
 struct OverviewView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.dynamicTypeSize) private var typeSize
+    /// The ring grows with the text size, so "100 %" still fits inside at the largest sizes.
+    @ScaledMetric(relativeTo: .title3) private var ringSide: CGFloat = 84
     @State private var showSettings = false
     /// Lives here, not in the starter card: the card disappears once its albums are accepted.
     @State private var showStarterPlan = false
@@ -71,7 +73,7 @@ struct OverviewView: View {
         return Card {
             layout {
                 ProgressRing(fraction: model.progress.fullyShare)
-                    .frame(width: 84, height: 84)
+                    .frame(width: min(ringSide, 150), height: min(ringSide, 150))
                 VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
                     Text("\(model.progress.fully.formatted()) von \(model.progress.total.formatted()) sortiert")
                         .font(.headline)
@@ -194,7 +196,9 @@ struct OverviewView: View {
                 if proposals.isEmpty {
                     Text("Noch keine Vorschläge")
                 } else {
-                    Text(Counted.join([String(localized: "\(proposals.count) Vorschläge"), String(localized: "\(existing) Alben gefunden")]))
+                    // "0 Alben gefunden" read like an error: only mention albums that exist.
+                    Text(Counted.join([String(localized: "\(proposals.count) Vorschläge")]
+                                      + (existing > 0 ? [String(localized: "\(existing) davon in deinen Alben")] : [])))
                 }
             }
             .font(.footnote).foregroundStyle(.secondary)

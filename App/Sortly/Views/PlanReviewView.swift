@@ -52,6 +52,8 @@ struct PlanReviewView: View {
         .scrollPosition($scroll)
         .background(Theme.background)
         .navigationTitle("Umsetzen")
+        // Leaving mid-way would look like cancelling; the work goes on either way.
+        .navigationBarBackButtonHidden(model.execution.isRunning)
         .navigationBarTitleDisplayMode(.inline)
         .modifier(ExecutionHaptics(execution: model.execution, holdSuccess: show != nil))
         .task {
@@ -142,8 +144,8 @@ struct PlanReviewView: View {
                 Text("Erst die markierten Punkte klären. Ändere dazu den Vorschlag unter „Anpassen“.")
                     .font(.footnote).foregroundStyle(.secondary)
             }
-            if !purchases.isUnlocked && albums > 0 && purchases.allows(albums: albums) {
-                Text("Noch \(purchases.remainingFreeAlbums) Alben kostenlos.")
+            if !purchases.isUnlocked && !Purchases.unlockedForUITests && albums > 0 && purchases.allows(albums: albums) {
+                Text("Kostenlos. Danach hast du noch \(purchases.remainingFreeAlbums - albums) von \(Purchases.freeAlbumLimit) Gratis-Alben.")
                     .font(.footnote).foregroundStyle(.secondary)
             }
         }
@@ -251,6 +253,10 @@ struct ResultCard: View {
             if !isUndo && !model.undonePlans.contains(plan.id) {
                 Button("Rückgängig machen") { confirmUndo = true }
                     .buttonStyle(SecondaryButtonStyle())
+                Text("Auch später möglich unter Einstellungen › Verlauf. Rückgängig entfernt nur die neuen Alben und Zuordnungen, deine Fotos bleiben.")
+                    .font(.footnote).foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity)
             }
         }
         .onAppear { appeared = true }

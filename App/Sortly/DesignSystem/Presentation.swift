@@ -96,6 +96,16 @@ extension Reliability {
         case .uncertain: "Unsicher"
         }
     }
+
+    /// One sentence for the info popover next to the label.
+    var explanation: LocalizedStringKey {
+        switch self {
+        case .certain: "Sicher heißt: Die Fotos gehören eindeutig zusammen."
+        case .likely: "Wahrscheinlich heißt: Es passt fast sicher. Ein kurzer Blick auf die Fotos lohnt sich."
+        case .plausible: "Möglich heißt: Es könnte passen. Bitte die Fotos kurz prüfen."
+        case .uncertain: "Unsicher heißt: Hier entscheidest du. Albumist übernimmt das nie von selbst."
+        }
+    }
 }
 
 extension AnalysisPipeline.Stage {

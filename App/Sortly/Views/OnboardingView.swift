@@ -121,6 +121,10 @@ struct OnboardingView: View {
             Text("Albumist braucht vollen Zugriff, um deine Mediathek zu analysieren und Alben anzulegen. Die Analyse passiert nur auf diesem Gerät.")
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
+            // Testers asked exactly here whether "full access" means the app may delete.
+            Label("Albumist löscht und verändert nie ein Foto. Es legt nur Alben an, und jeder Schritt lässt sich rückgängig machen.", systemImage: "checkmark.shield")
+                .font(.subheadline)
+                .fixedSize(horizontal: false, vertical: true)
             switch model.access {
             case .denied, .restricted:
                 Card {
@@ -156,7 +160,7 @@ struct OnboardingView: View {
     private var start: some View {
         let currentYear = Calendar.current.component(.year, from: Date())
         return page {
-            Text("Erst ein Probelauf?").font(.title.weight(.bold))
+            Text("Womit soll Albumist anfangen?").font(.title.weight(.bold))
                 .fixedSize(horizontal: false, vertical: true)
             Text("Die Analyse läuft immer über die ganze Mediathek. Für den ersten Durchgang kann Albumist die Vorschläge aber auf ein Jahr beschränken, damit du das Ergebnis in Ruhe prüfen kannst.")
                 .foregroundStyle(.secondary)
