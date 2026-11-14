@@ -18,6 +18,9 @@ public struct TravelAtlas: Hashable, Sendable {
     public var longestTripDays: Int?
     /// Most photographed town outside the home area (by trip photos), if any.
     public var favoriteTripCity: String?
+    /// A good photo from the favorite destination for the share image: a real photo (no
+    /// screenshot or video), favorites first, then the largest one.
+    public var favoriteTripCover: AssetID?
     /// First photo per country, for the "countries light up in order" animation.
     public var firstVisits: [String: Date] = [:]
     /// All trips, oldest first (main town or country of each trip).
@@ -96,6 +99,17 @@ public struct TravelAtlas: Hashable, Sendable {
         }
         .sorted { $0.start < $1.start }
         atlas.favoriteTripCity = tripCities.max { ($0.value, $1.key) < ($1.value, $0.key) }?.key
+        if let city = atlas.favoriteTripCity {
+            func rank(_ a: AssetSnapshot) -> (Int, Int, String) {
+                (a.isFavorite ? 1 : 0, a.pixelWidth * a.pixelHeight, a.id.rawValue)
+            }
+            atlas.favoriteTripCover = facts
+                .lazy
+                .filter { $0.tripID != nil && $0.place?.locality == city && $0.asset.kind == .image && !$0.asset.isScreenshotLike }
+                .map(\.asset)
+                .max { rank($0) < rank($1) }?
+                .id
+        }
         return atlas
     }
 }

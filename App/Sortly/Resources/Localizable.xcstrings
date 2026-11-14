@@ -1411,6 +1411,16 @@
         }
       }
     },
+    "Foto vom Lieblingsziel zeigen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show photo of favorite destination"
+          }
+        }
+      }
+    },
     "Fotos sortiert" : {
       "localizations" : {
         "en" : {
@@ -1697,6 +1707,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Empty folder"
+          }
+        }
+      }
+    },
+    "Lieblingsziel" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Favorite destination"
           }
         }
       }
@@ -2513,6 +2533,16 @@
         }
       }
     },
+    "Teilen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Share"
+          }
+        }
+      }
+    },
     "Teilweise fertig" : {
       "localizations" : {
         "en" : {
@@ -2719,6 +2749,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Existing album will be extended"
+          }
+        }
+      }
+    },
+    "Vorschau des Teilen-Bilds" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preview of the share image"
           }
         }
       }

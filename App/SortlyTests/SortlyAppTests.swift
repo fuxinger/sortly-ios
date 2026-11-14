@@ -104,6 +104,31 @@ struct AtlasRenderingTests {
         }
     }
 
+    /// Stand-in for a holiday photo (the simulator has no real library in tests):
+    /// evening sky, sea and a few houses on a hill.
+    static func sampleCover() -> UIImage {
+        UIGraphicsImageRenderer(size: CGSize(width: 1080, height: 720)).image { ctx in
+            let cg = ctx.cgContext
+            let space = CGColorSpaceCreateDeviceRGB()
+            let sky = CGGradient(colorsSpace: space, colors: [UIColor(red: 0.35, green: 0.55, blue: 0.85, alpha: 1).cgColor,
+                                                              UIColor(red: 1.0, green: 0.78, blue: 0.55, alpha: 1).cgColor] as CFArray, locations: [0, 1])!
+            cg.drawLinearGradient(sky, start: .zero, end: CGPoint(x: 0, y: 470), options: [])
+            UIColor(red: 1, green: 0.93, blue: 0.75, alpha: 1).setFill()
+            cg.fillEllipse(in: CGRect(x: 700, y: 330, width: 120, height: 120))
+            let sea = CGGradient(colorsSpace: space, colors: [UIColor(red: 0.16, green: 0.42, blue: 0.62, alpha: 1).cgColor,
+                                                              UIColor(red: 0.05, green: 0.22, blue: 0.38, alpha: 1).cgColor] as CFArray, locations: [0, 1])!
+            cg.saveGState(); cg.clip(to: CGRect(x: 0, y: 470, width: 1080, height: 250))
+            cg.drawLinearGradient(sea, start: CGPoint(x: 0, y: 470), end: CGPoint(x: 0, y: 720), options: []); cg.restoreGState()
+            UIColor(red: 0.42, green: 0.36, blue: 0.28, alpha: 1).setFill()
+            let hill = UIBezierPath()
+            hill.move(to: CGPoint(x: 0, y: 520)); hill.addQuadCurve(to: CGPoint(x: 520, y: 520), controlPoint: CGPoint(x: 230, y: 300))
+            hill.addLine(to: CGPoint(x: 520, y: 720)); hill.addLine(to: CGPoint(x: 0, y: 720)); hill.close(); hill.fill()
+            let houses: [(CGFloat, CGFloat, UIColor)] = [(90, 420, .init(red: 0.95, green: 0.85, blue: 0.70, alpha: 1)), (170, 395, .init(red: 0.93, green: 0.62, blue: 0.42, alpha: 1)),
+                                                         (250, 385, .init(red: 0.98, green: 0.92, blue: 0.80, alpha: 1)), (330, 400, .init(red: 0.86, green: 0.55, blue: 0.40, alpha: 1))]
+            for (x, y, color) in houses { color.setFill(); cg.fill(CGRect(x: x, y: y, width: 64, height: 70)) }
+        }
+    }
+
     /// Renders the share card and the atlas screen and prints them as JPEG (base64) into
     /// the CI log, so the design can be reviewed without a Mac.
     @Test func renderPreviews() async throws {
@@ -111,22 +136,26 @@ struct AtlasRenderingTests {
         #expect(outlines.count > 200)
         let atlas = Self.sampleAtlas()
 
-        let card = ImageRenderer(content: ShareCard(atlas: atlas, sortedPhotos: 12_480, outlines: outlines))
-        card.scale = 1
-        let cardImage = try #require(card.uiImage)
-        #expect(cardImage.size == CGSize(width: 720, height: 1280))
-        Self.emit("sharecard", cardImage.jpegData(compressionQuality: 0.8)!)
+        for (name, cover) in [("sharecard", Self.sampleCover()), ("sharecard-nophoto", nil)] as [(String, UIImage?)] {
+            let card = ImageRenderer(content: ShareCard(atlas: atlas, sortedPhotos: 12_480, outlines: outlines, cover: cover))
+            card.scale = 1
+            let cardImage = try #require(card.uiImage)
+            #expect(cardImage.size == CGSize(width: 720, height: 1280))
+            Self.emit(name, cardImage.jpegData(compressionQuality: 0.8)!)
+        }
 
-        let screen = ImageRenderer(content:
-            AtlasContent(atlas: atlas, outlines: outlines, revealed: 14)
-                .padding(16)
-                .frame(width: 393)
-                .background(AtlasStyle.background)
-                .environment(\.colorScheme, .dark)
-        )
-        screen.scale = 2
-        let screenImage = try #require(screen.uiImage)
-        Self.emit("atlas", screenImage.jpegData(compressionQuality: 0.7)!)
+        for scheme in [ColorScheme.light, .dark] {
+            let screen = ImageRenderer(content:
+                AtlasContent(atlas: atlas, outlines: outlines, revealed: 14)
+                    .padding(16)
+                    .frame(width: 393)
+                    .background(Theme.background)
+                    .environment(\.colorScheme, scheme)
+            )
+            screen.scale = 2
+            let screenImage = try #require(screen.uiImage)
+            Self.emit(scheme == .light ? "atlas" : "atlas-dark", screenImage.jpegData(compressionQuality: 0.7)!)
+        }
     }
 }
 

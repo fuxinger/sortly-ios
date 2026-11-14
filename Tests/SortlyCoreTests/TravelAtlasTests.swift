@@ -38,6 +38,27 @@ struct TravelAtlasTests {
         #expect(atlas.trips.first?.days == 6)
         #expect(TravelAtlas.flag("X") == "")
     }
+
+    @Test func coverPrefersFavoritePhotoFromFavoriteCity() {
+        let rome = SortlyID("trip-rome")
+        var facts: [AssetFacts] = []
+        for i in 0..<6 {
+            var f = fact(i, country: "IT", city: "Rom", day: 3, trip: rome)
+            f.asset.pixelWidth = 4000; f.asset.pixelHeight = 3000
+            facts.append(f)
+        }
+        var big = fact(10, country: "IT", city: "Rom", day: 4, trip: rome)
+        big.asset.subtypes = [.screenshot]; big.asset.pixelWidth = 9000; big.asset.pixelHeight = 9000
+        var video = fact(11, country: "IT", city: "Rom", day: 4, trip: rome)
+        video.asset.kind = .video; video.asset.pixelWidth = 8000; video.asset.pixelHeight = 8000
+        var favorite = fact(12, country: "IT", city: "Rom", day: 5, trip: rome)
+        favorite.asset.isFavorite = true; favorite.asset.pixelWidth = 1000; favorite.asset.pixelHeight = 800
+        facts += [big, video, favorite]
+        #expect(TravelAtlas.compute(facts: facts).favoriteTripCover == AssetID("a12"))
+        facts.removeLast()
+        let cover = TravelAtlas.compute(facts: facts).favoriteTripCover
+        #expect(cover != AssetID("a10") && cover != AssetID("a11") && cover != nil)
+    }
 }
 
 @Suite("Photo story facts")
