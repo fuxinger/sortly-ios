@@ -376,13 +376,18 @@ struct ProposalDetailView: View {
         }
     }
 
+    /// Photos still missing in the album the user chose (not necessarily Albumist's first candidate).
+    private func missingPhotos(in albumID: CollectionID) -> Int? {
+        guard let match else { return nil }
+        let candidate = ([match.best].compactMap { $0 } + match.alternatives).first { $0.albumID == albumID }
+        return candidate.map { proposal.assetIDs.count - $0.metrics.intersection }
+    }
+
     private var primaryTitle: LocalizedStringKey {
         switch recommended {
         case .keepExisting: "Album so lassen"
         case .extendExisting(let id):
-            // The album the user chose, which need not be Albumist's first candidate.
-            let candidate = match.flatMap { m in ([m.best].compactMap { $0 } + m.alternatives).first { $0.albumID == id } }
-            if let missing = candidate.map({ proposal.assetIDs.count - $0.metrics.intersection }), missing > 0 {
+            if let missing = missingPhotos(in: id), missing > 0 {
                 "\(missing) Fotos ergänzen"
             } else {
                 "Album ergänzen"
