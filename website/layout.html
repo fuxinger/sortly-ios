@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="%LANG%">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>%TITLE% – {{APP_NAME}}</title>
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#0a6e7a">
+<link rel="alternate" hreflang="%OTHER_LANG%" href="%OTHER_HREF%">
+<link rel="stylesheet" href="../assets/style.css">
+<link rel="icon" href="../assets/icon.svg" type="image/svg+xml">
+</head>
+<body>
+<header class="top">
+  <div class="wrap top-inner">
+    <a class="brand" href="index.html"><img src="../assets/icon.svg" alt="" width="28" height="28">{{APP_NAME}}</a>
+    <nav>
+%NAV%
+      <a class="lang" href="%OTHER_HREF%" hreflang="%OTHER_LANG%" lang="%OTHER_LANG%">%OTHER_LABEL%</a>
+    </nav>
+  </div>
+</header>
+<main class="wrap">
+%BODY%
+</main>
+<footer class="wrap foot">
+  <p>© 2026 {{OWNER_NAME}} · %NAV%</p>
+</footer>
+</body>
+</html>
