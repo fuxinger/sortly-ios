@@ -43,8 +43,10 @@ enum SmartAssistant {
     static func travelStory(facts: [String]) async -> String? {
         #if canImport(FoundationModels)
         guard isAvailable, !facts.isEmpty else { return nil }
+        // The story follows the app's language (German or English); the facts themselves are German.
+        let language = Bundle.main.preferredLocalizations.first == "de" ? "auf Deutsch" : "auf Englisch"
         let session = LanguageModelSession(instructions: """
-        Du schreibst eine kurze, warme Geschichte über die Fotos eines Menschen in der Du-Form auf Deutsch, drei bis vier Sätze.
+        Du schreibst eine kurze, warme Geschichte über die Fotos eines Menschen in der Du-Form \(language), drei bis vier Sätze.
         Verwende ausschließlich die gegebenen Fakten. Erfinde keine Orte, Personen, Erlebnisse oder Zahlen.
         Keine Aufzählung, keine Überschrift, keine Emojis.
         """)

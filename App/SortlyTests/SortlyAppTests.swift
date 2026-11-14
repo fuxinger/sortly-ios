@@ -129,3 +129,25 @@ struct AtlasRenderingTests {
         Self.emit("atlas", screenImage.jpegData(compressionQuality: 0.7)!)
     }
 }
+
+@Suite("English localization")
+struct LocalizationTests {
+    private var english: Bundle? {
+        Bundle.main.path(forResource: "en", ofType: "lproj").flatMap(Bundle.init(path:))
+    }
+
+    @Test func appShipsEnglish() throws {
+        let bundle = try #require(english, "en.lproj missing; localizations: \(Bundle.main.localizations)")
+        #expect(bundle.localizedString(forKey: "Abbrechen", value: nil, table: nil) == "Cancel")
+        #expect(bundle.localizedString(forKey: "Deine Fotos, endlich sortiert.", value: nil, table: nil) == "Your photos, finally sorted.")
+        let format = bundle.localizedString(forKey: "%lld Fotos", value: nil, table: nil)
+        #expect(String.localizedStringWithFormat(format, 1) == "1 photo")
+        #expect(String.localizedStringWithFormat(format, 3) == "3 photos")
+        let twoArgs = bundle.localizedString(forKey: "%@ von %@", value: nil, table: nil)
+        #expect(String(format: twoArgs, "3", "7") == "3 of 7")
+    }
+
+    @Test func germanStaysSource() {
+        #expect(Bundle.main.developmentLocalization == "de")
+    }
+}

@@ -1,0 +1,30 @@
+{
+  "sourceLanguage" : "de",
+  "strings" : {
+    "Neue Fotos sortieren mit ${applicationName}" : {
+      "localizations" : {
+        "de" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Neue Fotos sortieren mit ${applicationName}",
+              "Fotos mit ${applicationName} sortieren",
+              "${applicationName} neue Fotos"
+            ]
+          }
+        },
+        "en" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Sort new photos with ${applicationName}",
+              "Sort photos with ${applicationName}",
+              "${applicationName} new photos"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}
