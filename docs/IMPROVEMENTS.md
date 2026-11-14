@@ -32,6 +32,9 @@ Quellen: **E1** Expertenrunde 14.11.2026 (Tempo, Oberfläche, Technik, Produkt) 
 | ✅ | UI-Test: Tab-Leiste schrumpfte beim Scrollen und versteckte die Tabs; fehlende Schritte machen jetzt ein Bildschirmfoto. | S | T 14.11. |
 | ✅ | Rückgängig fragte iOS für jedes Album einzeln „Albumist darf Album löschen?“ (37 Fragen bei 37 Alben). Alle Alben und Ordner gehen jetzt in einer Anfrage weg: eine Frage. Ordner nur, wenn alles darin mitgeht. | M | T 14.11. |
 | ✅ | Menü bei größter Schrift schnitt „Nicht sortiert“ ab. Eigenes Menü-Etikett, das umbricht. | S | T 14.11. |
+| ✅ | Land Italien zeigte „Mehrere passende Alben“ mit den eben angelegten Reisen Rom und Florenz und wollte Florenz-Fotos ins Rom-Album legen. Alben anderer Vorschläge und kleinere Alben mit anderem Namen werden bei Ländern nicht mehr ergänzt. | M | Fuchs 14.11. |
+| ✅ | „Mehrere passende Alben“ hatte einen ausgegrauten Knopf „Bitte unter „Anpassen“ wählen“. Jetzt aktiver Knopf „Album auswählen“, die Erklärung nennt jedes Album und verspricht nichts, die Wahl wird angezeigt. | S | Fuchs 14.11. |
+| ✅ | Mit nur einem freigegebenen Foto zeigte Albumist trotzdem viele Vorschläge (die Beispiel-Mediathek: iOS gibt selbst gespeicherte Fotos frei). Übersicht zeigt bei eingeschränktem Zugriff jetzt, wie viele Fotos Albumist sieht, mit „Auswahl ändern“ und „Alle Fotos erlauben“. | S | Fuchs 14.11. |
 | 💡 | Bedienungshilfen-Prüfung meldet zu wenig Kontrast bei den großen Glas-Knöpfen. Gemessen: Weiß auf Petrol 6:1, also bestanden; vermutlich misst die Prüfung den Glas-Effekt mit. Auf echtem Gerät nachprüfen. | S | T 14.11. |
 
 ## Aus dem Bedienungstest (B)

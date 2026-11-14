@@ -193,3 +193,80 @@ struct ManagedAlbumTests {
         #expect(OverrideSet(r.newOverrides).mustNotRecreate(source))
     }
 }
+
+/// Fuchs, 14.11.: the country Italien showed "Mehrere passende Alben" for the trip albums
+/// Rom and Florenz that Albumist had just made, and offered to add Florence photos to Rom.
+@Suite("Place collections never grow smaller albums")
+struct PlacePartMatchingTests {
+    let matcher = AlbumMatcher()
+    let rome = ids("rom", 0..<20), florence = ids("flo", 0..<11)
+
+    func trip(_ id: String, _ assets: Set<AssetID>, _ title: String) -> AlbumProposal {
+        AlbumProposal(id: SortlyID(id), kind: .trip, title: title, assetIDs: assets)
+    }
+
+    func italy(_ assets: Set<AssetID>) -> AlbumProposal {
+        AlbumProposal(id: SortlyID("country-it"), kind: .placeCollection(.country), title: "Italien", folderPath: ["Länder"], assetIDs: assets)
+    }
+
+    @Test func countryIsNotMatchedWithAlbumistsTripAlbums() throws {
+        let trips = [trip("t-rom", rome, "Rom · 10.05.–14.05.2024"), trip("t-flo", florence, "Florenz · 03.09.–05.09.2022")]
+        let country = italy(rome.union(florence))
+        let inventory = CollectionInventory([
+            CollectionSnapshot(id: "a-rom", title: "Rom · 10.05.–14.05.2024", assetIDs: rome),
+            CollectionSnapshot(id: "a-flo", title: "Florenz · 03.09.–05.09.2022", assetIDs: florence),
+        ])
+        let results = matcher.match(trips + [country], against: inventory,
+                                    assignments: [SortlyID("t-rom"): "a-rom", SortlyID("t-flo"): "a-flo"])
+        let result = try #require(results[country.id])
+        #expect(result.status == .newAlbumRequired)
+        #expect(result.best == nil)
+        // The trip albums are not even offered: they belong to their trips.
+        #expect(result.alternatives.isEmpty)
+        #expect(ProposalDecision.recommended(for: country, match: result) == .createNew(title: nil, folderPath: nil))
+        #expect(results[SortlyID("t-rom")]?.status == .alreadyComplete)
+        #expect(results[SortlyID("t-flo")]?.status == .alreadyComplete)
+    }
+
+    @Test func countryDoesNotGrowTheUsersCityAlbum() throws {
+        let country = italy(rome.union(florence))
+        let inventory = CollectionInventory([
+            CollectionSnapshot(id: "u-rom", title: "Rom 2024", assetIDs: rome),
+            CollectionSnapshot(id: "u-flo", title: "Florenz", assetIDs: florence),
+        ])
+        let result = try #require(matcher.match([country], against: inventory)[country.id])
+        #expect(result.status == .newAlbumRequired)
+        // The user may still choose one of them under "Anpassen".
+        let offered = Set(result.alternatives.map(\.albumID))
+        #expect(offered == ["u-rom", "u-flo"])
+    }
+
+    @Test func anAlbumNamedAfterThePlaceIsStillExtended() throws {
+        let country = italy(rome.union(florence))
+        let album = CollectionSnapshot(id: "u-it", title: "Italien 2024", assetIDs: rome)
+        let result = try #require(matcher.match([country], against: CollectionInventory([album]))[country.id])
+        #expect(result.status == .extendable)
+        #expect(result.best?.albumID == "u-it")
+    }
+
+    @Test func aCountryVisitedOnOneTripIsCompleteInThatTripAlbum() throws {
+        let trips = [trip("t-rom", rome, "Rom · 10.05.–14.05.2024")]
+        let country = italy(rome)
+        let inventory = CollectionInventory([CollectionSnapshot(id: "a-rom", title: "Rom · 10.05.–14.05.2024", assetIDs: rome)])
+        let result = try #require(matcher.match(trips + [country], against: inventory, assignments: [SortlyID("t-rom"): "a-rom"])[country.id])
+        #expect(result.status == .alreadyComplete)
+    }
+
+    @Test func severalAlbumsDoNotPromiseToAddPhotos() throws {
+        let p = AlbumProposal(id: SortlyID("p"), kind: .trip, title: "Rom", assetIDs: ids("t", 0..<100))
+        let inventory = CollectionInventory([
+            CollectionSnapshot(id: "a", title: "Rom 1", assetIDs: ids("t", 0..<60)),
+            CollectionSnapshot(id: "b", title: "Rom 2", assetIDs: ids("t", 40..<100)),
+        ])
+        let result = try #require(matcher.match([p], against: inventory)[p.id])
+        #expect(result.status == .multipleMatches)
+        let promises = result.reasons.filter { if case .missingItems = $0 { true } else { false } }
+        #expect(promises.isEmpty)
+        #expect(result.reasons.last == .severalAlbumsMatch(count: 2))
+    }
+}

@@ -811,16 +811,6 @@
         }
       }
     },
-    "%lld vorhandene Alben passen. Bitte wähle eines aus." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld existing albums match. Please choose one."
-          }
-        }
-      }
-    },
     "%lld Vorschläge prüfen" : {
       "localizations" : {
         "en" : {
@@ -1367,16 +1357,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Please review"
-          }
-        }
-      }
-    },
-    "Bitte unter „Anpassen“ wählen" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Please choose under “Adjust”"
           }
         }
       }
@@ -5549,6 +5529,86 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Albums for the countries where you took photos. Cities if you like."
+          }
+        }
+      }
+    },
+    "%lld Alben passen ähnlich gut. Albumist ergänzt erst, wenn du eines ausgewählt hast." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld albums fit about equally well. Albumist adds nothing until you choose one."
+          }
+        }
+      }
+    },
+    "Album auswählen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose album"
+          }
+        }
+      }
+    },
+    "Deine Wahl: „%@“ ergänzen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your choice: add to “%@”"
+          }
+        }
+      }
+    },
+    "Deine Wahl: neues Album" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your choice: new album"
+          }
+        }
+      }
+    },
+    "Albumist sieht nur die %lld Fotos, die du freigegeben hast. Für Alben aus deiner ganzen Mediathek braucht Albumist vollen Zugriff." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Albumist only sees the %lld photos you shared. To make albums from your whole library, Albumist needs full access."
+          }
+        }
+      }
+    },
+    "Die Beispielfotos zählen mit: Fotos, die eine App selbst gespeichert hat, gibt iOS automatisch für sie frei." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The sample photos count too: iOS automatically shares photos an app saved itself with that app."
+          }
+        }
+      }
+    },
+    "Auswahl ändern" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Change selection"
+          }
+        }
+      }
+    },
+    "Alle Fotos erlauben" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Allow all photos"
           }
         }
       }

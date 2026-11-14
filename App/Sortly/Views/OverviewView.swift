@@ -1,3 +1,4 @@
+import Photos
 import SwiftUI
 import SortlyCore
 import SortlyEngine
@@ -18,6 +19,7 @@ struct OverviewView: View {
                 if let interrupted = model.interruptedPlan {
                     InterruptedPlanCard(plan: interrupted)
                 }
+                if model.access == .limited { LimitedAccessCard() }
                 statusCard
                 analysisCard
                 if model.history.isEmpty && model.acceptedProposals.isEmpty {
@@ -341,6 +343,64 @@ struct StarterSetCard: View {
                 }
                 .buttonStyle(PrimaryButtonStyle())
             }
+        }
+    }
+}
+
+/// Limited photo access: says how many photos Albumist sees, so nobody wonders where the
+/// suggestions come from, and lets the user change the selection or allow everything.
+struct LimitedAccessCard: View {
+    @Environment(AppModel.self) private var model
+    @Environment(\.openURL) private var openURL
+    @Environment(\.scenePhase) private var scenePhase
+
+    var body: some View {
+        Card {
+            Label("Nur ausgewählte Fotos", systemImage: "photo.badge.checkmark").font(.headline)
+            Text("Albumist sieht nur die \(model.progress.total) Fotos, die du freigegeben hast. Für Alben aus deiner ganzen Mediathek braucht Albumist vollen Zugriff.")
+                .font(.subheadline).foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+            #if targetEnvironment(simulator)
+            if DemoLibrary.shared.isDone {
+                Text("Die Beispielfotos zählen mit: Fotos, die eine App selbst gespeichert hat, gibt iOS automatisch für sie frei.")
+                    .font(.footnote).foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            #endif
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: Theme.Spacing.s) { buttons }
+                VStack(spacing: Theme.Spacing.s) { buttons }
+            }
+        }
+        .onChange(of: scenePhase) { _, phase in
+            // Back from the Settings app: with full access the whole library is analysed.
+            guard phase == .active else { return }
+            Task {
+                let before = model.access
+                await model.refreshAccess()
+                if model.access != before { model.startAnalysis(userInitiated: true) }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var buttons: some View {
+        Button("Auswahl ändern") { presentPicker() }
+            .buttonStyle(SecondaryButtonStyle())
+        if let url = URL(string: UIApplication.openSettingsURLString) {
+            Button("Alle Fotos erlauben") { openURL(url) }
+                .buttonStyle(SecondaryButtonStyle())
+        }
+    }
+
+    private func presentPicker() {
+        let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+        guard var top = scenes.compactMap({ $0.keyWindow?.rootViewController }).first else { return }
+        while let presented = top.presentedViewController { top = presented }
+        let model = model
+        // @Sendable: PhotoKit may call this from its own queue.
+        PHPhotoLibrary.shared().presentLimitedLibraryPicker(from: top) { @Sendable _ in
+            Task { @MainActor in model.startAnalysis(userInitiated: true) }
         }
     }
 }

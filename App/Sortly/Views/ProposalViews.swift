@@ -282,7 +282,12 @@ struct ProposalDetailView: View {
                 ForEach(Array(match.reasons.enumerated()), id: \.offset) { _, reason in
                     Text(ReasonText.text(reason)).font(.subheadline).foregroundStyle(.secondary)
                 }
-                if let best = match.best, best.isEditable, match.status != .newAlbumRequired {
+                if let choice = chosenAlbumText {
+                    Label(choice, systemImage: "hand.point.up.left")
+                        .font(.subheadline.weight(.semibold))
+                }
+                // "Passt nicht" names one album; with several albums the choice happens under "Album auswählen".
+                if let best = match.best, best.isEditable, ![.newAlbumRequired, .multipleMatches].contains(match.status) {
                     Button("„\(best.albumTitle)“ passt nicht") { rejectingMatch = true }
                         .font(.subheadline.weight(.semibold))
                         .frame(minHeight: 44)
@@ -298,10 +303,34 @@ struct ProposalDetailView: View {
         }
     }
 
+    /// Several albums fit (or none clearly): the user picks one, Albumist does not guess.
+    private var needsChoice: Bool {
+        if case .undecided = recommended { return !proposal.requiresUserName }
+        return false
+    }
+
+    /// The user's pick from "Anpassen", shown where Albumist could not decide alone.
+    private var chosenAlbumText: String? {
+        guard let match, [.multipleMatches, .ambiguous].contains(match.status) else { return nil }
+        switch model.decision(for: proposal) {
+        case .extendExisting(let id):
+            let title = model.inventory[id]?.title ?? ""
+            return String(localized: "Deine Wahl: „\(title)“ ergänzen")
+        case .createNew:
+            return String(localized: "Deine Wahl: neues Album")
+        default:
+            return nil
+        }
+    }
+
     private var actions: some View {
         VStack(spacing: Theme.Spacing.s) {
             Button {
-                Task { await applyNow() }
+                if needsChoice {
+                    showAdjust = true
+                } else {
+                    Task { await applyNow() }
+                }
             } label: {
                 if preparing {
                     ProgressView().frame(maxWidth: .infinity)
@@ -310,7 +339,7 @@ struct ProposalDetailView: View {
                 }
             }
             .buttonStyle(PrimaryButtonStyle())
-            .disabled(!recommended.isAccepted || preparing)
+            .disabled((!recommended.isAccepted && !needsChoice) || preparing)
 
             HStack(spacing: Theme.Spacing.s) {
                 Button("Anpassen") { showAdjust = true }.buttonStyle(SecondaryButtonStyle())
@@ -350,14 +379,16 @@ struct ProposalDetailView: View {
     private var primaryTitle: LocalizedStringKey {
         switch recommended {
         case .keepExisting: "Album so lassen"
-        case .extendExisting:
-            if let missing = match?.best.map({ proposal.assetIDs.count - $0.metrics.intersection }), missing > 0 {
+        case .extendExisting(let id):
+            // The album the user chose, which need not be Albumist's first candidate.
+            let candidate = match.flatMap { m in ([m.best].compactMap { $0 } + m.alternatives).first { $0.albumID == id } }
+            if let missing = candidate.map({ proposal.assetIDs.count - $0.metrics.intersection }), missing > 0 {
                 "\(missing) Fotos ergänzen"
             } else {
                 "Album ergänzen"
             }
         case .createNew: "Album anlegen"
-        case .undecided: proposal.requiresUserName ? "Erst einen Namen eingeben" : "Bitte unter „Anpassen“ wählen"
+        case .undecided: proposal.requiresUserName ? "Erst einen Namen eingeben" : "Album auswählen"
         default: "Übernehmen"
         }
     }

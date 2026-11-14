@@ -191,7 +191,7 @@ enum ReasonText {
         case .albumNotEditable(let album):
             return String(localized: "„\(album)“ kann nicht bearbeitet werden (z. B. geteiltes Album).")
         case .severalAlbumsMatch(let count):
-            return String(localized: "\(count) vorhandene Alben passen. Bitte wähle eines aus.")
+            return String(localized: "\(count) Alben passen ähnlich gut. Albumist ergänzt erst, wenn du eines ausgewählt hast.")
         case .weakOverlapOnly(let album, let shared):
             return String(localized: "„\(album)“ hat nur \(shared) gemeinsame Aufnahmen.")
         case .noExistingAlbum:

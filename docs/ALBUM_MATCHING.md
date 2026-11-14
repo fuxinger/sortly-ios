@@ -47,3 +47,21 @@ weniger als 0,15 Punkte auseinander, gilt „mehrere passende Alben“.
 ## Sonderfälle
 Smart-Alben (Favoriten, Screenshots …) werden nicht als Ziel verwendet. Geteilte und
 synchronisierte Alben sind nur lesbar. Ausgeblendete Fotos zählen nur mit Zustimmung.
+
+### Teil-Alben bei Ländern und Orten
+Ein kleineres Album mit anderem Namen ist bei einer Orts-Sammlung ein Teil, nicht das
+Album: „Rom · 2024“ enthält nur Italien-Fotos, ist aber Rom. Albumist schlägt nie vor, es
+mit Fotos aus ganz Italien zu ergänzen. Ergänzt wird nur ein Album, das ein Wort mit dem
+Ort teilt („Italien 2019“, „Urlaub in Italien“). Ein Album, das schon den ganzen Ort
+enthält, zählt weiter als vollständig. Unter „Anpassen“ kann man ein Teil-Album trotzdem
+wählen.
+
+### Alben anderer Vorschläge
+Ein Album, das Albumist für einen anderen Vorschlag angelegt oder ergänzt hat (laut den
+Aufzeichnungen zu verwalteten Alben), wird nie mit fremden Fotos ergänzt und nicht
+angeboten. Es zählt nur, wenn es schon genau diesen Vorschlag enthält (ein Land, das man
+auf einer einzigen Reise besucht hat).
+
+### Mehrere passende Alben
+Albumist ergänzt dann nichts von sich aus. Die Erklärung nennt jedes passende Album; der
+Hauptknopf heißt „Album auswählen“ und öffnet die Auswahl.
