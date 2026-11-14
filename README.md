@@ -9,7 +9,7 @@ Originalfotos werden nie gelöscht, verändert oder kopiert.
 
 ## Voraussetzungen
 - iOS/iPadOS 26 oder neuer (getestet im Simulator, siehe `docs/TEST_PLAN.md`)
-- Zum Bauen: Xcode 26 auf macOS und [XcodeGen](https://github.com/yonaskolb/XcodeGen)
+- Zum Bauen: Xcode 27 auf macOS und [XcodeGen](https://github.com/yonaskolb/XcodeGen)
 - Für die plattformunabhängige Logik reicht Swift 6.2 (auch Linux)
 
 ## Installation und Build

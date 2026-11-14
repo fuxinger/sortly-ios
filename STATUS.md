@@ -6,8 +6,8 @@ Arbeitskopie im Projektordner: /mnt/project-files/sortly/ (Sync: /home/user/scri
 
 ## Rahmenbedingungen
 - Fuchs hat keinen Mac und kein Apple-Developer-Konto. iOS-Builds und Tests laufen über
-  GitHub Actions (macos-26), unsigniert (`CODE_SIGNING_ALLOWED=NO`), nur im Simulator.
-- Mindestens iOS 26, muss auch auf iOS 27 laufen.
+  GitHub Actions (Image `xcode-27`: macOS 27, Xcode 27, iOS-27-Simulator), unsigniert (`CODE_SIGNING_ALLOWED=NO`), nur im Simulator.
+- Gebaut und getestet für das aktuelle iOS 27; Mindestversion bleibt iOS 26.
 - Linux-Toolchain im Container: `export PATH=/home/user/toolchain/swift-6.2.3-RELEASE-ubuntu24.04/usr/bin:$PATH`, Kern-Tests mit `swift test`.
 - Selbständig weiterarbeiten, keine Rückfragen. Antworten auf Deutsch, einfache Sprache.
 

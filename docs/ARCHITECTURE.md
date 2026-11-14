@@ -45,7 +45,7 @@ setzt beim nächsten Lauf fort. Ergebnisse tragen eine Versionsnummer, damit ver
 Analysen gezielt neu laufen.
 
 ## Framework-Entscheidungen
-SwiftUI (iOS 26, Liquid Glass über Systemleisten), PhotoKit, Vision (neue Swift-API:
+SwiftUI (iOS 27, Mindestversion 26; Liquid Glass über Systemleisten), PhotoKit, Vision (neue Swift-API:
 `ClassifyImageRequest`, `RecognizeTextRequest`, `DetectBarcodesRequest`), CoreLocation
 (`CLGeocoder`), BackgroundTasks (`BGProcessingTask` nachts beim Laden), StoreKit 2,
 App Intents. Keine Drittanbieter-Abhängigkeiten.

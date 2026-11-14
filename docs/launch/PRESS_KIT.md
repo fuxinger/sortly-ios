@@ -5,7 +5,7 @@
 
 [Ort], [Datum]. Die meisten iPhone-Nutzer haben Tausende Fotos, aber kaum Alben. Die neue App Albumist erkennt Reisen, Orte, Screenshots und Dokumente und schlägt daraus Alben mit klaren Namen vor – etwa „Toskana 03.08.–14.08.2024“. Die gesamte Analyse läuft auf dem Gerät; Fotos verlassen das iPhone nie. Vorhandene Alben werden erkannt und ergänzt statt doppelt angelegt, jede Änderung wird vorher gezeigt und lässt sich rückgängig machen. Als Extra zeigt der „Reise-Atlas“ alle Länder, in denen man fotografiert hat, als leuchtende Weltkarte zum Teilen.
 
-Albumist ist ab [Datum] im App Store erhältlich (iOS 26). Die ersten 10 Alben sind kostenlos, danach einmalig 4,99 € (zum Start eine Woche 2,99 €) – ohne Abo.
+Albumist ist ab [Datum] im App Store erhältlich (ab iOS 26, optimiert für iOS 27). Die ersten 10 Alben sind kostenlos, danach einmalig 4,99 € (zum Start eine Woche 2,99 €) – ohne Abo.
 
 **Über den Entwickler:** [2–3 Sätze von dir]
 

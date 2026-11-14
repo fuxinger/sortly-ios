@@ -8,7 +8,7 @@ gute Produktseite) und wie Albumist dasteht.
 
 | Bereich | Stand |
 |---|---|
-| iOS-26-Design | Systemleisten in Liquid Glass, Tab-Leiste schrumpft beim Scrollen, Suche als eigener Tab, Glasknöpfe (`glassProminent`/`glass`), iPad als Seitenleiste |
+| iOS-27-Design | Systemleisten in Liquid Glass, Tab-Leiste schrumpft beim Scrollen, Suche als eigener Tab, Glasknöpfe (`glassProminent`/`glass`), iPad als Seitenleiste |
 | Apple-Technik | SwiftUI, Vision (neue Swift-API), Foundation Models auf dem Gerät (Foto-Geschichte, Namen, Suche in Sätzen), App Intents, Spotlight (`IndexedEntity`), BackgroundTasks mit Fortschritt auf dem Sperrbildschirm, StoreKit 2 |
 | Siri und Kurzbefehle | „Neue Fotos sortieren“, „Fotos aus Italien in Albumist“, „Offene Vorschläge“, Vorschlag öffnen |
 | Spotlight | Länder („Italien, 120 Fotos“) und offene Vorschläge, Antippen öffnet sie |

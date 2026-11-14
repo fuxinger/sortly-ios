@@ -28,7 +28,7 @@ Feste Versprechen an die Nutzer, die der Code nie brechen darf:
 4. Große Mediatheken (100.000+ Fotos, viel in iCloud) müssen funktionieren, ohne das Gerät
    zu überhitzen oder Datenvolumen zu verbrauchen.
 
-Rahmen: iOS 26 (muss auch unter iOS 27 laufen), Swift 6 mit strikter Nebenläufigkeitsprüfung,
+Rahmen: aktuelles iOS 27 mit Xcode 27 (Mindestversion iOS 26), Swift 6 mit strikter Nebenläufigkeitsprüfung,
 keine Fremdbibliotheken. Die Fachlogik liegt in einem Swift-Paket und läuft auch auf Linux.
 Es gibt 180+ automatische Tests (Swift Testing) und einen UI-Test im Simulator.
 

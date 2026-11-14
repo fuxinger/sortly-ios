@@ -9,6 +9,6 @@ Albumist turns years of unsorted photos into real Apple Photos albums – trips 
 **Warum jetzt / Geschichte des Entwicklers (persönlich ergänzen!):**
 [2–3 Sätze von dir: Wer bist du, warum hast du die App gebaut, z. B. „Meine eigene Mediathek mit 15.000 Fotos war ein Chaos …“]
 
-**Technik, die Apple interessiert:** iOS 26 Design (Liquid Glass), Foundation Models (on-device), Vision, App Intents/Kurzbefehle, BackgroundTasks, StoreKit 2, Dynamic Type, VoiceOver, Dunkelmodus, Datenschutz ohne erhobene Daten.
+**Technik, die Apple interessiert:** aktuelles iOS-27-Design (Liquid Glass), Foundation Models (on-device), Vision, App Intents/Kurzbefehle, BackgroundTasks, StoreKit 2, Dynamic Type, VoiceOver, Dunkelmodus, Datenschutz ohne erhobene Daten.
 
 **Passende Themen für Sammlungen:** Neujahr „Ordnung schaffen“, Sommerferien/Reisen, Datenschutz, Apps von Einzelentwicklern.
