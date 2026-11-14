@@ -28,7 +28,7 @@ Quellen: **E1** Expertenrunde 14.11.2026 (Tempo, Oberfläche, Technik, Produkt) 
 | Status | Punkt | Aufwand | Quelle |
 |---|---|---|---|
 | ✅ | Ortsnamen beim ersten Durchgang begrenzt nachschlagen (60), Rest nachts; Pause wirkt sofort. Erste Vorschläge bis zu einer Stunde früher. | S | E1 Tempo |
-| 💡 | Orte ohne Ergebnis merken, damit sie nicht jede Nacht erneut nachgeschlagen werden. | S | E1 Tempo |
+| ✅ | Orte ohne Ergebnis (See, Meer, Wildnis) werden gemerkt und nicht jede Nacht erneut nachgeschlagen. | S | E1 Tempo |
 | ✅ | „Nächste 50 Fotos“-Abfrage mit Lesezeichen statt Suche von vorn (17,7 s → 0,3 s bei 100.000 Fotos). | S | E1 Tempo |
 | ✅ | Beim Umsetzen nur das betroffene Album prüfen, nicht jedes Mal die ganze Albenliste (große Pläne: Minuten statt Viertelstunden). | M | E1 Tempo/Technik |
 | 💡 | Nach Analyse und Start nichts doppelt von der Platte lesen; Oberfläche sofort zeigen, Rest im Hintergrund. | M | E1 Tempo |

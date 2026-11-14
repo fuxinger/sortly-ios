@@ -177,8 +177,11 @@ public actor PlaceResolutionService {
                 switch await request(geocoder, representative) {
                 case .success(let components):
                     outcome.onlineRequests += 1
-                    online = components
-                    if let components { try await cache.cachePlace(components, cell: cell, resolvedAt: now()) }
+                    // "Nothing here" (open sea, a lake, wilderness) is remembered as an empty
+                    // answer, so the cell is not asked again every night.
+                    let answer = components ?? PlaceComponents()
+                    online = answer
+                    try await cache.cachePlace(answer, cell: cell, resolvedAt: now())
                 case .failure(.offline):
                     outcome.onlineRequests += 1
                     onlineDisabled = true
@@ -195,7 +198,8 @@ public actor PlaceResolutionService {
             for member in members {
                 let match = offlineMatch(member.coordinate, memo: &offlineCache)
                 guard let merged = merge(online: online, offline: match, at: member.coordinate) else {
-                    outcome.pendingOnline.insert(member.assetID)
+                    // An empty answer will not get better by asking again.
+                    if online != PlaceComponents() { outcome.pendingOnline.insert(member.assetID) }
                     continue
                 }
                 batch[member.assetID] = ResolvedPlace(components: merged.components, source: .gpsReverseGeocoded, resolvedAt: now(), precisionMeters: merged.townIsValid ? cellMeters : nil)

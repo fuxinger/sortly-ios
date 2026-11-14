@@ -60,6 +60,23 @@ struct PlaceResolutionTests {
         #expect(outcome.cacheHits >= 1)
     }
 
+    @Test func cellsWithoutResultAreRememberedToo() async throws {
+        let cache = MemoryPlaceCache()
+        let first = FakeGeocoder(answers: []) // e.g. a lake: the geocoder knows no town there
+        let collector = ResultCollector()
+        let outcome = try await service(level: .locality, geocoder: first, cache: cache)
+            .resolve(requests(Fixture.Places.rome, count: 10, prefix: "r")) { await collector.add($0) }
+        #expect(!first.calls.isEmpty)
+        #expect(outcome.pendingOnline.isEmpty)
+        let rome = await collector.places[AssetID("r-0")]
+        #expect(rome?.components.country == "Italien")
+        #expect(rome?.components.locality == nil)
+        let second = FakeGeocoder(answers: [])
+        _ = try await service(level: .locality, geocoder: second, cache: cache)
+            .resolve(requests(Fixture.Places.rome, count: 10, prefix: "x")) { _ in }
+        #expect(second.calls.isEmpty)
+    }
+
     @Test func bordersAreConfirmedOnline() async throws {
         let geocoder = FakeGeocoder()
         let collector = ResultCollector()
