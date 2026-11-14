@@ -337,10 +337,13 @@ struct InterruptedPlanCard: View {
                     .buttonStyle(PrimaryButtonStyle())
                 Button("Rückgängig machen") { confirmUndo = true }
                     .buttonStyle(SecondaryButtonStyle())
-                Button("So lassen") { Task { await model.keepInterruptedPlanAsIs() } }
-                    .font(.subheadline.weight(.semibold))
-                    .frame(maxWidth: .infinity, minHeight: 44)
-                    .accessibilityIdentifier("interrupted.keep")
+                Button { Task { await model.keepInterruptedPlanAsIs() } } label: {
+                    Text("So lassen")
+                        .font(.subheadline.weight(.semibold))
+                        .frame(maxWidth: .infinity, minHeight: 44)
+                        .contentShape(Rectangle())
+                }
+                .accessibilityIdentifier("interrupted.keep")
                 Text("Fortsetzen legt den Rest an. Rückgängig nimmt das Erledigte zurück. So lassen behält das Erledigte und lässt den Rest weg; es steht dann im Verlauf und lässt sich später noch zurücknehmen.")
                     .font(.footnote).foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)

@@ -3291,6 +3291,22 @@
         }
       }
     },
+    "Nur was beim letzten Umsetzen gefehlt hat. Schon Erledigtes bleibt, wie es ist, und wird nicht doppelt angelegt." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nur was beim letzten Umsetzen gefehlt hat. Schon Erledigtes bleibt, wie es ist, und wird nicht doppelt angelegt."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Only what was missing last time. What is already done stays as it is and is not created twice."
+          }
+        }
+      }
+    },
     "OK" : {
       "localizations" : {
         "en" : {

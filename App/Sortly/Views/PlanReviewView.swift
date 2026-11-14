@@ -81,6 +81,12 @@ struct PlanReviewView: View {
     private func planContent(_ plan: ChangePlan) -> some View {
         let summary = plan.summary
         Text("Das passiert jetzt").font(.title2.weight(.bold))
+        if plan.retries != nil {
+            // "Fehlendes erneut versuchen" (I16): say that this is not the whole plan again.
+            Text("Nur was beim letzten Umsetzen gefehlt hat. Schon Erledigtes bleibt, wie es ist, und wird nicht doppelt angelegt.")
+                .font(.subheadline).foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
         Card {
             if summary.newFolders > 0 { row("folder.badge.plus", "Neue Ordner", summary.newFolders) }
             row("rectangle.stack.badge.plus", "Neue Alben", summary.newAlbums)
@@ -428,14 +434,17 @@ struct PlanAlbumList: View {
                 Button {
                     withAnimation(.smooth(duration: 0.3)) { showAll.toggle() }
                 } label: {
-                    if showAll {
-                        Text("Weniger anzeigen")
-                    } else {
-                        Text("Alle \(albums.count) Alben anzeigen")
+                    Group {
+                        if showAll {
+                            Text("Weniger anzeigen")
+                        } else {
+                            Text("Alle \(albums.count) Alben anzeigen")
+                        }
                     }
+                    .font(.subheadline.weight(.semibold))
+                    .frame(minHeight: 44)
+                    .contentShape(Rectangle())
                 }
-                .font(.subheadline.weight(.semibold))
-                .frame(minHeight: 44)
             }
         }
     }

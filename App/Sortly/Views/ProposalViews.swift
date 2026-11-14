@@ -385,9 +385,12 @@ struct ProposalDetailView: View {
                 .buttonStyle(SecondaryButtonStyle())
             }
             if recommended.isAccepted && !recommended.isKeepExisting {
-                Button("Auswählen und später anlegen") { accept(); dismiss() }
-                    .font(.subheadline.weight(.semibold))
-                    .frame(minHeight: 44)
+                Button { accept(); dismiss() } label: {
+                    Text("Auswählen und später anlegen")
+                        .font(.subheadline.weight(.semibold))
+                        .frame(minHeight: 44)
+                        .contentShape(Rectangle())
+                }
             }
         }
         .padding(.top, Theme.Spacing.s)

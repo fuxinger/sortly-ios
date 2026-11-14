@@ -37,9 +37,12 @@
   Als Text teilbar. Englisch „Verschoben“ heißt jetzt „Moved“ (war „Postponed“).
 - Geführte Reparatur (I16): ein unterbrochenes Umsetzen bietet „Fortsetzen“, „Rückgängig machen“
   und „So lassen“; Fehler stehen im Änderungsbeleg in Klartext, mit „Fehlendes erneut versuchen“
-  (legt nur an, was fehlt). „Diagnose teilen“ in den Einstellungen und im Beleg: Zustände, Zahlen
-  und Fehlercodes, keine Fotos, Namen oder Orte.
+  (legt nur an, was fehlt; der Plan sagt das auch). Was du nach einer Unterbrechung so gelassen
+  hast, zählt im Beleg nicht als Fehler. „Diagnose teilen“ in den Einstellungen und im Beleg:
+  Zustände, Zahlen und Fehlercodes, keine Fotos, Namen oder Orte.
 ### Korrigiert
+- Textknöpfe „So lassen“, „Alle … Alben anzeigen“ und „Auswählen und später anlegen“
+  haben jetzt die volle Tippfläche von 44 Punkt (Barrierefreiheitsprüfung im Simulator).
 - Gegenprüfung 14.11.2026 (43 Befunde, `docs/review/AUDIT_2026-11-14.md`): Ausführungsjournal
   mit echten Änderungen, sicherer Wiederanlauf und Rückgängig, geschützte Löschungen, eine
   Ausführung zur Zeit, Abschluss in einer Transaktion, Reisen behalten ihre Identität, alte

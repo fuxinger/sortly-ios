@@ -683,6 +683,8 @@ final class SortlyFlowUITests: XCTestCase {
         let gone = waitGone(card, timeout: 30)
         print(gone ? "UI_STEP_OK interruption card gone after keep" : "UI_STEP_MISSING interruption card gone after keep")
         XCTAssertTrue(gone, "The interruption card stayed after \"So lassen\"")
+        sleep(2)
+        shot("50b-after-keep")
 
         // The kept plan is the newest history row; its receipt says what is missing.
         guard tap(app.buttons["Einstellungen"], "settings after keep") else { return }
