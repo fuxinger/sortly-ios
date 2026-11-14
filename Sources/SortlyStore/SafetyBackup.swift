@@ -17,6 +17,41 @@ public struct SafetyBackup: Codable, Sendable, Equatable {
         public var secondary: String?
         public var number: Double?
         public var payload: Data
+
+        public init(key: String, secondary: String? = nil, number: Double? = nil, payload: Data) {
+            self.key = key
+            self.secondary = secondary
+            self.number = number
+            self.payload = payload
+        }
+
+        // Payloads are JSON text: kept as text in the file (base64 would make it a third
+        // larger and hide the repetitions the compression finds). Other bytes stay base64.
+        enum CodingKeys: String, CodingKey { case key, secondary, number, json, payload }
+
+        public init(from decoder: any Decoder) throws {
+            let c = try decoder.container(keyedBy: CodingKeys.self)
+            key = try c.decode(String.self, forKey: .key)
+            secondary = try c.decodeIfPresent(String.self, forKey: .secondary)
+            number = try c.decodeIfPresent(Double.self, forKey: .number)
+            if let text = try c.decodeIfPresent(String.self, forKey: .json) {
+                payload = Data(text.utf8)
+            } else {
+                payload = try c.decode(Data.self, forKey: .payload)
+            }
+        }
+
+        public func encode(to encoder: any Encoder) throws {
+            var c = encoder.container(keyedBy: CodingKeys.self)
+            try c.encode(key, forKey: .key)
+            try c.encodeIfPresent(secondary, forKey: .secondary)
+            try c.encodeIfPresent(number, forKey: .number)
+            if let text = String(data: payload, encoding: .utf8) {
+                try c.encode(text, forKey: .json)
+            } else {
+                try c.encode(payload, forKey: .payload)
+            }
+        }
     }
 
     public var formatVersion: Int
@@ -57,7 +92,12 @@ public struct SafetyBackup: Codable, Sendable, Equatable {
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .deferredToDate
         encoder.outputFormatting = [.sortedKeys]
-        let data = try encoder.encode(self)
+        var data = try encoder.encode(self)
+        #if canImport(Darwin)
+        // Plans list photo identifiers again and again: compressed, a copy for a large library
+        // stays a few megabytes in the backup.
+        if let packed = try? (data as NSData).compressed(using: .lzfse) as Data { data = packed }
+        #endif
         try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
         // Atomic: a crash while writing leaves the previous copy, never half a file.
         try data.write(to: url, options: [.atomic])
@@ -67,7 +107,15 @@ public struct SafetyBackup: Codable, Sendable, Equatable {
         guard FileManager.default.fileExists(atPath: url.path) else { return nil }
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .deferredToDate
-        let backup = try decoder.decode(SafetyBackup.self, from: Data(contentsOf: url))
+        var data = try Data(contentsOf: url)
+        if data.first != UInt8(ascii: "{") {
+            #if canImport(Darwin)
+            data = try (data as NSData).decompressed(using: .lzfse) as Data
+            #else
+            throw CocoaError(.fileReadCorruptFile)
+            #endif
+        }
+        let backup = try decoder.decode(SafetyBackup.self, from: data)
         // A copy from a newer app version is left alone rather than half understood.
         return backup.formatVersion <= formatVersion ? backup : nil
     }

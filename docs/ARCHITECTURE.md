@@ -57,7 +57,8 @@ gespeichert; Vorschaubilder kommen jedes Mal frisch aus PhotoKit.
 
 Was nicht rekonstruierbar ist (Ausnahmen, Regeln, Einstellungen außer `analysis.*` und
 `execution.*`, verwaltete Alben, Pläne), kopiert `SafetyBackup` als rohe Zeilen in
-*Application Support/Albumist Backup/decisions.json*, die im Geräte-Backup liegt. Geschrieben
+*Application Support/Albumist Backup/decisions.json*, die im Geräte-Backup liegt (Nutzdaten als
+JSON-Text, auf Apple-Geräten mit LZFSE komprimiert, damit die Kopie auch bei großen Mediatheken klein bleibt). Geschrieben
 wird zwei Sekunden nach einer Entscheidung, nach jeder Analyse und beim Wechsel in den
 Hintergrund. Beim Start einer leeren Datenbank kommen die Entscheidungen sofort zurück, Alben und
 Verlauf erst, wenn die Mediathek passt (mindestens die Hälfte der verwalteten Alben existiert).

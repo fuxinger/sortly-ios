@@ -372,6 +372,15 @@ struct StoreTests {
         #expect(try await fresh.planHistory().count == 1)
     }
 
+    @Test func backupKeepsPayloadsAsTextAndReadsOldBase64Rows() throws {
+        let row = SafetyBackup.Row(key: "k", payload: Data(#"{"a":1}"#.utf8))
+        let encoded = String(decoding: try JSONEncoder().encode(row), as: UTF8.self)
+        #expect(encoded.contains(#""json":"{\"a\":1}""#))
+        #expect(try JSONDecoder().decode(SafetyBackup.Row.self, from: Data(encoded.utf8)) == row)
+        let binary = SafetyBackup.Row(key: "b", payload: Data([0xFF, 0xFE, 0x00]))
+        #expect(try JSONDecoder().decode(SafetyBackup.Row.self, from: JSONEncoder().encode(binary)) == binary)
+    }
+
     @Test func backupFromANewerAppIsLeftAlone() async throws {
         var backup = try await storeWithDecisions().0.safetyBackup()
         backup.formatVersion = SafetyBackup.formatVersion + 1
