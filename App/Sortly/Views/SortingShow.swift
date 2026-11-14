@@ -1,12 +1,14 @@
 import SwiftUI
 import SortlyCore
 
-/// "Fotos fliegen in Alben": while a plan runs, photos lift off a loose pile and fly in an arc
-/// into their album, one album after another, while a counter runs up.
+/// "Fotos fliegen in Alben": while a plan runs, photos lift off a loose pile and fly in one
+/// calm arc into their album, one album after another, while a counter runs up.
 ///
-/// The show is paced for the eye (about four seconds in total) but never runs ahead of the
-/// real work: an album only fills once its step has really finished. If the work is quicker,
-/// the show finishes on its own; a tap skips it. With Reduce Motion the albums cross-fade.
+/// The show follows the real work and never runs ahead of it: an album only fills once its
+/// step has really finished. With fast work it lasts about 2 s for one album and about 5–7 s
+/// for many; when the work is slower, it waits on the next album and photos fly for nearly
+/// every one. A backlog of finished albums is riffled through. "Überspringen" ends the show
+/// at once. With Reduce Motion only the current album is shown and cross-fades; nothing flies.
 struct SortingShow: View {
     struct Album: Identifiable, Equatable {
         /// Index of the album's last "add photos" step in the plan.
@@ -20,11 +22,12 @@ struct SortingShow: View {
 
     @Environment(AppModel.self) private var model
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.accessibilityVoiceOverEnabled) private var voiceOver
     @State private var current = 0
     @State private var landed: Set<Int> = []
-    @State private var counted = 0
+    /// Distinct photos sorted so far (a photo in two albums counts once, like the result card).
+    @State private var sorted: Set<AssetID> = []
     @State private var flights: [Flight] = []
-    @State private var skipping = false
     @State private var pop = false
     @State private var landings = 0
     @State private var width: CGFloat = 360
@@ -33,7 +36,8 @@ struct SortingShow: View {
     private var pileCenter: CGPoint { CGPoint(x: width / 2, y: 78) }
     private var albumCenter: CGPoint { CGPoint(x: width / 2, y: 252) }
     private var spacing: CGFloat { min(176, width * 0.44) }
-    private var totalPhotos: Int { albums.reduce(0) { $0 + $1.assets.count } }
+    private var totalPhotos: Int { Set(albums.flatMap(\.assets)).count }
+    private var counted: Int { sorted.count }
 
     /// Loose photos on the pile: offset x, offset y, rotation in degrees.
     private static let scatter: [(CGFloat, CGFloat, Double)] = [
@@ -51,18 +55,25 @@ struct SortingShow: View {
             .frame(maxWidth: .infinity)
             .frame(height: sceneHeight)
             .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
+            // Decorative and hidden from VoiceOver: the labels must not grow out of the scene.
+            .dynamicTypeSize(...DynamicTypeSize.xxLarge)
             .accessibilityHidden(true)
 
-            Button("Überspringen") { skipping = true }
+            Button("Überspringen", action: onFinish)
                 .font(.subheadline.weight(.semibold))
                 .frame(minHeight: 44)
-                .opacity(skipping ? 0 : 1)
         }
+        // iPad: a focused column instead of a small cluster in a wide band.
+        .frame(maxWidth: 520)
+        .frame(maxWidth: .infinity)
         .padding(.top, Theme.Spacing.m)
-        .contentShape(Rectangle())
-        .onTapGesture { skipping = true }
-        .sensoryFeedback(.impact(weight: .light, intensity: 0.7), trigger: landings)
-        .task { await run() }
+        .sensoryFeedback(.impact(flexibility: .soft, intensity: 0.6), trigger: landings)
+        .task {
+            if voiceOver {
+                AccessibilityNotification.Announcement(String(localized: "Fotos werden einsortiert")).post()
+            }
+            await run()
+        }
     }
 
     // MARK: Parts
@@ -72,7 +83,7 @@ struct SortingShow: View {
             Text(counted, format: .number)
                 .font(.system(size: 56, weight: .bold, design: .rounded))
                 .monospacedDigit()
-                .contentTransition(.numericText(value: Double(counted)))
+                .contentTransition(reduceMotion ? .opacity : .numericText(value: Double(counted)))
             Text("Fotos einsortiert")
                 .font(.headline)
                 .foregroundStyle(.secondary)
@@ -80,41 +91,45 @@ struct SortingShow: View {
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .monospacedDigit()
-                .contentTransition(.numericText())
+                .contentTransition(reduceMotion ? .opacity : .numericText())
         }
         .frame(maxWidth: .infinity)
         .accessibilityElement(children: .combine)
         .accessibilityLabel(Text("Fotos werden einsortiert"))
         .accessibilityValue(Text("\(counted) von \(totalPhotos)"))
+        .accessibilityAddTraits(.updatesFrequently)
     }
 
     /// The pile thins out as photos find their albums.
     private var pile: some View {
         let photos = pilePhotos
         let remaining = 1 - Double(counted) / Double(max(1, totalPhotos))
-        let visible = Int((remaining * Double(photos.count)).rounded(.up))
+        let visible = max(0, min(photos.count, Int((remaining * Double(photos.count)).rounded(.up))))
         return ZStack {
             ForEach(Array(photos.prefix(visible).enumerated()), id: \.element) { index, id in
                 let s = Self.scatter[index % Self.scatter.count]
                 PhotoChip(id: id, side: 76)
-                    .rotationEffect(.degrees(s.2))
+                    .rotationEffect(.degrees(s.2 * 0.6))
                     .offset(x: s.0, y: s.1)
-                    .transition(.scale(scale: 0.5).combined(with: .opacity))
+                    .transition(reduceMotion ? AnyTransition.opacity : AnyTransition.scale(scale: 0.5).combined(with: .opacity))
             }
         }
         .position(pileCenter)
         .animation(.smooth(duration: 0.35), value: visible)
     }
 
+    /// The albums move as one strip; with Reduce Motion only the current one, cross-fading.
     private var carousel: some View {
         ZStack {
-            ForEach(albums.indices.filter { abs($0 - current) <= 1 }, id: \.self) { index in
+            ForEach(albums.indices.filter { reduceMotion ? $0 == current : abs($0 - current) <= 1 }, id: \.self) { index in
                 let offset = CGFloat(index - current)
-                AlbumStack(album: albums[index], filled: landed.contains(index))
-                    .scaleEffect(index == current ? (pop ? 1.07 : 1) : 0.76)
+                AlbumStack(album: albums[index], filled: landed.contains(index), focused: index == current)
+                    .scaleEffect(index == current ? (pop && !reduceMotion ? 1.04 : 1) : 0.76)
                     .opacity(index == current ? 1 : (index < current ? 0.5 : 0.35))
                     .position(x: albumCenter.x + offset * spacing, y: albumCenter.y)
-                    .transition(.opacity)
+                    .transition(reduceMotion ? AnyTransition.opacity : AnyTransition.asymmetric(
+                        insertion: AnyTransition.offset(x: spacing).combined(with: .opacity),
+                        removal: AnyTransition.offset(x: -spacing).combined(with: .opacity)))
             }
         }
     }
@@ -137,82 +152,129 @@ struct SortingShow: View {
 
     private func run() async {
         let started = Date()
-        if albums.isEmpty {
-            await waitForEnd(started: started)
-            onFinish()
-            return
-        }
-        let pace: Double = reduceMotion ? 0.3 : (albums.count == 1 ? 1.1 : min(0.8, max(0.4, 4.2 / Double(albums.count))))
-        // Long plans: the first albums fly in full, the rest are counted up quickly.
-        let detailed = albums.count <= 10 ? albums.count : 7
-        for index in albums.indices {
+        var lastMove = Date.distantPast
+        // `.task` restarts when the tab comes back: continue there, never land an album twice.
+        for index in albums.indices where !landed.contains(index) {
             if Task.isCancelled { return }
-            await waitUntilDone(index, started: started)
-            if model.execution.failure != nil { break }
-            let quick = skipping || reduceMotion || (index >= detailed && index < albums.count - 1)
-            withAnimation(quick ? .snappy(duration: 0.2) : .smooth(duration: 0.45)) { current = index }
-            if quick {
-                try? await Task.sleep(for: .seconds(skipping ? 0.02 : (reduceMotion ? pace : 0.09)))
-            } else {
-                launch(index, duration: pace * 0.8)
-                try? await Task.sleep(for: .seconds(pace * 0.8))
+            let essential = index < 3 || index == albums.count - 1
+            let calm = !reduceMotion && !voiceOver
+            if calm && (essential || albumsDone() - index <= 1) {
+                await prefetch(index)
             }
-            await land(index, quietly: quick && !reduceMotion)
-            if !quick { try? await Task.sleep(for: .seconds(pace * 0.25)) }
+            await waitUntilDone(index, started: started)
+            let execution = model.execution
+            if Task.isCancelled || execution.failure != nil { break }
+            if !execution.isRunning && execution.finished == nil { break } // never started: no celebration
+            // A step that failed or was skipped gets no checkmark.
+            if execution.unsuccessfulSteps.contains(albums[index].id) { continue }
+            // Photos fly while the show keeps up; a backlog of finished albums is riffled through.
+            let quick = !calm || (!essential && albumsDone() - index > 1)
+            if !quick || index == albums.count - 1 || Date().timeIntervalSince(lastMove) > 0.25 {
+                withAnimation(reduceMotion ? .easeInOut(duration: 0.3) : .smooth(duration: quick ? 0.35 : 0.5)) {
+                    current = index
+                }
+                lastMove = Date()
+            }
+            if quick {
+                await land(index, quietly: true)
+                let step = reduceMotion ? max(0.08, min(0.5, 2.0 / Double(albums.count))) : 0.06
+                try? await Task.sleep(for: .seconds(step))
+            } else {
+                let arrival = launch(index, duration: albums.count == 1 ? 0.7 : 0.58, lead: 0.15)
+                try? await Task.sleep(for: .seconds(arrival))
+                await land(index, quietly: false)
+                try? await Task.sleep(for: .seconds(0.15))
+                // The next album already moves to the centre and waits there while its step runs.
+                if index + 1 < albums.count && albumsDone() <= index + 1 {
+                    withAnimation(.smooth(duration: 0.5)) { current = index + 1 }
+                    lastMove = Date()
+                }
+            }
         }
         await waitForEnd(started: started)
-        try? await Task.sleep(for: .seconds(skipping ? 0.05 : 0.6))
+        guard !Task.isCancelled else { return }
+        try? await Task.sleep(for: .seconds(0.5))
+        guard !Task.isCancelled else { return }
         onFinish()
     }
 
-    private func launch(_ index: Int, duration: Double) {
+    /// Sends the first photos of an album on their way; returns when the last one arrives.
+    @discardableResult
+    private func launch(_ index: Int, duration: Double, lead: Double = 0) -> Double {
         let album = albums[index]
-        let count = min(album.assets.count, albums.count == 1 ? 6 : (albums.count <= 4 ? 4 : 3))
+        let count = min(album.assets.count, albums.count == 1 ? 5 : 3)
+        let flight = max(0.5, duration)
+        let stagger = 0.08
         let target = CGPoint(x: albumCenter.x, y: albumCenter.y - 30)
+        // One calm gesture per album: all photos bow to the same side, alternating per album.
+        let bow: CGFloat = (index.isMultiple(of: 2) ? 1 : -1) * min(64, width * 0.16)
         var launched: [Flight] = []
         for k in 0..<count {
             let s = Self.scatter[k % Self.scatter.count]
-            let from = CGPoint(x: pileCenter.x + s.0, y: pileCenter.y + s.1)
-            let to = CGPoint(x: target.x + CGFloat(k % 3 - 1) * 6, y: target.y + CGFloat(k % 2) * 4)
-            let side: CGFloat = k.isMultiple(of: 2) ? 1 : -1
-            let control = CGPoint(x: (from.x + to.x) / 2 + side * min(120, width * 0.28), y: (from.y + to.y) / 2 - 36)
+            // Dealt from the top of the pile; ArcFlight fades them in while they lift.
+            let from = CGPoint(x: pileCenter.x + s.0 * 0.25, y: pileCenter.y + s.1 * 0.25 - 6)
+            let to = CGPoint(x: target.x + CGFloat(k % 3 - 1) * 5, y: target.y + CGFloat(k % 2) * 3)
+            let control = CGPoint(x: (from.x + to.x) / 2 + bow * (1 + 0.2 * CGFloat(k)), y: from.y - 56)
             launched.append(Flight(asset: album.assets[k], from: from, control: control, to: to,
-                                   angle: s.2, delay: Double(k) * 0.07, duration: max(0.3, duration - Double(k) * 0.07)))
+                                   angle: s.2 * 0.6, delay: lead + Double(k) * stagger, duration: flight))
         }
         flights.append(contentsOf: launched)
+        let arrival = lead + Double(max(0, count - 1)) * stagger + flight
         let ids = Set(launched.map(\.id))
         Task {
-            try? await Task.sleep(for: .seconds(duration + 0.6))
+            try? await Task.sleep(for: .seconds(arrival + 0.3))
             flights.removeAll { ids.contains($0.id) }
         }
+        return arrival
     }
 
     private func land(_ index: Int, quietly: Bool) async {
-        withAnimation(.spring(response: 0.32, dampingFraction: 0.62)) { _ = landed.insert(index) }
-        withAnimation(.snappy(duration: quietly ? 0.15 : 0.35)) { counted += albums[index].assets.count }
+        guard !landed.contains(index) else { return }
+        withAnimation(reduceMotion ? .easeOut(duration: 0.2) : .spring(response: 0.32, dampingFraction: 0.62)) {
+            _ = landed.insert(index)
+        }
+        withAnimation(.snappy(duration: quietly ? 0.15 : 0.35)) { sorted.formUnion(albums[index].assets) }
         if quietly { return }
-        landings += 1
-        withAnimation(.spring(response: 0.18, dampingFraction: 0.5)) { pop = true }
-        try? await Task.sleep(for: .seconds(0.12))
-        withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) { pop = false }
+        if index < 3 || index == albums.count - 1 { landings += 1 } // a few soft taps, not one per album
+        withAnimation(.spring(response: 0.22, dampingFraction: 0.6)) { pop = true }
+        try? await Task.sleep(for: .seconds(0.14))
+        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) { pop = false }
     }
 
     /// Never ahead of the real work: wait until the album's step has finished.
     private func waitUntilDone(_ index: Int, started: Date) async {
         while !Task.isCancelled {
             let execution = model.execution
-            if execution.completedSteps > albums[index].id || execution.finished != nil || execution.failure != nil { return }
+            // completedSteps only counts for this run while it runs (a previous run leaves its value).
+            if execution.isRunning && execution.completedSteps > albums[index].id { return }
+            if execution.finished != nil || execution.failure != nil { return }
             if !execution.isRunning && Date().timeIntervalSince(started) > 3 { return }
             try? await Task.sleep(for: .milliseconds(60))
         }
     }
 
+    /// The result card needs isRunning == false; `finished` is set earlier, before the new
+    /// albums are recorded.
     private func waitForEnd(started: Date) async {
         while !Task.isCancelled {
             let execution = model.execution
-            if execution.finished != nil || execution.failure != nil { return }
+            if !execution.isRunning && (execution.finished != nil || execution.failure != nil) { return }
             if !execution.isRunning && Date().timeIntervalSince(started) > 3 { return }
             try? await Task.sleep(for: .milliseconds(80))
+        }
+    }
+
+    private func albumsDone() -> Int {
+        let execution = model.execution
+        if execution.finished != nil { return albums.count }
+        guard execution.isRunning else { return 0 }
+        return albums.filter { execution.completedSteps > $0.id }.count
+    }
+
+    /// Loads the photos about to fly now, not mid-flight.
+    private func prefetch(_ index: Int) async {
+        for id in albums[index].assets.prefix(albums.count == 1 ? 5 : 3) {
+            _ = await ThumbnailCache.shared.image(for: id, side: 76)
         }
     }
 
@@ -246,7 +308,8 @@ struct SortingShow: View {
 
 // MARK: - Pieces
 
-/// A photo as a small print: rounded, white edge, soft shadow.
+/// A photo as a small print: rounded edge in the card colour (white in light mode, a quiet
+/// rim in dark mode), soft shadow.
 private struct PhotoChip: View {
     var id: AssetID
     var side: CGFloat
@@ -257,7 +320,7 @@ private struct PhotoChip: View {
             .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
             .overlay {
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .strokeBorder(.white.opacity(0.9), lineWidth: 3)
+                    .strokeBorder(Theme.card, lineWidth: 3)
             }
             .shadow(color: .black.opacity(0.14), radius: 6, y: 3)
     }
@@ -267,6 +330,9 @@ private struct PhotoChip: View {
 private struct AlbumStack: View {
     var album: SortingShow.Album
     var filled: Bool
+    /// The album in the centre; neighbours hide their labels (the screen edges would cut them).
+    var focused = true
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     private let side: CGFloat = 124
 
     var body: some View {
@@ -289,35 +355,41 @@ private struct AlbumStack: View {
                             Image(systemName: "checkmark.circle.fill")
                                 .font(.title2)
                                 .symbolRenderingMode(.palette)
-                                .foregroundStyle(.white, Theme.accent)
+                                .foregroundStyle(Theme.onAccent, Theme.accent)
                                 .padding(8)
-                                .transition(.scale(scale: 0.4).combined(with: .opacity))
+                                .transition(reduceMotion ? AnyTransition.opacity
+                                            : AnyTransition.scale(scale: 0.4).combined(with: .opacity))
                         }
                     }
             }
             .shadow(color: .black.opacity(0.12), radius: 14, y: 8)
-            Text(album.title)
-                .font(.subheadline.weight(.semibold))
-                .lineLimit(1)
-                .frame(maxWidth: 160)
-            Text("\(album.assets.count) Fotos")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .monospacedDigit()
+            Group {
+                Text(album.title)
+                    .font(.subheadline.weight(.semibold))
+                    .lineLimit(1)
+                    .frame(maxWidth: 160)
+                Text("\(album.assets.count) Fotos")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .monospacedDigit()
+            }
+            .opacity(focused ? 1 : 0)
         }
     }
 
-    @ViewBuilder
+    /// Opaque placeholder that pulses calmly while the album waits for its step; the cover
+    /// is always mounted so it is loaded in time and fades in without a grey frame.
     private var cover: some View {
-        if filled, let first = album.assets.first {
-            AssetThumbnail(id: first, side: side)
-                .transition(.opacity)
-        } else {
-            ZStack {
-                Theme.accent.opacity(0.12)
-                Image(systemName: "rectangle.stack")
-                    .font(.system(size: 34, weight: .medium))
-                    .foregroundStyle(Theme.accent.opacity(0.6))
+        ZStack {
+            Theme.card
+            Theme.accent.opacity(0.12)
+            Image(systemName: "rectangle.stack")
+                .font(.system(size: 34, weight: .medium))
+                .foregroundStyle(Theme.accent.opacity(0.6))
+                .symbolEffect(.pulse, isActive: focused && !filled && !reduceMotion)
+            if let first = album.assets.first {
+                AssetThumbnail(id: first, side: side)
+                    .opacity(filled ? 1 : 0)
             }
         }
     }
@@ -372,13 +444,17 @@ private struct ArcFlight: ViewModifier, Animatable {
         let u = 1 - t
         let x = u * u * from.x + 2 * u * t * control.x + t * t * to.x
         let y = u * u * from.y + 2 * u * t * control.y + t * t * to.y
-        let lift = sin(CGFloat.pi * t)
-        let fade: Double = t > 0.92 ? Double((1 - t) / 0.08) : 1
+        // Lift first (+8 %, deeper shadow, squares up), then sink and shrink into the album.
+        let lift = sin(CGFloat.pi * min(1, t / 0.6))
+        let settle = max(0, (t - 0.5) / 0.5)
+        let scale = (1 + 0.08 * lift) * (1 - 0.38 * settle * settle)
+        let appear = Double(min(1, t / 0.08))
+        let fade: Double = t > 0.9 ? Double((1 - t) / 0.1) : 1
         return content
-            .scaleEffect((1 + 0.16 * lift) * (1 - 0.42 * t))
-            .rotationEffect(.degrees(angle * Double(u)))
-            .shadow(color: .black.opacity(0.18 * Double(lift)), radius: 14 * lift, y: 10 * lift)
-            .opacity(fade)
+            .scaleEffect(scale)
+            .rotationEffect(.degrees(angle * Double(u * u)))
+            .shadow(color: .black.opacity(0.18 * Double(lift)), radius: 12 * lift, y: 8 * lift)
+            .opacity(appear * fade)
             .position(x: x, y: y)
     }
 }

@@ -35,6 +35,8 @@ final class AppModel {
         var totalSteps = 0
         var finished: ChangePlan?
         var failure: String?
+        /// Steps that failed or were skipped (the sorting show gives them no checkmark).
+        var unsuccessfulSteps: Set<Int> = []
     }
 
     // MARK: State
@@ -563,8 +565,12 @@ final class AppModel {
         let executor = ChangeExecutor(library: library, store: store)
         do {
             let result = try await executor.execute(confirmed) { event in
-                if case .stepFinished(let index, _) = event {
-                    Task { @MainActor in AppModel.shared.execution.completedSteps = index + 1 }
+                if case .stepFinished(let index, let state) = event {
+                    let succeeded: Bool = if case .succeeded = state { true } else { false }
+                    Task { @MainActor in
+                        if !succeeded { AppModel.shared.execution.unsuccessfulSteps.insert(index) }
+                        AppModel.shared.execution.completedSteps = index + 1
+                    }
                 }
             }
             execution.finished = result

@@ -15,6 +15,9 @@ struct PlanReviewView: View {
     @State private var show: [SortingShow.Album]?
     @ScaledMetric(relativeTo: .body) private var iconWidth: CGFloat = 28
     @Environment(\.scenePhase) private var scenePhase
+    @State private var scroll = ScrollPosition(edge: .top)
+    /// The screen loads once; coming back from another tab keeps the result and its undo.
+    @State private var didLoad = false
 
     var body: some View {
         ScrollView {
@@ -46,13 +49,19 @@ struct PlanReviewView: View {
             }
             .padding(Theme.Spacing.l)
         }
+        .scrollPosition($scroll)
         .background(Theme.background)
         .navigationTitle("Umsetzen")
         .navigationBarTitleDisplayMode(.inline)
         .modifier(ExecutionHaptics(execution: model.execution, holdSuccess: show != nil))
         .task {
             await model.refreshAccess()
+            guard !didLoad else { return }
+            didLoad = true
             if !model.execution.isRunning {
+                // A new visit starts clean (the last result stays while the user only switched tabs).
+                model.execution.finished = nil
+                model.execution.failure = nil
                 if let prebuilt { model.plan = prebuilt } else { await model.buildPlan() }
             }
             loading = false
@@ -60,11 +69,6 @@ struct PlanReviewView: View {
         .onChange(of: scenePhase) { _, phase in
             // Back from the Settings app: the full-access card disappears by itself.
             if phase == .active { Task { await model.refreshAccess() } }
-        }
-        .onDisappear {
-            guard !model.execution.isRunning else { return }
-            model.execution.finished = nil
-            model.execution.failure = nil
         }
     }
 
@@ -122,7 +126,12 @@ struct PlanReviewView: View {
         } else {
             Button {
                 let albums = SortingShow.albums(from: plan, inventory: model.inventory)
-                if !albums.isEmpty { show = albums }
+                if !albums.isEmpty {
+                    withAnimation(.smooth(duration: 0.4)) {
+                        show = albums
+                        scroll.scrollTo(edge: .top)
+                    }
+                }
                 Task { await model.execute(plan) }
             } label: {
                 Text("Jetzt umsetzen")
