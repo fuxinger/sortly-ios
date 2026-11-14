@@ -196,7 +196,15 @@ struct ProposalDetailView: View {
             }
             .padding(Theme.Spacing.l)
         }
-        .background(Theme.background)
+        .background(alignment: .top) {
+            // Each suggestion gets its own soft colours from its cover photo.
+            ZStack(alignment: .top) {
+                Theme.background
+                PhotoGlow(id: model.previewIDs(for: proposal, count: 1).first ?? proposal.coverAssetID)
+                    .frame(height: 440)
+            }
+            .ignoresSafeArea()
+        }
         .navigationTitle("Vorschlag")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear { name = model.userTitles[proposal.id] ?? "" }

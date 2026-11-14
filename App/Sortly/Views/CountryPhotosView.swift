@@ -45,7 +45,15 @@ struct CountryPhotosView: View {
             .padding(.horizontal, Theme.Spacing.l)
             .padding(.bottom, Theme.Spacing.xl)
         }
-        .background(Theme.background)
+        .background(alignment: .top) {
+            // The country's own colours, taken from its newest photo.
+            ZStack(alignment: .top) {
+                Theme.background
+                PhotoGlow(id: country.years.first?.photos.first?.id)
+                    .frame(height: 440)
+            }
+            .ignoresSafeArea()
+        }
         .navigationTitle(AtlasStyle.countryName(code))
         .overlay {
             if country.years.isEmpty {
