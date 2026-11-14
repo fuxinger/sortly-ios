@@ -18,6 +18,11 @@ final class SortlyFlowUITests: XCTestCase {
         app.launch()
     }
 
+    /// The first suggestion row of a list ("57 Aufnahmen" is in every row, never in a button).
+    private func suggestionRow() -> XCUIElement {
+        app.collectionViews.cells.containing(NSPredicate(format: "label CONTAINS %@", "Aufnahmen")).element(boundBy: 0)
+    }
+
     private func button(_ text: String) -> XCUIElement {
         app.buttons.matching(NSPredicate(format: "label CONTAINS %@", text)).firstMatch
     }
@@ -230,8 +235,9 @@ final class SortlyFlowUITests: XCTestCase {
         if tap(button("Vorschläge prüfen"), "open suggestions", timeout: 20) {
             sleep(1)
             shot("07-suggestions"); audit("suggestions")
-            // Rows live in a List (collection view), not a scroll view.
-            let first = app.collectionViews.cells.element(boundBy: 0)
+            // Rows live in a List (collection view), not a scroll view. The first cell can be
+            // the "N empfohlene übernehmen" button, so pick the first real suggestion row.
+            let first = suggestionRow()
             if tap(first, "open first suggestion", timeout: 10) {
                 sleep(1)
                 let opened = app.navigationBars["Vorschlag"].waitForExistence(timeout: 5)
@@ -255,7 +261,7 @@ final class SortlyFlowUITests: XCTestCase {
         let travel = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Reisen")).firstMatch
         if tap(travel, "open travel area", timeout: 10) {
             sleep(1)
-            if tap(app.collectionViews.cells.element(boundBy: 0), "open trip suggestion", timeout: 10) {
+            if tap(suggestionRow(), "open trip suggestion", timeout: 10) {
                 let opened = app.navigationBars["Vorschlag"].waitForExistence(timeout: 5)
                 print(opened ? "UI_STEP_OK trip detail opened" : "UI_STEP_MISSING trip detail opened")
                 XCTAssertTrue(opened, "Tapping a trip suggestion did not open its detail")

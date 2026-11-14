@@ -106,10 +106,12 @@ struct ProposalRow: View {
         switch model.decisions[proposal.id] {
         case .reject:
             Label("Nicht jetzt", systemImage: "xmark.circle")
+                .labelStyle(CompactLabelStyle())
                 .font(.footnote.weight(.semibold))
                 .foregroundStyle(.secondary)
         case .some(let d) where d.isAccepted:
             Label("Übernommen", systemImage: "checkmark.circle.fill")
+                .labelStyle(CompactLabelStyle())
                 .font(.footnote.weight(.semibold))
                 .foregroundStyle(Theme.accent)
         default:
@@ -538,5 +540,16 @@ struct ProposalPhotosView: View {
                 if isSelected { selected.remove(id) } else { selected.insert(id) }
             }
             .accessibilityAddTraits(traits(selected: isSelected))
+    }
+}
+
+/// Symbol and text close together, like a status line (the list's own label style
+/// puts the symbol in a wide icon column).
+private struct CompactLabelStyle: LabelStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        HStack(spacing: 4) {
+            configuration.icon
+            configuration.title
+        }
     }
 }
