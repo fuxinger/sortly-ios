@@ -101,6 +101,13 @@ final class AppModel {
     var plan: ChangePlan?
     var execution = ExecutionState()
     var message: String?
+    /// Where Siri, Shortcuts or a Spotlight result wants to go; the overview opens it.
+    var route: Route?
+
+    enum Route: Hashable {
+        case suggestion(SortlyID)
+        case country(String)
+    }
 
     let library = PhotoKitLibrary()
     private(set) var store: SortlyStore?
@@ -125,7 +132,18 @@ final class AppModel {
 
     // MARK: Lifecycle
 
+    /// Loads the app state once. The app and a Siri or Spotlight intent can both ask for
+    /// it at launch; the second caller waits for the first instead of opening the database twice.
     func bootstrap() async {
+        if let bootstrapTask { return await bootstrapTask.value }
+        let task = Task { await load() }
+        bootstrapTask = task
+        await task.value
+    }
+
+    @ObservationIgnored private var bootstrapTask: Task<Void, Never>?
+
+    private func load() async {
         guard phase == .loading else { return }
         do {
             let store = try SortlyStore(url: try Self.databaseURL())
@@ -267,6 +285,7 @@ final class AppModel {
         } catch {
             message = error.localizedDescription
         }
+        SpotlightIndex.scheduleUpdate(self)
     }
 
     // MARK: Proposals and decisions
@@ -339,6 +358,7 @@ final class AppModel {
     private func persistDecisions() {
         let decisions = decisions
         Task { try? await store?.setValue(decisions, forKey: Key.decisions) }
+        SpotlightIndex.scheduleUpdate(self)
     }
 
     // MARK: Plan and execution

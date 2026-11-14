@@ -4,7 +4,15 @@ name: UI flow
 # not cancel a running UI flow (it takes ~30 min); the newest commit runs next.
 on:
   pull_request:
+    paths-ignore: ['**.md']
   workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  HOMEBREW_NO_AUTO_UPDATE: 1
+  HOMEBREW_NO_INSTALL_CLEANUP: 1
 
 concurrency:
   group: ui-${{ github.ref }}

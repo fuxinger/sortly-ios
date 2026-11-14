@@ -39,6 +39,9 @@ struct PlanReviewView: View {
         .background(Theme.background)
         .navigationTitle("Umsetzen")
         .navigationBarTitleDisplayMode(.inline)
+        // Haptic feedback when the changes are done, or when something went wrong.
+        .sensoryFeedback(.success, trigger: model.execution.finished) { old, new in old == nil && new != nil }
+        .sensoryFeedback(.error, trigger: model.execution.failure) { old, new in old == nil && new != nil }
         .task {
             if !model.execution.isRunning {
                 if let prebuilt { model.plan = prebuilt } else { await model.buildPlan() }

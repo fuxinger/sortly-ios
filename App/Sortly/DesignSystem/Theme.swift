@@ -71,30 +71,34 @@ struct ProgressRing: View {
     }
 }
 
-/// Full-width primary action.
-struct PrimaryButtonStyle: ButtonStyle {
-    @Environment(\.isEnabled) private var isEnabled
-
+/// Full-width primary action in the iOS 26 Liquid Glass style (system `glassProminent`
+/// button: Apple's own contrast, press and disabled states, tinted with the app color).
+struct PrimaryButtonStyle: PrimitiveButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .font(.headline)
-            .frame(maxWidth: .infinity, minHeight: 52)
-            .foregroundStyle(.white)
-            .background(Theme.accent.opacity(isEnabled ? (configuration.isPressed ? 0.8 : 1) : 0.4),
-                        in: RoundedRectangle(cornerRadius: Theme.Radius.button, style: .continuous))
+        Button(role: configuration.role, action: configuration.trigger) {
+            configuration.label
+                .font(.headline)
+                .frame(maxWidth: .infinity, minHeight: 30)
+        }
+        .buttonStyle(.glassProminent)
+        .buttonBorderShape(.capsule)
+        .controlSize(.large)
+        .tint(Theme.accent)
     }
 }
 
-/// Secondary full-width action.
-struct SecondaryButtonStyle: ButtonStyle {
+/// Secondary full-width action: the system `glass` button.
+struct SecondaryButtonStyle: PrimitiveButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .font(.body.weight(.medium))
-            .frame(maxWidth: .infinity, minHeight: 48)
-            .foregroundStyle(.primary)
-            .background(Theme.card.opacity(configuration.isPressed ? 0.7 : 1),
-                        in: RoundedRectangle(cornerRadius: Theme.Radius.button - 2, style: .continuous))
-            .overlay(RoundedRectangle(cornerRadius: Theme.Radius.button - 2, style: .continuous).stroke(Color(uiColor: .separator)))
+        Button(role: configuration.role, action: configuration.trigger) {
+            configuration.label
+                .font(.body.weight(.medium))
+                .frame(maxWidth: .infinity, minHeight: 28)
+        }
+        .buttonStyle(.glass)
+        .buttonBorderShape(.capsule)
+        .controlSize(.large)
+        .tint(.primary)
     }
 }
 

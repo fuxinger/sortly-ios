@@ -8,7 +8,7 @@ def norm(k):
     k = re.sub(r'%(lld|ld|d|@|f|\.\d+f)', '#', k)
     return k
 keys = {norm(k): k for k in cat['strings']}
-pat = re.compile(r'(?:(?:Text|Button|Label|Section|navigationTitle|Toggle|TextField|NavigationLink|ContentUnavailableView|Picker|confirmationDialog|LabeledContent|LocalizedStringKey|accessibilityLabel|Link|Tab|alert)\(|String\(localized: )\s*"((?:[^"\\]|\\.)*)"')
+pat = re.compile(r'(?:(?:Text|Button|Label|Section|navigationTitle|Toggle|TextField|NavigationLink|ContentUnavailableView|Picker|confirmationDialog|LabeledContent|LocalizedStringKey|accessibilityLabel|Link|Tab|alert|IntentDescription)\(|String\(localized: |LocalizedStringResource = |TypeDisplayRepresentation \{ |dialog: |shortTitle: |@Parameter\(title: )\s*"((?:[^"\\]|\\.)*)"')
 missing = {}
 for f in glob.glob(f'{root}/App/Sortly/**/*.swift', recursive=True):
     src = open(f).read()

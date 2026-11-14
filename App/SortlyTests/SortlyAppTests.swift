@@ -194,6 +194,34 @@ struct LocalizationTests {
     }
 }
 
+@Suite("Siri, Shortcuts and Spotlight")
+@MainActor
+struct IntentDataTests {
+    private func photo(_ id: String, _ country: String?) -> AssetFacts {
+        AssetFacts(asset: AssetSnapshot(id: AssetID(id)), place: country.map { PlaceComponents(isoCountryCode: $0) })
+    }
+
+    @Test func countriesMostPhotographedFirst() {
+        let model = AppModel()
+        model.facts = [photo("a", "it"), photo("b", "IT"), photo("c", "FR"), photo("d", nil), photo("e", "")]
+        let countries = IntentData.countries(model)
+        #expect(countries.map(\.id) == ["IT", "FR"])
+        #expect(countries.map(\.photoCount) == [2, 1])
+        #expect(countries.first?.name == AtlasStyle.countryName("IT"))
+    }
+
+    @Test func noSuggestionsBeforeAnalysis() {
+        #expect(IntentData.suggestions(AppModel()).isEmpty)
+    }
+
+    @Test func intentTextsShipInEnglish() throws {
+        let path = try #require(Bundle.main.path(forResource: "en", ofType: "lproj"))
+        let bundle = try #require(Bundle(path: path))
+        #expect(bundle.localizedString(forKey: "Fotos aus einem Land zeigen", value: nil, table: nil) == "Show photos from a country")
+        #expect(bundle.localizedString(forKey: "Offene Vorschläge", value: nil, table: nil) == "Open suggestions")
+    }
+}
+
 @Suite("Demo library")
 @MainActor
 struct DemoLibraryTests {

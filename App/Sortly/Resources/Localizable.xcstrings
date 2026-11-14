@@ -4560,6 +4560,136 @@
           }
         }
       }
+    },
+    "Offene Vorschläge" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open suggestions"
+          }
+        }
+      }
+    },
+    "Sagt dir, wie viele Albumvorschläge auf dich warten, und gibt sie an Kurzbefehle weiter." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tells you how many album suggestions are waiting and passes them on to Shortcuts."
+          }
+        }
+      }
+    },
+    "Vorschlag öffnen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open suggestion"
+          }
+        }
+      }
+    },
+    "Öffnet einen Albumvorschlag in SORTLY." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens an album suggestion in SORTLY."
+          }
+        }
+      }
+    },
+    "Fotos aus einem Land zeigen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show photos from a country"
+          }
+        }
+      }
+    },
+    "Zeigt in SORTLY alle Fotos, die in einem Land aufgenommen wurden." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shows all photos taken in one country in SORTLY."
+          }
+        }
+      }
+    },
+    "Fotos aus einem Land" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Photos from a country"
+          }
+        }
+      }
+    },
+    "Albumvorschlag" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Album suggestion"
+          }
+        }
+      }
+    },
+    "Album" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Album"
+          }
+        }
+      }
+    },
+    "Fotos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Photos"
+          }
+        }
+      }
+    },
+    "Urlaub" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vacation"
+          }
+        }
+      }
+    },
+    "Vorschlag nicht gefunden" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suggestion not found"
+          }
+        }
+      }
+    },
+    "Dieser Vorschlag ist schon erledigt oder nicht mehr aktuell." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This suggestion is already done or no longer current."
+          }
+        }
+      }
     }
   },
   "version" : "1.0"
