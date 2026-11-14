@@ -40,6 +40,9 @@ struct MainTabs: View {
                 NavigationStack { SearchView() }
             }
         }
+        // iPad: tabs become a sidebar; iPhone: the Liquid Glass tab bar shrinks while scrolling.
+        .tabViewStyle(.sidebarAdaptable)
+        .tabBarMinimizeBehavior(.onScrollDown)
         .alert("Hinweis", isPresented: Binding(get: { model.message != nil }, set: { if !$0 { model.message = nil } })) {
             Button("OK", role: .cancel) {}
         } message: {
