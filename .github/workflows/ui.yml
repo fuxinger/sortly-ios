@@ -77,6 +77,18 @@ jobs:
           kill $LOGPID 2>/dev/null
           pkill -INT -f "recordVideo" 2>/dev/null; sleep 2; kill $WATCHPID 2>/dev/null
           ls -la ../build/sorting-show.mp4 2>/dev/null && echo "UI_VIDEO sorting-show.mp4"
+          # Artifact downloads are not reachable from every reviewer's machine, so a smaller copy of
+          # the video is also printed into the log (base64 chunks, like the screenshots).
+          if [ -f ../build/sorting-show.mp4 ]; then
+            avconvert --source ../build/sorting-show.mp4 --output ../build/sorting-show-small.mp4 \
+              --preset Preset1920x1080 --replace > /dev/null 2>&1 \
+              || cp ../build/sorting-show.mp4 ../build/sorting-show-small.mp4
+            bytes=$(stat -f%z ../build/sorting-show-small.mp4)
+            echo "UI_VIDEO_SIZE $bytes"
+            if [ "$bytes" -lt 25000000 ]; then
+              base64 -i ../build/sorting-show-small.mp4 | tr -d '\n' | fold -w 60000 | awk '{print "UI_VIDEO_B64 " NR " " $0}'
+            fi
+          fi
           grep -aE "error:|UI_STEP|UI_SWEEP|UI_TIMING|UI_FACT|A11Y_|PREVIEW_JPEG|Test Case|Executed|\*\* |Testing failed|Fatal error|crashed" ../ui-log.txt | grep -v "/SourcePackages/" | head -8000
           # Unique runtime warnings from the app (timestamps cut off; scene setup and view dumps are noise).
           grep -avE "^Filtering|^Timestamp|SwiftUI:Scenes|_UIHostingView|renderbox" ../swiftui-log.txt | cut -c 25- | sort | uniq -c | sort -rn | head -40 | sed 's/^/UI_RUNTIME_WARNING /'
