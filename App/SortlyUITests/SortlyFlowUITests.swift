@@ -364,7 +364,14 @@ final class SortlyFlowUITests: XCTestCase {
             if tap(app.buttons["Einstellungen"], "settings") {
                 sleep(1)
                 shot("21-settings"); audit("settings")
+                // The history sits far down in a lazy list: its rows exist only once scrolled to.
                 let undo = app.buttons["Rückgängig"].firstMatch
+                let list = app.collectionViews.firstMatch
+                var swipes = 0
+                while !undo.exists && swipes < 10 {
+                    (list.exists ? list : app).swipeUp()
+                    swipes += 1
+                }
                 if tap(undo, "undo in history", timeout: 10) {
                     tap(app.buttons["Rückgängig machen"].firstMatch, "confirm undo")
                     sleep(15)
