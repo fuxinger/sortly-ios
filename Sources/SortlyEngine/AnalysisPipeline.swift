@@ -78,6 +78,10 @@ public actor AnalysisPipeline {
     private let calendar: Calendar
     private let time: TimeSource
     private let batchSize: Int
+    /// Online place lookups per normal run; the rest waits for the overnight refinement run.
+    /// Keeps the first analysis from spending up to an hour on town names before photos are
+    /// looked at (the geocoder allows about 40 requests a minute). `nil` = no limit.
+    private let foregroundOnlineBudget: Int?
     public private(set) var settings: OrganizationSettings
     private var userPaused = false
 
@@ -91,7 +95,8 @@ public actor AnalysisPipeline {
         settings: OrganizationSettings,
         calendar: Calendar = .sortlyDefault,
         time: TimeSource = .live(),
-        batchSize: Int = 50
+        batchSize: Int = 50,
+        foregroundOnlineBudget: Int? = nil
     ) {
         self.store = store
         self.reader = reader
@@ -103,12 +108,20 @@ public actor AnalysisPipeline {
         self.calendar = calendar
         self.time = time
         self.batchSize = max(1, batchSize)
+        self.foregroundOnlineBudget = foregroundOnlineBudget
     }
 
     public func update(settings: OrganizationSettings) { self.settings = settings }
 
     /// Pauses at the next batch boundary; `run` then returns with `.userPaused`.
     public func pause() { userPaused = true }
+
+    /// Checked between online place lookups, so Pause, heat or low battery stop that stage
+    /// within one request instead of after all of them.
+    private func stopRequested() async -> Bool {
+        if userPaused || Task.isCancelled { return true }
+        return await conditions.pauseReason() != nil
+    }
 
     public func run(
         mode: Mode = .incremental,
@@ -166,10 +179,17 @@ public actor AnalysisPipeline {
         )
         let contentTotal = try await store.countNeedingAnalysis(version: Self.contentVersion)
         var contentDone = 0
+        var cursor: AssetSnapshot?
         while true {
             if let reason = await shouldStop() { report.pausedBecause = reason; return report }
-            let batch = try await store.assetsNeedingAnalysis(version: Self.contentVersion, limit: batchSize)
+            var batch = try await store.assetsNeedingAnalysis(version: Self.contentVersion, limit: batchSize, olderThan: cursor)
+            if batch.isEmpty, cursor != nil {
+                // Past the oldest dated photo: one plain pass picks up photos without a date.
+                cursor = nil
+                batch = try await store.assetsNeedingAnalysis(version: Self.contentVersion, limit: batchSize)
+            }
             if batch.isEmpty { break }
+            if batch.last?.creationDate != nil { cursor = batch.last }
             for asset in batch {
                 let result: ContentAnalysis
                 do {
@@ -231,7 +251,9 @@ public actor AnalysisPipeline {
         let store = self.store
         let total = requests.count
         let counter = ProgressCounter()
-        return try await service.resolve(requests, refining: refining) { batch in
+        let budget = refining ? nil : foregroundOnlineBudget
+        return try await service.resolve(requests, refining: refining, maxOnlineRequests: budget,
+                                         shouldStop: { [weak self] in await self?.stopRequested() ?? true }) { batch in
             try await store.setPlaces(batch)
             let done = await counter.add(batch.count)
             onProgress(Progress(stage: .places, completed: min(done, total), total: total))

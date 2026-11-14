@@ -127,6 +127,7 @@ public actor PlaceResolutionService {
         _ requests: [Request],
         refining: Bool = false,
         maxOnlineRequests: Int? = nil,
+        shouldStop: (@Sendable () async -> Bool)? = nil,
         sink: Sink
     ) async throws -> Outcome {
         var outcome = Outcome()
@@ -166,6 +167,8 @@ public actor PlaceResolutionService {
         var onlineDisabled = !policy.onlineAllowed || geocoder == nil
         for (cell, members) in groups {
             if Task.isCancelled { outcome.pendingOnline.formUnion(members.map(\.assetID)); continue }
+            // Pause, heat or low battery: no more online lookups; cached cells still count.
+            if !onlineDisabled, let shouldStop, await shouldStop() { onlineDisabled = true }
             var online = try await cache.cachedPlace(cell: cell)
             if online != nil {
                 outcome.cacheHits += 1

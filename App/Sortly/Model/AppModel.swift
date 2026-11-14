@@ -157,7 +157,8 @@ final class AppModel {
             pipeline = AnalysisPipeline(
                 store: store, reader: library, analyzer: VisionAnalyzer(),
                 geocoder: SystemGeocoder(locale: Locale(identifier: settings.titleLanguage.rawValue)),
-                map: map, conditions: DeviceConditions(), settings: settings
+                map: map, conditions: DeviceConditions(), settings: settings,
+                foregroundOnlineBudget: 60
             )
             await refreshDerived()
             phase = onboardingDone && access.canRead ? .ready : .onboarding

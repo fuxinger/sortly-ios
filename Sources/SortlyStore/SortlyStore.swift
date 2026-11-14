@@ -102,8 +102,18 @@ public actor SortlyStore: ChangePlanStoring {
     }
 
     /// Assets whose analysis is older than `version` (new, changed or affected by a pipeline upgrade).
-    public func assetsNeedingAnalysis(version: Int, limit: Int) throws -> [AssetSnapshot] {
-        try db.query("SELECT * FROM assets WHERE analysis_version < ? ORDER BY creation_date DESC LIMIT ?", [.integer(Int64(version)), .integer(Int64(limit))]).map(Self.asset)
+    /// Newest first. With `olderThan` (the last asset of the previous batch) the scan continues
+    /// where it stopped instead of skipping every already-analyzed photo again: without it a
+    /// first run over 100,000 photos spent about 18 s in this query alone.
+    public func assetsNeedingAnalysis(version: Int, limit: Int, olderThan last: AssetSnapshot? = nil) throws -> [AssetSnapshot] {
+        if let last, let date = last.creationDate?.timeIntervalSince1970 {
+            return try db.query("""
+                SELECT * FROM assets WHERE analysis_version < ?
+                  AND (creation_date < ? OR (creation_date = ? AND id < ?))
+                ORDER BY creation_date DESC, id DESC LIMIT ?
+                """, [.integer(Int64(version)), .real(date), .real(date), .text(last.id.rawValue), .integer(Int64(limit))]).map(Self.asset)
+        }
+        return try db.query("SELECT * FROM assets WHERE analysis_version < ? ORDER BY creation_date DESC, id DESC LIMIT ?", [.integer(Int64(version)), .integer(Int64(limit))]).map(Self.asset)
     }
 
     public func countNeedingAnalysis(version: Int) throws -> Int {

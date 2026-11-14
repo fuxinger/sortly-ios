@@ -122,6 +122,18 @@ struct PlaceResolutionTests {
         #expect(outcome.pendingOnline.contains(AssetID("home-0")))
     }
 
+    @Test func pauseStopsOnlineLookupsButCountriesStillResolve() async throws {
+        let geocoder = FakeGeocoder()
+        let collector = ResultCollector()
+        let reqs = requests(Fixture.Places.munichHome, count: 10, prefix: "home") + requests(Fixture.Places.rome, count: 10, prefix: "trip", priority: 10)
+        let outcome = try await service(level: .locality, geocoder: geocoder)
+            .resolve(reqs, shouldStop: { true }) { await collector.add($0) }
+        #expect(geocoder.calls.isEmpty)
+        #expect(outcome.pendingOnline.contains(AssetID("trip-0")))
+        // The country is known offline and kept, even though the town is still open.
+        #expect(await collector.places[AssetID("trip-0")]?.components.isoCountryCode == "IT")
+    }
+
     @Test func borrowedTownFromAnotherCountryIsDropped() async {
         let s = service(level: .locality, geocoder: nil)
         let munich = Self.map.lookup(Fixture.Places.munichHome)

@@ -52,6 +52,29 @@ struct StoreTests {
         #expect(try await s.assetCount() == 2)
     }
 
+    @Test func analysisQueueContinuesFromBookmark() async throws {
+        let s = try store()
+        // Two photos share a timestamp, one has no date: the bookmark must not skip or repeat any.
+        var assets = (0..<6).map { AssetSnapshot(id: AssetID("a\($0)"), creationDate: Fixture.date("2026-01-0\($0 + 1)")) }
+        assets.append(AssetSnapshot(id: "same", creationDate: Fixture.date("2026-01-03")))
+        assets.append(AssetSnapshot(id: "undated", creationDate: nil))
+        try await s.upsertAssets(assets)
+
+        var seen: [AssetID] = []
+        var cursor: AssetSnapshot?
+        while true {
+            let batch = try await s.assetsNeedingAnalysis(version: 1, limit: 3, olderThan: cursor)
+            if batch.isEmpty { break }
+            seen += batch.map(\.id)
+            cursor = batch.last
+            if cursor?.creationDate == nil { break }
+        }
+        let rest = try await s.assetsNeedingAnalysis(version: 1, limit: 10).map(\.id).filter { !seen.contains($0) }
+        #expect(Set(seen + rest).count == 8)
+        #expect(seen.count == Set(seen).count)
+        #expect(seen.first == "a5")
+    }
+
     @Test func inventoryRoundTrip() async throws {
         let s = try store()
         let inv = CollectionInventory([
