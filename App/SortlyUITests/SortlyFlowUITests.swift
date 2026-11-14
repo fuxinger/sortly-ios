@@ -54,8 +54,16 @@ final class SortlyFlowUITests: XCTestCase {
             XCTFail("Missing: \(step)")
             return false
         }
+        // Scroll the element into view. Content above the screen or under the navigation bar
+        // still counts as "hittable" for XCUITest, but a tap there lands on the bar, so it is
+        // scrolled back down; content below the screen is scrolled up.
+        let bar = app.navigationBars.firstMatch
         var swipes = 0
-        while !element.isHittable && swipes < 6 { app.swipeUp(); swipes += 1 }
+        while swipes < 8 {
+            let underBar = bar.exists && !bar.frame.contains(element.frame) && element.frame.midY < bar.frame.maxY
+            if underBar { app.swipeDown() } else if !element.isHittable { app.swipeUp() } else { break }
+            swipes += 1
+        }
         element.tap()
         print("UI_STEP_OK \(step)")
         return true
@@ -192,8 +200,11 @@ final class SortlyFlowUITests: XCTestCase {
             shot("05-overview-empty")
             tap(demo, "seed demo library")
             let started = Date()
-            // The card says so once every photo is in the library (the button goes away at once).
-            XCTAssertTrue(anything("Beispiel-Mediathek ist angelegt").waitForExistence(timeout: 600), "Demo library not created")
+            // The demo card disappears from the overview once every photo is in the library.
+            let seeded = waitStable("demo library created", timeout: 600) {
+                !anything("Beispielfotos werden angelegt").exists && !button("Beispiel-Mediathek anlegen").exists
+            }
+            XCTAssertTrue(seeded, "Demo library not created")
             print("UI_TIMING seed \(Int(Date().timeIntervalSince(started))) s")
         } else {
             print("UI_STEP_MISSING demo button (already seeded?)")

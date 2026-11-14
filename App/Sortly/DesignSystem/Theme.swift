@@ -21,6 +21,11 @@ enum Theme {
 
     /// Named asset instead of `Color.accentColor`, so off-screen renders (share image) keep the teal too.
     static let accent = Color("AccentColor")
+    /// Text and symbols on an accent fill: white on the dark teal of light mode, near-black
+    /// on the lighter teal of dark mode (white there would fall below 3:1 contrast).
+    static let onAccent = Color(uiColor: UIColor { traits in
+        traits.userInterfaceStyle == .dark ? UIColor(white: 0.07, alpha: 1) : .white
+    })
     static let background = Color(uiColor: .systemGroupedBackground)
     static let card = Color(uiColor: .secondarySystemGroupedBackground)
     static let secondaryText = Color.secondary
@@ -91,6 +96,7 @@ struct PrimaryButtonStyle: PrimitiveButtonStyle {
         Button(role: configuration.role, action: configuration.trigger) {
             configuration.label
                 .font(.headline)
+                .foregroundStyle(Theme.onAccent)
                 .frame(maxWidth: .infinity, minHeight: 30)
         }
         .buttonStyle(.glassProminent)

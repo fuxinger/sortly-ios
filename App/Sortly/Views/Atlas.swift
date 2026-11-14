@@ -193,7 +193,7 @@ extension AtlasView {
             .font(.subheadline.weight(.semibold))
             .padding(.horizontal, 14).padding(.vertical, 8)
             .background(selected ? Theme.accent : Theme.card, in: Capsule())
-            .foregroundStyle(selected ? Color.white : Color.primary)
+            .foregroundStyle(selected ? Theme.onAccent : Color.primary)
         }
         .buttonStyle(.plain)
         .accessibilityAddTraits(selected ? .isSelected : [])

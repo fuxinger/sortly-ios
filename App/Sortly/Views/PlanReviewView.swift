@@ -264,7 +264,7 @@ struct UnlockCard: View {
                 Task { await purchases.purchase() }
             } label: {
                 if purchases.isPurchasing {
-                    ProgressView().tint(.white)
+                    ProgressView().tint(Theme.onAccent)
                 } else if let product = purchases.product {
                     Text("Freischalten für \(product.displayPrice)")
                 } else {

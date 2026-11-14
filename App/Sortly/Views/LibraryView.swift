@@ -25,7 +25,7 @@ struct LibraryView: View {
                                     .font(.subheadline.weight(.semibold))
                                     .padding(.horizontal, 14).padding(.vertical, 8)
                                     .background(b == bucket ? Theme.accent : Theme.card, in: Capsule())
-                                    .foregroundStyle(b == bucket ? Color.white : Color.primary)
+                                    .foregroundStyle(b == bucket ? Theme.onAccent : Color.primary)
                             }
                             .buttonStyle(.plain)
                             .accessibilityAddTraits(b == bucket ? .isSelected : [])
@@ -190,7 +190,7 @@ struct SelectionBar: View {
                 .font(.caption.weight(.bold)).monospacedDigit()
                 .padding(.horizontal, 7).padding(.vertical, 2)
                 .background(Theme.accent, in: Capsule())
-                .foregroundStyle(.white)
+                .foregroundStyle(Theme.onAccent)
                 .offset(x: -14, y: -8)
                 .accessibilityLabel(Text("\(count) ausgewählt"))
         }

@@ -91,11 +91,11 @@ struct OverviewView: View {
                     HStack {
                         Text(model.analysis.stage?.label ?? "Analyse läuft").font(.headline)
                         Spacer()
-                        Button("Pause") { model.pauseAnalysis() }.font(.subheadline.weight(.semibold)).frame(minHeight: 44)
+                        Button { model.pauseAnalysis() } label: { TapTarget("Pause") }
                     }
                     VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
                         Text(model.analysis.stage?.label ?? "Analyse läuft").font(.headline)
-                        Button("Pause") { model.pauseAnalysis() }.font(.subheadline.weight(.semibold)).frame(minHeight: 44)
+                        Button { model.pauseAnalysis() } label: { TapTarget("Pause") }
                     }
                 }
                 VStack(alignment: .leading, spacing: Theme.Spacing.s) {
@@ -125,7 +125,7 @@ struct OverviewView: View {
                         }
                     }
                     if !typeSize.isAccessibilitySize { Spacer() }
-                    Button("Neu prüfen") { model.startAnalysis() }.font(.subheadline.weight(.semibold)).frame(minHeight: 44)
+                    Button { model.startAnalysis() } label: { TapTarget("Neu prüfen") }
                 }
                 if let pending = model.analysis.lastReport?.placesPendingOnline, pending > 0 {
                     Label("\(pending) Orte werden später genauer bestimmt.", systemImage: "moon.zzz")
@@ -223,5 +223,18 @@ extension OrganizationArea {
         case .chronology: "Jahre und Monate"
         case .mediaTypes: "Medientypen"
         }
+    }
+}
+
+/// A short text action with Apple's minimum tap area of 44 pt (the label alone is ~18 pt tall).
+private struct TapTarget: View {
+    var title: LocalizedStringKey
+    init(_ title: LocalizedStringKey) { self.title = title }
+
+    var body: some View {
+        Text(title)
+            .font(.subheadline.weight(.semibold))
+            .frame(minWidth: 44, minHeight: 44)
+            .contentShape(Rectangle())
     }
 }
