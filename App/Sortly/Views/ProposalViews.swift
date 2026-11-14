@@ -106,6 +106,7 @@ struct ProposalDetailView: View {
     @State private var showDirect = false
     @State private var preparing = false
     @State private var applied = false
+    @State private var rejectingMatch = false
 
     /// Only trips get a creative name; places and dates keep their exact titles.
     private var canSuggestTitle: Bool {
@@ -123,14 +124,19 @@ struct ProposalDetailView: View {
     }
 
     private var match: MatchResult? { model.match(for: proposal) }
+    /// What the primary button does: the user's choice from "Anpassen" wins over SORTLY's
+    /// recommendation (it must never be overwritten by accepting the suggestion).
     private var recommended: ProposalDecision {
-        ProposalDecision.recommended(for: proposal, match: match, userTitle: name)
+        let chosen = model.decision(for: proposal)
+        if chosen.isAccepted { return chosen }
+        return ProposalDecision.recommended(for: proposal, match: match, userTitle: name)
     }
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Theme.Spacing.m) {
-                ThumbnailGrid(ids: proposal.assetIDs.sorted(), columns: 4, limit: 12)
+                ThumbnailGrid(ids: proposal.assetIDs.sorted(), columns: 4, limit: 12,
+                              portrait: [.screenshots, .documents, .messenger].contains(proposal.kind.area))
 
                 VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
                     Text("\(Text(proposal.kind.area.title)) · \(Text(proposal.reliability.label))")
@@ -213,6 +219,18 @@ struct ProposalDetailView: View {
                 }
                 ForEach(Array(match.reasons.enumerated()), id: \.offset) { _, reason in
                     Text(ReasonText.text(reason)).font(.subheadline).foregroundStyle(.secondary)
+                }
+                if let best = match.best, best.isEditable, match.status != .newAlbumRequired {
+                    Button("„\(best.albumTitle)“ passt nicht") { rejectingMatch = true }
+                        .font(.subheadline.weight(.semibold))
+                        .frame(minHeight: 44)
+                        .confirmationDialog("Dieses Album passt nicht?", isPresented: $rejectingMatch, titleVisibility: .visible) {
+                            Button("Nicht mehr für diesen Vorschlag anbieten") {
+                                Task { await model.rejectMatch(best.albumID, for: proposal) }
+                            }
+                        } message: {
+                            Text("SORTLY merkt sich das und schlägt stattdessen ein neues oder ein anderes passendes Album vor. Am Album selbst ändert sich nichts.")
+                        }
                 }
             }
         }
@@ -307,20 +325,27 @@ struct AdjustProposalView: View {
                 }
                 .disabled(proposal.requiresUserName && title.trimmingCharacters(in: .whitespaces).isEmpty)
             }
-            if !candidates.isEmpty {
-                Section("Vorhandenes Album ergänzen") {
-                    ForEach(candidates, id: \.albumID) { candidate in
-                        Button {
-                            model.setDecision(.extendExisting(candidate.albumID), for: proposal)
-                            dismiss()
-                        } label: {
-                            VStack(alignment: .leading) {
-                                Text(candidate.albumTitle)
-                                Text("\(candidate.metrics.intersection) gemeinsame Aufnahmen").font(.footnote).foregroundStyle(.secondary)
-                            }
+            Section {
+                ForEach(candidates, id: \.albumID) { candidate in
+                    Button {
+                        model.setDecision(.extendExisting(candidate.albumID), for: proposal)
+                        dismiss()
+                    } label: {
+                        VStack(alignment: .leading) {
+                            Text(candidate.albumTitle)
+                            Text("\(candidate.metrics.intersection) gemeinsame Aufnahmen").font(.footnote).foregroundStyle(.secondary)
                         }
                     }
+                    .foregroundStyle(.primary)
                 }
+                NavigationLink("Anderes Album wählen") {
+                    AlbumPickerView(excluded: Set(candidates.map(\.albumID))) { id in
+                        model.setDecision(.extendExisting(id), for: proposal)
+                        dismiss()
+                    }
+                }
+            } header: {
+                Text("Vorhandenes Album ergänzen")
             }
         }
         .navigationTitle("Anpassen")
@@ -329,5 +354,42 @@ struct AdjustProposalView: View {
             ToolbarItem(placement: .cancellationAction) { Button("Abbrechen") { dismiss() } }
         }
         .onAppear { title = model.userTitles[proposal.id] ?? (proposal.requiresUserName ? "" : proposal.title) }
+    }
+}
+
+/// Every album SORTLY may change, searchable; used when no suggested album fits.
+struct AlbumPickerView: View {
+    @Environment(AppModel.self) private var model
+    var excluded: Set<CollectionID> = []
+    var onPick: (CollectionID) -> Void
+    @State private var query = ""
+
+    private var albums: [CollectionSnapshot] {
+        let all = model.inventory.albums.filter { $0.isEditableAlbum && !excluded.contains($0.id) }
+        let filtered = query.isEmpty ? all : all.filter { $0.title.localizedCaseInsensitiveContains(query) }
+        return filtered.sorted { $0.title.localizedStandardCompare($1.title) == .orderedAscending }
+    }
+
+    var body: some View {
+        List {
+            if albums.isEmpty {
+                Text(query.isEmpty ? LocalizedStringKey("Noch keine Alben") : LocalizedStringKey("Kein Album gefunden")).foregroundStyle(.secondary)
+            }
+            ForEach(albums) { album in
+                Button {
+                    onPick(album.id)
+                } label: {
+                    HStack {
+                        Label(album.title, systemImage: "rectangle.stack")
+                        Spacer()
+                        Text(album.assetIDs.count.formatted()).foregroundStyle(.secondary).monospacedDigit()
+                    }
+                }
+                .foregroundStyle(.primary)
+            }
+        }
+        .searchable(text: $query, prompt: Text("Album suchen"))
+        .navigationTitle("Album wählen")
+        .navigationBarTitleDisplayMode(.inline)
     }
 }

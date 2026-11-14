@@ -88,19 +88,22 @@ struct OverviewView: View {
                     HStack {
                         Text(model.analysis.stage?.label ?? "Analyse läuft").font(.headline)
                         Spacer()
-                        Button("Pause") { model.pauseAnalysis() }.font(.subheadline.weight(.semibold))
+                        Button("Pause") { model.pauseAnalysis() }.font(.subheadline.weight(.semibold)).frame(minHeight: 44)
                     }
                     VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
                         Text(model.analysis.stage?.label ?? "Analyse läuft").font(.headline)
-                        Button("Pause") { model.pauseAnalysis() }.font(.subheadline.weight(.semibold))
+                        Button("Pause") { model.pauseAnalysis() }.font(.subheadline.weight(.semibold)).frame(minHeight: 44)
                     }
                 }
-                ProgressView(value: model.analysis.fraction)
-                    .tint(Theme.accent)
-                if model.analysis.total > 0 {
-                    Text("\(model.analysis.completed.formatted()) von \(model.analysis.total.formatted())")
-                        .font(.footnote).foregroundStyle(.secondary).monospacedDigit()
+                VStack(alignment: .leading, spacing: Theme.Spacing.s) {
+                    ProgressView(value: model.analysis.fraction)
+                        .tint(Theme.accent)
+                    if model.analysis.total > 0 {
+                        Text("\(model.analysis.completed.formatted()) von \(model.analysis.total.formatted())")
+                            .font(.footnote).foregroundStyle(.secondary).monospacedDigit()
+                    }
                 }
+                .accessibilityElement(children: .combine) // one element: bar plus "150 von 240"
             } else if let reason = model.analysis.lastReport?.pausedBecause {
                 Text(reason.label).font(.headline)
                 Text("Die Analyse setzt genau dort fort, wo sie aufgehört hat.").font(.subheadline).foregroundStyle(.secondary)
@@ -119,7 +122,7 @@ struct OverviewView: View {
                         }
                     }
                     if !typeSize.isAccessibilitySize { Spacer() }
-                    Button("Neu prüfen") { model.startAnalysis() }.font(.subheadline.weight(.semibold))
+                    Button("Neu prüfen") { model.startAnalysis() }.font(.subheadline.weight(.semibold)).frame(minHeight: 44)
                 }
                 if let pending = model.analysis.lastReport?.placesPendingOnline, pending > 0 {
                     Label("\(pending) Orte werden später genauer bestimmt.", systemImage: "moon.zzz")
@@ -168,7 +171,7 @@ struct OverviewView: View {
                 if proposals.isEmpty {
                     Text("Noch keine Vorschläge")
                 } else {
-                    Text("\(proposals.count) Vorschläge · \(existing) Alben gefunden")
+                    Text(Counted.join([String(localized: "\(proposals.count) Vorschläge"), String(localized: "\(existing) Alben gefunden")]))
                 }
             }
             .font(.footnote).foregroundStyle(.secondary)

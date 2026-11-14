@@ -51,23 +51,44 @@ struct AtlasMap: View {
     var highlighted: Set<String>
     /// The most recently revealed country is drawn in orange.
     var latest: String? = nil
+    /// Called with the visited country under the finger; nil = the map is not tappable.
+    var onTapCountry: ((String) -> Void)? = nil
+    @State private var size: CGSize = .zero
+
+    private static func path(_ country: AtlasOutlines.Country, in size: CGSize) -> Path {
+        let north = 83.0, south = -56.0
+        func point(_ c: GeoCoordinate) -> CGPoint {
+            CGPoint(x: (c.longitude + 180) / 360 * size.width,
+                    y: (north - min(max(c.latitude, south), north)) / (north - south) * size.height)
+        }
+        var path = Path()
+        for ring in country.rings {
+            guard let first = ring.first else { continue }
+            path.move(to: point(first))
+            for c in ring.dropFirst() { path.addLine(to: point(c)) }
+            path.closeSubpath()
+        }
+        return path
+    }
+
+    /// The visited country at `location`; small countries get a few points of slack.
+    private func country(at location: CGPoint) -> String? {
+        let visited = outlines.filter { highlighted.contains($0.code) }
+        let paths = visited.map { ($0.code, Self.path($0, in: size)) }
+        if let hit = paths.first(where: { $0.1.contains(location, eoFill: true) }) { return hit.0 }
+        func distance(_ rect: CGRect) -> CGFloat {
+            hypot(max(rect.minX - location.x, 0, location.x - rect.maxX), max(rect.minY - location.y, 0, location.y - rect.maxY))
+        }
+        return paths.map { ($0.0, distance($0.1.boundingRect)) }
+            .filter { $0.1 <= 12 }
+            .min { $0.1 < $1.1 }?.0
+    }
 
     var body: some View {
         Canvas { context, size in
-            let north = 83.0, south = -56.0
-            func point(_ c: GeoCoordinate) -> CGPoint {
-                CGPoint(x: (c.longitude + 180) / 360 * size.width,
-                        y: (north - min(max(c.latitude, south), north)) / (north - south) * size.height)
-            }
             var land = Path(), visited = Path(), recent = Path()
             for country in outlines {
-                var path = Path()
-                for ring in country.rings {
-                    guard let first = ring.first else { continue }
-                    path.move(to: point(first))
-                    for c in ring.dropFirst() { path.addLine(to: point(c)) }
-                    path.closeSubpath()
-                }
+                let path = Self.path(country, in: size)
                 if country.code == latest { recent.addPath(path) }
                 else if highlighted.contains(country.code) { visited.addPath(path) }
                 else { land.addPath(path) }
@@ -78,7 +99,13 @@ struct AtlasMap: View {
             context.fill(recent, with: .color(AtlasStyle.latest), style: fill)
         }
         .aspectRatio(360 / 139, contentMode: .fit)
-        .accessibilityHidden(true)
+        .onGeometryChange(for: CGSize.self) { $0.size } action: { size = $0 }
+        .onTapGesture(coordinateSpace: .local) { location in
+            guard let onTapCountry, let code = country(at: location) else { return }
+            onTapCountry(code)
+        }
+        .allowsHitTesting(onTapCountry != nil)
+        .accessibilityHidden(true) // the country list below is the accessible way in
     }
 }
 
@@ -231,6 +258,8 @@ struct AtlasContent: View {
     var atlas: TravelAtlas
     var outlines: [AtlasOutlines.Country]
     var revealed: Int
+    /// Country tapped on the map; opens its photos like a tap in the list.
+    @State private var tappedCountry: String?
     @ScaledMetric(relativeTo: .largeTitle) private var numberSize: CGFloat = 56
 
     var body: some View {
@@ -238,7 +267,9 @@ struct AtlasContent: View {
         let shown = Array(order.prefix(revealed))
         VStack(alignment: .leading, spacing: Theme.Spacing.l) {
             Card {
-                AtlasMap(outlines: outlines, highlighted: Set(shown), latest: revealed < order.count ? shown.last : nil)
+                AtlasMap(outlines: outlines, highlighted: Set(shown), latest: revealed < order.count ? shown.last : nil) {
+                    tappedCountry = $0
+                }
                 VStack(alignment: .leading, spacing: 2) {
                     HStack(alignment: .firstTextBaseline, spacing: 8) {
                         Text(shown.count.formatted())
@@ -263,8 +294,8 @@ struct AtlasContent: View {
             }
 
             LazyVGrid(columns: [GridItem(.flexible(), spacing: Theme.Spacing.m), GridItem(.flexible())], spacing: Theme.Spacing.m) {
-                tile("building.2.fill", atlas.cityCount.formatted(), "Städte")
-                tile("airplane", atlas.tripCount.formatted(), "Reisen")
+                tile("building.2.fill", atlas.cityCount.formatted(), atlas.cityCount == 1 ? "Stadt" : "Städte")
+                tile("airplane", atlas.tripCount.formatted(), atlas.tripCount == 1 ? "Reise" : "Reisen")
                 if atlas.year == nil, let year = atlas.sinceYear { tile("calendar", String(year), "unterwegs seit") }
                 if let days = atlas.longestTripDays { tile("clock.fill", "\(days)", days == 1 ? "Tag längste Reise" : "Tage längste Reise") }
             }
@@ -279,21 +310,32 @@ struct AtlasContent: View {
             if !shown.isEmpty {
                 VStack(alignment: .leading, spacing: 0) {
                     ForEach(Array(shown.enumerated()), id: \.element) { index, code in
-                        HStack(spacing: Theme.Spacing.m) {
-                            Text(TravelAtlas.flag(code)).font(.title2)
-                            Text(AtlasStyle.countryName(code))
-                            Spacer()
-                            if atlas.newCountryCodes.contains(code) {
-                                Text("Neu").font(.caption.weight(.semibold))
-                                    .padding(.horizontal, 8).padding(.vertical, 3)
-                                    .background(Theme.accent.opacity(0.15), in: Capsule())
-                                    .foregroundStyle(Theme.accent)
-                            } else if let date = atlas.firstVisits[code] {
-                                Text(String(Calendar.current.component(.year, from: date)))
-                                    .monospacedDigit().foregroundStyle(.secondary)
+                        // Destination-based link (see DECISIONS: no value-based links).
+                        NavigationLink {
+                            CountryPhotosView(code: code, year: atlas.year)
+                        } label: {
+                            HStack(spacing: Theme.Spacing.m) {
+                                Text(TravelAtlas.flag(code)).font(.title2).accessibilityHidden(true)
+                                Text(AtlasStyle.countryName(code))
+                                Spacer()
+                                if atlas.newCountryCodes.contains(code) {
+                                    Text("Neu").font(.caption.weight(.semibold))
+                                        .padding(.horizontal, 8).padding(.vertical, 3)
+                                        .background(Theme.accent.opacity(0.15), in: Capsule())
+                                        .foregroundStyle(Theme.accent)
+                                } else if let date = atlas.firstVisits[code] {
+                                    Text(verbatim: String(Calendar.current.component(.year, from: date)))
+                                        .monospacedDigit().foregroundStyle(.secondary)
+                                }
+                                Image(systemName: "chevron.right")
+                                    .font(.footnote.weight(.semibold)).foregroundStyle(.tertiary)
+                                    .accessibilityHidden(true)
                             }
+                            .padding(.vertical, 10)
+                            .frame(minHeight: 44)
+                            .contentShape(Rectangle())
                         }
-                        .padding(.vertical, 10)
+                        .buttonStyle(.plain)
                         .transition(.move(edge: .bottom).combined(with: .opacity))
                         if index < shown.count - 1 { Divider() }
                     }
@@ -301,6 +343,9 @@ struct AtlasContent: View {
                 .padding(.horizontal, Theme.Spacing.l)
                 .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous))
             }
+        }
+        .navigationDestination(item: $tappedCountry) { code in
+            CountryPhotosView(code: code, year: atlas.year)
         }
     }
 
@@ -334,7 +379,8 @@ struct AtlasTeaser: View {
                     HStack {
                         VStack(alignment: .leading, spacing: 2) {
                             Text("Dein Reise-Atlas").font(.headline)
-                            Text("\(atlas.countryCodes.count) Länder · \(atlas.cityCount) Städte · \(atlas.tripCount) Reisen")
+                            Text(Counted.join([String(localized: "\(atlas.countryCodes.count) Länder"), String(localized: "\(atlas.cityCount) Städte"),
+                                               String(localized: "\(atlas.tripCount) Reisen")]))
                                 .font(.subheadline).foregroundStyle(.secondary)
                         }
                         Spacer()
@@ -407,8 +453,8 @@ struct ShareCard: View {
                         .padding(.vertical, cover == nil ? 24 : 4)
                     flags(order)
                     HStack(spacing: 40) {
-                        stat(atlas.cityCount, "Städte")
-                        stat(atlas.tripCount, "Reisen")
+                        stat(atlas.cityCount, atlas.cityCount == 1 ? "Stadt" : "Städte")
+                        stat(atlas.tripCount, atlas.tripCount == 1 ? "Reise" : "Reisen")
                         if let days = atlas.longestTripDays, days > 1 { stat(days, "Tage am Stück") }
                     }
                     if cover == nil, let city = atlas.favoriteTripCity {

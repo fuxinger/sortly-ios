@@ -22,6 +22,14 @@ final class SortlyFlowUITests: XCTestCase {
         app.buttons.matching(NSPredicate(format: "label CONTAINS %@", text)).firstMatch
     }
 
+    /// The search tab (`Tab(role: .search)`) carries the system's own label.
+    private func searchTabButton() -> XCUIElement {
+        for label in ["Suchen", "Suche", "Search"] where app.tabBars.buttons[label].exists {
+            return tabButton(label)
+        }
+        return app.tabBars.buttons.element(boundBy: app.tabBars.buttons.count - 1)
+    }
+
     /// A tab bar button; the iOS 26 tab bar shrinks while scrolling, so it is expanded first.
     private func tabButton(_ name: String) -> XCUIElement {
         let button = app.tabBars.buttons[name]
@@ -87,7 +95,8 @@ final class SortlyFlowUITests: XCTestCase {
         do {
             try app.performAccessibilityAudit { issue in
                 let element = issue.element
-                print("A11Y_ISSUE \(screen) | type \(issue.auditType.rawValue) | \(issue.compactDescription) | label '\(element?.label ?? "-")' | \(element?.elementType.rawValue ?? 0)")
+                let frame = element.map { f in "\(Int(f.frame.minX)),\(Int(f.frame.minY)) \(Int(f.frame.width))x\(Int(f.frame.height))" } ?? "-"
+                print("A11Y_ISSUE \(screen) | type \(issue.auditType.rawValue) | \(issue.compactDescription) | label '\(element?.label ?? "-")' | \(element?.elementType.rawValue ?? 0) | id '\(element?.identifier ?? "-")' | \(frame)")
                 return true // collect everything, the report decides
             }
             print("A11Y_AUDIT_DONE \(screen)")
@@ -112,6 +121,25 @@ final class SortlyFlowUITests: XCTestCase {
         }
     }
 
+    /// Polls until `condition` held on `stableChecks` checks in a row (2 s apart).
+    @discardableResult
+    private func waitStable(_ what: String, timeout: TimeInterval, stableChecks: Int = 3, _ condition: () -> Bool) -> Bool {
+        let deadline = Date().addingTimeInterval(timeout)
+        var streak = 0
+        while Date() < deadline {
+            streak = condition() ? streak + 1 : 0
+            if streak >= stableChecks { return true }
+            sleep(2)
+        }
+        print("UI_STEP_MISSING \(what) (timeout \(Int(timeout)) s)")
+        return false
+    }
+
+    /// The overview shows "Analyse aktuell" and no running analysis (no "Pause").
+    private var analysisIdle: Bool {
+        anything("Analyse aktuell").exists && !app.buttons["Pause"].exists
+    }
+
     // MARK: Tests
 
     func test1_FullFlow() {
@@ -129,7 +157,12 @@ final class SortlyFlowUITests: XCTestCase {
                 button("Zugriff erlauben").tap()
                 allowPhotosIfAsked()
             }
-            tap(button("Weiter"), "access granted", timeout: 20)
+            // With access granted the app moves on by itself; "Weiter" only appears when
+            // access had been granted before.
+            if button("Weiter").waitForExistence(timeout: 3) { button("Weiter").tap() }
+            let trial = button("Analyse starten").waitForExistence(timeout: 20)
+            print(trial ? "UI_STEP_OK access granted" : "UI_STEP_MISSING access granted")
+            XCTAssertTrue(trial, "Onboarding did not reach the trial step")
             shot("04-trial"); audit("trial")
             tap(button("Analyse starten"), "start analysis")
             allowNotificationsIfAsked()
@@ -141,16 +174,23 @@ final class SortlyFlowUITests: XCTestCase {
             shot("05-overview-empty")
             tap(demo, "seed demo library")
             let started = Date()
-            XCTAssertTrue(waitGone(demo, timeout: 600), "Demo library not created")
+            // The card says so once every photo is in the library (the button goes away at once).
+            XCTAssertTrue(anything("Beispiel-Mediathek ist angelegt").waitForExistence(timeout: 600), "Demo library not created")
             print("UI_TIMING seed \(Int(Date().timeIntervalSince(started))) s")
         } else {
             print("UI_STEP_MISSING demo button (already seeded?)")
         }
-        sleep(3)
         let analysed = Date()
-        XCTAssertTrue(anything("Analyse aktuell").waitForExistence(timeout: 1200), "Analysis did not finish")
+        // Seeding starts a fresh analysis; wait until it ran and the overview stays idle.
+        XCTAssertTrue(waitStable("analysis finished", timeout: 1200) { analysisIdle }, "Analysis did not finish")
         print("UI_TIMING analysis \(Int(Date().timeIntervalSince(analysed))) s")
-        sleep(2)
+        // The demo library holds 12 trips; "1 Reisen" was a real detection bug.
+        let teaser = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Dein Reise-Atlas")).firstMatch
+        if teaser.waitForExistence(timeout: 10) {
+            print("UI_FACT atlas \(teaser.label)")
+            let trips = teaser.label.firstMatch(of: #/(\d+) Reise/#).flatMap { Int($0.1) } ?? 0
+            XCTAssertGreaterThanOrEqual(trips, 8, "Too few trips detected in the demo library: \(teaser.label)")
+        }
         shot("06-overview"); audit("overview")
         app.swipeUp(); sleep(1)
         shot("06b-overview-areas")
@@ -217,6 +257,19 @@ final class SortlyFlowUITests: XCTestCase {
             shot("12-atlas"); audit("atlas")
             app.swipeUp(); sleep(1)
             shot("12b-atlas-list")
+            // A country opens its photos (list row; the map does the same for sighted users).
+            let italy = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Italien")).firstMatch
+            if tap(italy, "open country", timeout: 10) {
+                let opened = app.navigationBars["Italien"].waitForExistence(timeout: 5)
+                print(opened ? "UI_STEP_OK country photos opened" : "UI_STEP_MISSING country photos opened")
+                XCTAssertTrue(opened, "Tapping a country did not open its photos")
+                let photos = app.buttons.matching(NSPredicate(format: "label MATCHES %@", ".*20[0-9][0-9].*")).count
+                print("UI_FACT country photos \(photos)")
+                XCTAssertGreaterThan(photos, 5, "The country screen shows no photos")
+                sleep(1)
+                shot("12c-country"); audit("country")
+                back(); sleep(1)
+            }
             if tap(app.buttons["Reise-Atlas teilen"], "share atlas") {
                 sleep(3)
                 shot("13-share-card"); audit("share card")
@@ -255,9 +308,8 @@ final class SortlyFlowUITests: XCTestCase {
             shot("18-albums"); audit("albums")
         }
 
-        // Search
-        let searchTab = tabButton("Suche").exists ? tabButton("Suche") : app.tabBars.buttons.element(boundBy: app.tabBars.buttons.count - 1)
-        if tap(searchTab, "search tab") {
+        // Search (the system names the search tab itself)
+        if tap(searchTabButton(), "search tab") {
             sleep(1)
             shot("19-search-empty")
             let field = app.searchFields.firstMatch
@@ -378,8 +430,8 @@ final class SortlyFlowUITests: XCTestCase {
         launch()
         sleep(5)
         sweep("Übersicht", depth: 0)
-        for tab in ["Mediathek", "Alben", "Suche"] {
-            let button = tabButton(tab)
+        for tab in ["Mediathek", "Alben", "Suchen"] {
+            let button = tab == "Suchen" ? searchTabButton() : tabButton(tab)
             guard button.waitForExistence(timeout: 5) else { print("UI_STEP_MISSING sweep tab \(tab)"); continue }
             button.tap(); sleep(2)
             sweep(tab, depth: 0)

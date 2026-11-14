@@ -28,6 +28,41 @@ struct MatchingTests {
         #expect(result.reasons.contains(.missingItems(count: 38)))
     }
 
+    @Test("An album the user marked as not fitting is never offered for that suggestion again")
+    func rejectedMatchIsSkipped() throws {
+        let garda = ids("garda", 0..<100)
+        let wrong = CollectionSnapshot(id: "sommer", title: "Sommer", assetIDs: ids("garda", 0..<90))
+        let other = CollectionSnapshot(id: "see", title: "Gardasee", assetIDs: ids("garda", 0..<60))
+        let proposal = tripProposal("p-garda", garda, title: "Gardasee 2026")
+        let inventory = CollectionInventory([wrong, other])
+        let before = try #require(matcher.match([proposal], against: inventory)[proposal.id])
+        #expect(before.best?.albumID == "sommer")
+
+        let overrides = OverrideSet([UserOverride(scope: .albumForSource("sommer", proposal.id), decision: .notMatchingAlbum)])
+        let after = try #require(matcher.match([proposal], against: inventory, overrides: overrides)[proposal.id])
+        #expect(after.best?.albumID == "see")
+        #expect(!after.alternatives.contains { $0.albumID == "sommer" })
+
+        // Only for this suggestion: another suggestion may still use the album.
+        let sibling = tripProposal("p-other", garda, title: "Sommer")
+        #expect(matcher.match([sibling], against: inventory, overrides: overrides)[sibling.id]?.best?.albumID == "sommer")
+
+        // Nothing else left: a new album is required.
+        let both = OverrideSet([UserOverride(scope: .albumForSource("sommer", proposal.id), decision: .notMatchingAlbum),
+                                UserOverride(scope: .albumForSource("see", proposal.id), decision: .notMatchingAlbum)])
+        let none = try #require(matcher.match([proposal], against: inventory, overrides: both)[proposal.id])
+        #expect(none.best == nil)
+        #expect(none.status == .newAlbumRequired)
+    }
+
+    @Test("The override survives a round trip through the store format")
+    func rejectedMatchOverrideIsCodable() throws {
+        let original = UserOverride(scope: .albumForSource("sommer", SortlyID("p")), decision: .notMatchingAlbum)
+        let decoded = try JSONDecoder().decode(UserOverride.self, from: JSONEncoder().encode(original))
+        #expect(decoded == original)
+        #expect(OverrideSet([decoded]).isRejectedMatch("sommer", for: SortlyID("p")))
+    }
+
     @Test("Scenario C: a country collection is not a substitute for single trips")
     func scenarioC() throws {
         let t1 = ids("rome24", 0..<50), t2 = ids("rome25", 0..<40), t3 = ids("florence", 0..<30)

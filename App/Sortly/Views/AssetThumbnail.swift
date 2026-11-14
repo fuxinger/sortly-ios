@@ -59,6 +59,7 @@ enum ThumbnailRequest {
         private var continuation: CheckedContinuation<UIImage?, Never>?
         private var requestID: PHImageRequestID?
         private var cancelled = false
+        private var lowResolution: UIImage?
 
         /// Returns false if the task was cancelled before the request could start.
         func begin(_ c: CheckedContinuation<UIImage?, Never>) -> Bool {
@@ -69,6 +70,9 @@ enum ThumbnailRequest {
             }
         }
         func started(_ id: PHImageRequestID) { lock.withLock { requestID = id } }
+        /// A small preview Photos delivers first; used only if the real thumbnail never comes.
+        func keep(_ image: UIImage) { lock.withLock { lowResolution = image } }
+        var kept: UIImage? { lock.withLock { lowResolution } }
         func finish(_ image: UIImage?) {
             let c: CheckedContinuation<UIImage?, Never>? = lock.withLock {
                 defer { continuation = nil }
@@ -98,10 +102,15 @@ enum ThumbnailRequest {
                 options.isNetworkAccessAllowed = false
                 let id = manager.value.requestImage(for: asset.value, targetSize: size, contentMode: .aspectFill, options: options) { image, info in
                     let degraded = (info?[PHImageResultIsDegradedKey] as? Bool) ?? false
-                    let failed = (info?[PHImageCancelledKey] as? Bool) ?? false || info?[PHImageErrorKey] != nil
-                    // Take the first usable image; an opportunistic final image would arrive later.
-                    if degraded && image == nil && !failed { return }
-                    state.finish(image)
+                    if degraded {
+                        // A preview that is nearly sharp enough is shown at once; a tiny one would
+                        // stay blurry in the cache, so it only serves as fallback.
+                        guard let image else { return }
+                        let pixels = min(image.size.width * image.scale, image.size.height * image.scale)
+                        if pixels >= min(size.width, size.height) * 0.7 { state.finish(image) } else { state.keep(image) }
+                        return
+                    }
+                    state.finish(image ?? state.kept)
                 }
                 state.started(id)
             }
@@ -115,12 +124,14 @@ enum ThumbnailRequest {
 struct AssetThumbnail: View {
     var id: AssetID
     var side: CGFloat = 80
+    /// Which part stays visible when the photo is cropped; screenshots keep their top.
+    var anchor: Alignment = .center
     @State private var image: UIImage?
 
     var body: some View {
         Rectangle()
             .fill(Color(uiColor: .tertiarySystemFill))
-            .overlay {
+            .overlay(alignment: anchor) {
                 if let image {
                     Image(uiImage: image).resizable().scaledToFill()
                 }
@@ -131,18 +142,21 @@ struct AssetThumbnail: View {
     }
 }
 
-/// Grid of thumbnails with a "+N" tile.
+/// Grid of thumbnails with a "+N" tile. Few photos get larger tiles; screenshots and
+/// documents are shown upright from the top, where their title is.
 struct ThumbnailGrid: View {
     var ids: [AssetID]
     var columns = 4
     var limit = 12
+    var portrait = false
 
     var body: some View {
         let shown = Array(ids.prefix(limit))
-        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 3), count: columns), spacing: 3) {
+        let count = min(columns, max(shown.count, 2))
+        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 3), count: count), spacing: 3) {
             ForEach(Array(shown.enumerated()), id: \.element) { index, id in
-                AssetThumbnail(id: id, side: 100)
-                    .aspectRatio(1, contentMode: .fill)
+                AssetThumbnail(id: id, side: count <= 2 ? 200 : (count == 3 ? 140 : 100), anchor: portrait ? .top : .center)
+                    .aspectRatio(portrait ? 0.75 : 1, contentMode: .fill)
                     .overlay {
                         if index == shown.count - 1 && ids.count > limit {
                             Color.black.opacity(0.45)

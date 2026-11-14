@@ -177,6 +177,18 @@ struct LocalizationTests {
         #expect(String(format: twoArgs, "3", "7") == "3 of 7")
     }
 
+    /// German singular forms ("1 Reise", not "1 Reisen") come from the catalog's plural variations.
+    @Test func germanSingulars() throws {
+        let path = try #require(Bundle.main.path(forResource: "de", ofType: "lproj"), "de.lproj missing")
+        let bundle = try #require(Bundle(path: path))
+        for (key, one, many) in [("%lld Fotos", "1 Foto", "2 Fotos"), ("%lld Reisen", "1 Reise", "2 Reisen"),
+                                 ("%lld Länder", "1 Land", "2 Länder"), ("%lld Vorschläge", "1 Vorschlag", "2 Vorschläge")] {
+            let format = bundle.localizedString(forKey: key, value: nil, table: nil)
+            #expect(String.localizedStringWithFormat(format, 1) == one)
+            #expect(String.localizedStringWithFormat(format, 2) == many)
+        }
+    }
+
     @Test func germanStaysSource() {
         #expect(Bundle.main.developmentLocalization == "de")
     }
@@ -188,7 +200,9 @@ struct DemoLibraryTests {
     @Test func rendersPhotosScreenshotsAndDocuments() throws {
         var rng = SeededRandom(seed: 1)
         let photo = DemoLibrary.crop(AtlasRenderingTests.sampleCover(), rng: &rng)
-        #expect(photo.size.width * photo.size.height == 1600 * 1200)
+        // Pixel size, not points: UIKit reports CGFloat sizes that can be off by a rounding error.
+        let pixels = try #require(photo.cgImage)
+        #expect(Set([pixels.width, pixels.height]) == [1600, 1200])
         let png = DemoLibrary.screenshotPNG(["Bordkarte", "MUC → FCO"])
         let source = try #require(CGImageSourceCreateWithData(png as CFData, nil))
         let properties = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any]

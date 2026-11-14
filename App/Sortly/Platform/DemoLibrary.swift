@@ -221,21 +221,45 @@ final class DemoLibrary {
 
     /// iPhone-sized screenshot with an EXIF "Screenshot" comment, as iOS writes it.
     static func screenshotPNG(_ lines: [String]) -> Data {
+        // Looks like a real app screen: status bar, colored header with the title, the
+        // details in a list and a button, so previews are recognizable at any crop.
         let size = CGSize(width: 1179, height: 2556)
         let format = UIGraphicsImageRendererFormat.default()
         format.scale = 1
+        let palette: [UIColor] = [.systemTeal, .systemIndigo, .systemOrange, .systemPink, .systemGreen, .systemBlue, .systemPurple, .systemRed]
+        let light = UITraitCollection(userInterfaceStyle: .light)
+        let seed: Int = (lines.first ?? "").unicodeScalars.reduce(0) { $0 + Int($1.value) }
+        let accent = palette[seed % palette.count].resolvedColor(with: light)
         let image = UIGraphicsImageRenderer(size: size, format: format).image { ctx in
-            UIColor.systemGroupedBackground.resolvedColor(with: UITraitCollection(userInterfaceStyle: .light)).setFill()
+            UIColor.systemGroupedBackground.resolvedColor(with: light).setFill()
             ctx.fill(CGRect(origin: .zero, size: size))
+            accent.setFill()
+            ctx.fill(CGRect(x: 0, y: 0, width: size.width, height: 760))
+            let white: [NSAttributedString.Key: Any] = [.font: UIFont.systemFont(ofSize: 50, weight: .semibold), .foregroundColor: UIColor.white]
+            ("9:41" as NSString).draw(at: CGPoint(x: 110, y: 52), withAttributes: white)
+            let title = lines.first ?? ""
+            (title as NSString).draw(in: CGRect(x: 72, y: 420, width: size.width - 144, height: 300),
+                                     withAttributes: [.font: UIFont.systemFont(ofSize: 104, weight: .bold), .foregroundColor: UIColor.white])
+            let details = Array(lines.dropFirst())
+            let card = CGRect(x: 48, y: 820, width: size.width - 96, height: CGFloat(details.count) * 170 + 40)
             UIColor.white.setFill()
-            UIBezierPath(roundedRect: CGRect(x: 60, y: 420, width: size.width - 120, height: CGFloat(lines.count) * 130 + 140), cornerRadius: 48).fill()
-            var y: CGFloat = 220
-            for (i, line) in lines.enumerated() {
-                let font = i == 0 ? UIFont.systemFont(ofSize: 92, weight: .bold) : UIFont.systemFont(ofSize: 58, weight: .regular)
-                if i == 1 { y = 490 }
-                (line as NSString).draw(at: CGPoint(x: i == 0 ? 72 : 110, y: y), withAttributes: [.font: font, .foregroundColor: UIColor.black])
-                y += i == 0 ? 140 : 130
+            UIBezierPath(roundedRect: card, cornerRadius: 44).fill()
+            for (i, line) in details.enumerated() {
+                let y = card.minY + 20 + CGFloat(i) * 170
+                (line as NSString).draw(in: CGRect(x: card.minX + 52, y: y + 50, width: card.width - 104, height: 90),
+                                        withAttributes: [.font: UIFont.systemFont(ofSize: 62), .foregroundColor: UIColor.black])
+                if i < details.count - 1 {
+                    UIColor.separator.resolvedColor(with: light).setFill()
+                    ctx.fill(CGRect(x: card.minX + 52, y: y + 169, width: card.width - 52, height: 2))
+                }
             }
+            let button = CGRect(x: 72, y: 2230, width: size.width - 144, height: 150)
+            accent.setFill()
+            UIBezierPath(roundedRect: button, cornerRadius: 75).fill()
+            let label = "Details anzeigen" as NSString
+            let attributes: [NSAttributedString.Key: Any] = [.font: UIFont.systemFont(ofSize: 60, weight: .semibold), .foregroundColor: UIColor.white]
+            let labelSize = label.size(withAttributes: attributes)
+            label.draw(at: CGPoint(x: button.midX - labelSize.width / 2, y: button.midY - labelSize.height / 2), withAttributes: attributes)
         }
         let data = NSMutableData()
         guard let cg = image.cgImage,

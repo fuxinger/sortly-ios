@@ -18,28 +18,53 @@ struct OnboardingView: View {
                 default: start
                 }
             }
-            .padding(Theme.Spacing.l)
-            .frame(maxWidth: 560)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Theme.background)
             .animation(.default, value: step)
         }
     }
 
+    /// One onboarding step: the content scrolls when it does not fit (large text, small
+    /// iPhones) and is centered when it does; the button stays at the bottom.
+    private func page<Content: View, Footer: View>(
+        centered: Bool = true,
+        @ViewBuilder content: () -> Content,
+        @ViewBuilder footer: () -> Footer
+    ) -> some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: Theme.Spacing.l) { content() }
+                .frame(maxWidth: 560, alignment: .leading)
+                .frame(maxWidth: .infinity)
+                .padding(.horizontal, Theme.Spacing.l)
+                .padding(.vertical, Theme.Spacing.l)
+        }
+        .scrollBounceBehavior(.basedOnSize)
+        .defaultScrollAnchor(centered ? .center : .top, for: .alignment)
+        .safeAreaInset(edge: .bottom) {
+            footer()
+                .frame(maxWidth: 560)
+                .padding(.horizontal, Theme.Spacing.l)
+                .padding(.vertical, Theme.Spacing.m)
+                .frame(maxWidth: .infinity)
+                .background(Theme.background)
+        }
+    }
+
     // MARK: Steps
 
     private var welcome: some View {
-        VStack(alignment: .leading, spacing: Theme.Spacing.xl) {
-            Spacer()
+        page {
             Text("SORTLY").font(.subheadline.weight(.semibold)).foregroundStyle(.secondary)
             Text("Deine Fotos, endlich sortiert.").font(.largeTitle.weight(.bold))
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.bottom, Theme.Spacing.s)
             VStack(alignment: .leading, spacing: Theme.Spacing.l) {
                 promise("iphone", "Alles bleibt auf deinem iPhone. Nichts wird hochgeladen.")
                 promise("lock.shield", "Originale werden nie gelöscht, verändert oder kopiert.")
                 promise("checklist", "Du siehst jeden Vorschlag, bevor etwas passiert, und kannst alles rückgängig machen.")
                 promise("rectangle.stack", "Vorhandene Alben werden erkannt und ergänzt statt doppelt angelegt.")
             }
-            Spacer()
+        } footer: {
             Button("Los geht’s") { step = 1 }.buttonStyle(PrimaryButtonStyle())
         }
     }
@@ -52,32 +77,33 @@ struct OnboardingView: View {
     }
 
     private var areas: some View {
-        VStack(alignment: .leading, spacing: Theme.Spacing.l) {
+        page(centered: false) {
             Text("Was soll SORTLY sortieren?").font(.title.weight(.bold))
+                .fixedSize(horizontal: false, vertical: true)
             Text("Die markierten Bereiche zählen als deine Hauptsortierung. Du kannst das später jederzeit ändern.")
                 .foregroundStyle(.secondary)
-            ScrollView {
-                VStack(spacing: Theme.Spacing.s) {
-                    ForEach(OrganizationArea.available, id: \.self) { area in
-                        Toggle(isOn: Binding(
-                            get: { model.settings.enabledAreas.contains(area) },
-                            set: { on in
-                                if on { model.settings.enabledAreas.insert(area) } else { model.settings.enabledAreas.remove(area) }
-                            }
-                        )) {
-                            HStack(spacing: Theme.Spacing.m) {
-                                IconTile(systemName: area.symbol, tint: area.tint)
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(area.title).font(.body.weight(.medium))
-                                    Text(area.explanation).font(.footnote).foregroundStyle(.secondary)
-                                }
+                .fixedSize(horizontal: false, vertical: true)
+            VStack(spacing: Theme.Spacing.s) {
+                ForEach(OrganizationArea.available, id: \.self) { area in
+                    Toggle(isOn: Binding(
+                        get: { model.settings.enabledAreas.contains(area) },
+                        set: { on in
+                            if on { model.settings.enabledAreas.insert(area) } else { model.settings.enabledAreas.remove(area) }
+                        }
+                    )) {
+                        HStack(spacing: Theme.Spacing.m) {
+                            IconTile(systemName: area.symbol, tint: area.tint)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(area.title).font(.body.weight(.medium))
+                                Text(area.explanation).font(.footnote).foregroundStyle(.secondary)
                             }
                         }
-                        .padding(Theme.Spacing.m)
-                        .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.Radius.card - 6, style: .continuous))
                     }
+                    .padding(Theme.Spacing.m)
+                    .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.Radius.card - 6, style: .continuous))
                 }
             }
+        } footer: {
             Button("Weiter") {
                 model.saveSettings()
                 step = 2
@@ -88,12 +114,13 @@ struct OnboardingView: View {
     }
 
     private var access: some View {
-        VStack(alignment: .leading, spacing: Theme.Spacing.l) {
-            Spacer()
+        page {
             IconTile(systemName: "photo.on.rectangle", tint: Theme.accent).scaleEffect(1.4).padding(.bottom, Theme.Spacing.s)
             Text("Zugriff auf deine Fotos").font(.title.weight(.bold))
+                .fixedSize(horizontal: false, vertical: true)
             Text("SORTLY braucht vollen Zugriff, um deine Mediathek zu analysieren und Alben anzulegen. Die Analyse passiert nur auf diesem iPhone.")
                 .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
             switch model.access {
             case .denied, .restricted:
                 Card {
@@ -111,7 +138,7 @@ struct OnboardingView: View {
             default:
                 EmptyView()
             }
-            Spacer()
+        } footer: {
             if model.access.canRead {
                 Button("Weiter") { step = 3 }.buttonStyle(PrimaryButtonStyle())
             } else {
@@ -128,26 +155,50 @@ struct OnboardingView: View {
 
     private var start: some View {
         let currentYear = Calendar.current.component(.year, from: Date())
-        return VStack(alignment: .leading, spacing: Theme.Spacing.l) {
-            Spacer()
+        return page {
             Text("Erst ein Probelauf?").font(.title.weight(.bold))
+                .fixedSize(horizontal: false, vertical: true)
             Text("Die Analyse läuft immer über die ganze Mediathek. Für den ersten Durchgang kann SORTLY die Vorschläge aber auf ein Jahr beschränken, damit du das Ergebnis in Ruhe prüfen kannst.")
                 .foregroundStyle(.secondary)
-            Picker("Vorschläge für", selection: $trialYear) {
-                Text("Die ganze Mediathek").tag(Int?.none)
-                ForEach((0..<6).map { currentYear - $0 }, id: \.self) { year in
-                    Text(verbatim: "Nur \(year)").tag(Int?.some(year))
+                .fixedSize(horizontal: false, vertical: true)
+            // A settings-style row with a menu instead of a wheel (HIG: menus for short lists).
+            ViewThatFits(in: .horizontal) {
+                HStack {
+                    Text("Vorschläge für")
+                    Spacer(minLength: Theme.Spacing.m)
+                    trialPicker(currentYear)
+                }
+                VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
+                    Text("Vorschläge für")
+                    trialPicker(currentYear)
                 }
             }
-            .pickerStyle(.inline)
+            .padding(.horizontal, Theme.Spacing.l)
+            .padding(.vertical, Theme.Spacing.s)
+            .frame(minHeight: 52)
             .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous))
             Text("Die erste Analyse kann bei großen Mediatheken eine Weile dauern. Sie läuft weiter, auch wenn du die App verlässt, und zeigt den Fortschritt auf dem Sperrbildschirm. Wenn du magst, sagt SORTLY dir Bescheid, sobald sie fertig ist.")
                 .font(.footnote).foregroundStyle(.secondary)
-            Spacer()
+                .fixedSize(horizontal: false, vertical: true)
+        } footer: {
             Button("Analyse starten") {
                 model.finishOnboarding(scope: trialYear.map { .year($0) } ?? .all)
             }
             .buttonStyle(PrimaryButtonStyle())
         }
+    }
+}
+
+extension OnboardingView {
+    fileprivate func trialPicker(_ currentYear: Int) -> some View {
+        Picker("Vorschläge für", selection: $trialYear) {
+            Text("Die ganze Mediathek").tag(Int?.none)
+            ForEach((0..<6).map { currentYear - $0 }, id: \.self) { year in
+                Text("Nur \(String(year))").tag(Int?.some(year))
+            }
+        }
+        .pickerStyle(.menu)
+        .labelsHidden()
+        .tint(Theme.accent)
     }
 }

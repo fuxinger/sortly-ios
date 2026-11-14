@@ -30,13 +30,7 @@ final class Purchases {
     func allows(albums: Int) -> Bool { isUnlocked || Self.unlockedForUITests || albums <= remainingFreeAlbums }
 
     /// Debug builds only: the end-to-end UI test runs without the purchase sheet.
-    static let unlockedForUITests: Bool = {
-        #if DEBUG
-        ProcessInfo.processInfo.arguments.contains("-SortlyUITestUnlocked")
-        #else
-        false
-        #endif
-    }()
+    static var unlockedForUITests: Bool { UITestSupport.isRunning }
 
     func recordUsage(albums: Int) {
         guard albums > 0 else { return }

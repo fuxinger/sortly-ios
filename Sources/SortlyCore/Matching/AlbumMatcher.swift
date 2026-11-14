@@ -113,7 +113,10 @@ public struct AlbumMatcher: Sendable {
     }
 
     /// Matches all proposals in one pass using an inverted membership index.
-    public func match(_ proposals: [AlbumProposal], against inventory: CollectionInventory) -> [SortlyID: MatchResult] {
+    /// - Parameter overrides: albums the user marked as "passt nicht" for a suggestion are
+    ///   never offered for it again (neither as best match nor as alternative).
+    public func match(_ proposals: [AlbumProposal], against inventory: CollectionInventory,
+                      overrides: OverrideSet = OverrideSet()) -> [SortlyID: MatchResult] {
         let membership = inventory.albumMembershipIndex()
 
         // Sibling map per proposal family, to detect albums that span several siblings.
@@ -134,6 +137,7 @@ public struct AlbumMatcher: Sendable {
             results[proposal.id] = match(
                 proposal,
                 inventory: inventory,
+                overrides: overrides,
                 membership: membership,
                 siblings: siblingOf[proposal.kind.familyKey] ?? [:],
                 titleIndex: titleIndex
@@ -145,6 +149,7 @@ public struct AlbumMatcher: Sendable {
     private func match(
         _ proposal: AlbumProposal,
         inventory: CollectionInventory,
+        overrides: OverrideSet,
         membership: [AssetID: [CollectionID]],
         siblings: [AssetID: SortlyID],
         titleIndex: [String: [CollectionID]]
@@ -159,7 +164,8 @@ public struct AlbumMatcher: Sendable {
         var weak: [MatchCandidate] = []
 
         for (albumID, shared) in intersections {
-            guard let album = inventory[albumID], shared >= min(thresholds.minimumSharedItems, proposal.assetIDs.count) else { continue }
+            guard let album = inventory[albumID], shared >= min(thresholds.minimumSharedItems, proposal.assetIDs.count),
+                  !overrides.isRejectedMatch(albumID, for: proposal.id) else { continue }
             let metrics = OverlapMetrics(proposalCount: proposal.assetIDs.count, albumCount: album.assetIDs.count, intersection: shared)
 
             // Broader collection: a substantial part of the album belongs to other siblings.

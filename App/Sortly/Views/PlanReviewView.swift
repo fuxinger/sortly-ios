@@ -159,7 +159,8 @@ struct ResultCard: View {
                 Image(systemName: failed == 0 ? "checkmark.circle.fill" : "exclamationmark.circle.fill")
                     .foregroundStyle(failed == 0 ? Theme.accent : Theme.tint(for: .documents))
             }
-            Text("\(summary.newAlbums) neue Alben, \(summary.extendedAlbums) ergänzt, \(summary.distinctAssets) Fotos einsortiert.")
+            Text(Counted.join([String(localized: "\(summary.newAlbums) neue Alben"), String(localized: "\(summary.extendedAlbums) ergänzt"),
+                               String(localized: "\(summary.distinctAssets) Fotos einsortiert")], separator: ", ") + ".")
                 .font(.subheadline)
             if failed > 0 {
                 Text("\(failed) Schritte konnten nicht ausgeführt werden. Sie werden beim nächsten Durchgang erneut versucht.")
@@ -171,7 +172,7 @@ struct ResultCard: View {
         .task {
             // Ask for a rating once, at the moment the first albums are done (never after errors).
             let summary = plan.summary
-            guard summary.newAlbums + summary.extendedAlbums > 0,
+            guard !UITestSupport.isRunning, summary.newAlbums + summary.extendedAlbums > 0,
                   !plan.steps.contains(where: { if case .failed = $0.state { true } else { false } }),
                   !UserDefaults.standard.bool(forKey: Self.reviewKey) else { return }
             UserDefaults.standard.set(true, forKey: Self.reviewKey)

@@ -120,6 +120,24 @@
               }
             }
           }
+        },
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Aufnahme"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Aufnahmen"
+                }
+              }
+            }
+          }
         }
       }
     },
@@ -232,6 +250,24 @@
               }
             }
           }
+        },
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Dokument liegt nur in iCloud und wird später gelesen."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Dokumente liegen nur in iCloud und werden später gelesen."
+                }
+              }
+            }
+          }
         }
       }
     },
@@ -250,6 +286,24 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "%lld entries"
+                }
+              }
+            }
+          }
+        },
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Eintrag"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Einträge"
                 }
               }
             }
@@ -276,6 +330,24 @@
               }
             }
           }
+        },
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Foto"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Fotos"
+                }
+              }
+            }
+          }
         }
       }
     },
@@ -294,6 +366,24 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "Add %lld photos"
+                }
+              }
+            }
+          }
+        },
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Foto ergänzen"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Fotos ergänzen"
                 }
               }
             }
@@ -320,6 +410,24 @@
               }
             }
           }
+        },
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Foto hinzufügen"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Fotos hinzufügen"
+                }
+              }
+            }
+          }
         }
       }
     },
@@ -338,6 +446,24 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "%lld photos without a location fit the time frame and are only suggested."
+                }
+              }
+            }
+          }
+        },
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Foto ohne Ort passt zeitlich dazu und ist nur vorgeschlagen."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Fotos ohne Ort passen zeitlich dazu und sind nur vorgeschlagen."
                 }
               }
             }
@@ -364,6 +490,24 @@
               }
             }
           }
+        },
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Foto ist nicht mehr in der Mediathek."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Fotos sind nicht mehr in der Mediathek."
+                }
+              }
+            }
+          }
         }
       }
     },
@@ -382,6 +526,24 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "%lld shared items"
+                }
+              }
+            }
+          }
+        },
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld gemeinsame Aufnahme"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld gemeinsame Aufnahmen"
                 }
               }
             }
@@ -414,6 +576,24 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "%lld copies created"
+                }
+              }
+            }
+          }
+        },
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Kopie angelegt"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Kopien angelegt"
                 }
               }
             }
@@ -490,6 +670,24 @@
               }
             }
           }
+        },
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Original gelöscht"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Originale gelöscht"
+                }
+              }
+            }
+          }
         }
       }
     },
@@ -508,6 +706,24 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "%lld places will be refined later."
+                }
+              }
+            }
+          }
+        },
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Ort wird später genauer bestimmt."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Orte werden später genauer bestimmt."
                 }
               }
             }
@@ -534,6 +750,24 @@
               }
             }
           }
+        },
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld passende Aufnahme fehlt noch und wird ergänzt."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld passende Aufnahmen fehlen noch und werden ergänzt."
+                }
+              }
+            }
+          }
         }
       }
     },
@@ -552,6 +786,24 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "%lld steps could not be completed. They will be retried next time."
+                }
+              }
+            }
+          }
+        },
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Schritt konnte nicht ausgeführt werden. Er wird beim nächsten Durchgang erneut versucht."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Schritte konnten nicht ausgeführt werden. Sie werden beim nächsten Durchgang erneut versucht."
                 }
               }
             }
@@ -608,6 +860,24 @@
               }
             }
           }
+        },
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Vorschlag prüfen"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Vorschläge prüfen"
+                }
+              }
+            }
+          }
         }
       }
     },
@@ -626,6 +896,24 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "%lld suggestions are waiting for you."
+                }
+              }
+            }
+          }
+        },
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Vorschlag wartet auf dich."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Vorschläge warten auf dich."
                 }
               }
             }
@@ -658,6 +946,24 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "Apply %lld accepted suggestions"
+                }
+              }
+            }
+          }
+        },
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld übernommenen Vorschlag umsetzen"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld übernommene Vorschläge umsetzen"
                 }
               }
             }
@@ -2294,6 +2600,24 @@
               }
             }
           }
+        },
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Noch %lld Album kostenlos."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Noch %lld Alben kostenlos."
+                }
+              }
+            }
+          }
         }
       }
     },
@@ -3420,9 +3744,39 @@
     "Die %lld Fotos, die SORTLY hinzugefügt hat, werden aus dem Album genommen. Alles andere bleibt, wie es ist." : {
       "localizations" : {
         "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The %lld photos SORTLY added will be removed from the album. Everything else stays as it is."
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "The %lld photo SORTLY added is taken out of the album. Everything else stays as it is."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "The %lld photos SORTLY added are taken out of the album. Everything else stays as it is."
+                }
+              }
+            }
+          }
+        },
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Das %lld Foto, das SORTLY hinzugefügt hat, wird aus dem Album genommen. Alles andere bleibt, wie es ist."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Die %lld Fotos, die SORTLY hinzugefügt hat, werden aus dem Album genommen. Alles andere bleibt, wie es ist."
+                }
+              }
+            }
           }
         }
       }
@@ -3450,9 +3804,39 @@
     "Ergänzt · %lld Fotos von SORTLY" : {
       "localizations" : {
         "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Extended · %lld photos from SORTLY"
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Extended · %lld photo from SORTLY"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Extended · %lld photos from SORTLY"
+                }
+              }
+            }
+          }
+        },
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Ergänzt · %lld Foto von SORTLY"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Ergänzt · %lld Fotos von SORTLY"
+                }
+              }
+            }
           }
         }
       }
@@ -3470,9 +3854,39 @@
     "Neu angelegt · %lld Fotos von SORTLY" : {
       "localizations" : {
         "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Created · %lld photos from SORTLY"
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Created · %lld photo from SORTLY"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Created · %lld photos from SORTLY"
+                }
+              }
+            }
+          }
+        },
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Neu angelegt · %lld Foto von SORTLY"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Neu angelegt · %lld Fotos von SORTLY"
+                }
+              }
+            }
           }
         }
       }
@@ -3663,6 +4077,486 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Apply Later"
+          }
+        }
+      }
+    },
+    "%lld Länder" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld country"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld countries"
+                }
+              }
+            }
+          }
+        },
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Land"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Länder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld Städte" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld city"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld cities"
+                }
+              }
+            }
+          }
+        },
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Stadt"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Städte"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld Reisen" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld trip"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld trips"
+                }
+              }
+            }
+          }
+        },
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Reise"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Reisen"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld Vorschläge" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld suggestion"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld suggestions"
+                }
+              }
+            }
+          }
+        },
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Vorschlag"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Vorschläge"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld Alben gefunden" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld album found"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld albums found"
+                }
+              }
+            }
+          }
+        },
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Album gefunden"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Alben gefunden"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld neue Alben" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld new album"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld new albums"
+                }
+              }
+            }
+          }
+        },
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld neues Album"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld neue Alben"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld Fotos einsortiert" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld photo sorted"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld photos sorted"
+                }
+              }
+            }
+          }
+        },
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Foto einsortiert"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Fotos einsortiert"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld ergänzt" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld extended"
+          }
+        }
+      }
+    },
+    "%lld neu" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld new"
+          }
+        }
+      }
+    },
+    "Vorschlag mit %lld Aufnahmen" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Suggestion with %lld item"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Suggestion with %lld items"
+                }
+              }
+            }
+          }
+        },
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Vorschlag mit %lld Aufnahme"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Vorschlag mit %lld Aufnahmen"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "seit %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "since %@"
+          }
+        }
+      }
+    },
+    "Nur %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Only %@"
+          }
+        }
+      }
+    },
+    "Ohne Datum" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No date"
+          }
+        }
+      }
+    },
+    "Für dieses Land gibt es gerade keine Fotos." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "There are no photos for this country right now."
+          }
+        }
+      }
+    },
+    "Album „%@“ anlegen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create Album “%@”"
+          }
+        }
+      }
+    },
+    "„%@“ passt nicht" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” doesn’t fit"
+          }
+        }
+      }
+    },
+    "Dieses Album passt nicht?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This album doesn’t fit?"
+          }
+        }
+      }
+    },
+    "Nicht mehr für diesen Vorschlag anbieten" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Don’t Offer It for This Suggestion Again"
+          }
+        }
+      }
+    },
+    "SORTLY merkt sich das und schlägt stattdessen ein neues oder ein anderes passendes Album vor. Am Album selbst ändert sich nichts." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SORTLY remembers this and suggests a new or another matching album instead. Nothing changes in the album itself."
+          }
+        }
+      }
+    },
+    "Anderes Album wählen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose Another Album"
+          }
+        }
+      }
+    },
+    "Kein Album gefunden" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No album found"
+          }
+        }
+      }
+    },
+    "Album wählen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose Album"
+          }
+        }
+      }
+    },
+    "Stadt" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "City"
+          }
+        }
+      }
+    },
+    "Reise" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trip"
           }
         }
       }

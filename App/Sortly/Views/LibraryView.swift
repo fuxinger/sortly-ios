@@ -122,25 +122,26 @@ struct LibraryView: View {
         LazyVGrid(columns: [GridItem(.adaptive(minimum: 96), spacing: 3)], spacing: 3) {
             ForEach(members.prefix(3000), id: \.id) { facts in
                 let id = facts.id
-                AssetThumbnail(id: id, side: 110)
-                    .aspectRatio(1, contentMode: .fill)
-                    .overlay(alignment: .bottomTrailing) {
-                        if selecting {
-                            Image(systemName: selection.contains(id) ? "checkmark.circle.fill" : "circle")
-                                .font(.title3)
-                                .foregroundStyle(.white, selection.contains(id) ? Theme.accent : Color.black.opacity(0.3))
-                                .padding(6)
+                // A real button: VoiceOver, Switch Control and the hit-area audit see it as one.
+                Button {
+                    guard selecting else { detail = facts; return }
+                    if selection.contains(id) { selection.remove(id) } else { selection.insert(id) }
+                } label: {
+                    AssetThumbnail(id: id, side: 110)
+                        .aspectRatio(1, contentMode: .fill)
+                        .overlay(alignment: .bottomTrailing) {
+                            if selecting {
+                                Image(systemName: selection.contains(id) ? "checkmark.circle.fill" : "circle")
+                                    .font(.title3)
+                                    .foregroundStyle(.white, selection.contains(id) ? Theme.accent : Color.black.opacity(0.3))
+                                    .padding(6)
+                            }
                         }
-                    }
-                    .contentShape(Rectangle())
-                    .onTapGesture {
-                        guard selecting else { detail = facts; return }
-                        if selection.contains(id) { selection.remove(id) } else { selection.insert(id) }
-                    }
-                    .accessibilityAddTraits(.isButton)
-                    .accessibilityElement()
-                    .accessibilityLabel(Text(facts.asset.creationDate?.formatted(date: .abbreviated, time: .shortened) ?? "Foto"))
-                    .accessibilityAddTraits(selecting && selection.contains(id) ? .isSelected : [])
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(Text(facts.asset.creationDate?.formatted(date: .abbreviated, time: .shortened) ?? String(localized: "Foto")))
+                .accessibilityAddTraits(selecting && selection.contains(id) ? .isSelected : [])
             }
         }
         .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.tile, style: .continuous))

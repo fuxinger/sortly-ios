@@ -46,7 +46,7 @@ final class AppModel {
     var snapshot: ProposalSnapshot?
     var decisions: [SortlyID: ProposalDecision] = [:]
     var userTitles: [SortlyID: String] = [:]
-    var facts: [AssetFacts] = [] { didSet { bucketCache = [:]; atlasCache = [:]; atlasYearsCache = nil } }
+    var facts: [AssetFacts] = [] { didSet { bucketCache = [:]; atlasCache = [:]; atlasYearsCache = nil; countryCache = [:] } }
     var states: [AssetID: AssetOrganizationState] = [:] { didSet { bucketCache = [:] } }
     /// Filtered and sorted library buckets; rebuilt only when facts or states change, not on
     /// every redraw of the library (a selection tap redraws it).
@@ -68,6 +68,29 @@ final class AppModel {
         let years = TravelAtlas.years(facts: facts)
         atlasYearsCache = years
         return years
+    }
+
+    @ObservationIgnored private var countryCache: [String: CountryPhotos] = [:]
+
+    /// The photos of one atlas country (all years or one year), newest first.
+    func countryPhotos(_ code: String, year: Int? = nil) -> CountryPhotos {
+        let key = "\(code)|\(year ?? 0)"
+        if let cached = countryCache[key] { return cached }
+        let photos = CountryPhotos.collect(countryCode: code, facts: facts, year: year)
+        countryCache[key] = photos
+        return photos
+    }
+
+    /// The open country suggestion that covers most of these photos, if there is one,
+    /// so the atlas can offer "Album anlegen" right where the photos are shown.
+    func countryProposal(for country: CountryPhotos) -> AlbumProposal? {
+        let ids = country.assetIDs
+        guard !ids.isEmpty else { return nil }
+        return openProposals
+            .filter { $0.kind == .placeCollection(.country) }
+            .map { ($0, $0.assetIDs.intersection(ids).count) }
+            .filter { $0.1 * 2 > $0.0.assetIDs.count }
+            .max { $0.1 < $1.1 }?.0
     }
     var progress = OrganizationStatusResolver.Progress()
     var inventory = CollectionInventory()
@@ -283,6 +306,31 @@ final class AppModel {
         }
     }
 
+    /// "Passt nicht": this album is never offered for this suggestion again. A decision that
+    /// pointed at the album is dropped, and the matching runs again right away.
+    func rejectMatch(_ album: CollectionID, for proposal: AlbumProposal) async {
+        guard let store else { return }
+        do {
+            try await store.addOverride(UserOverride(scope: .albumForSource(album, proposal.id), decision: .notMatchingAlbum))
+            switch decisions[proposal.id] {
+            case .extendExisting(album)?, .keepExisting(album)?:
+                decisions[proposal.id] = nil
+                persistDecisions()
+            case .renameExisting(let id, _, _)? where id == album:
+                decisions[proposal.id] = nil
+                persistDecisions()
+            case .moveExisting(let id, _, _)? where id == album:
+                decisions[proposal.id] = nil
+                persistDecisions()
+            default:
+                break
+            }
+            if let rematched = try await pipeline?.rematch() { snapshot = rematched }
+        } catch {
+            message = error.localizedDescription
+        }
+    }
+
     func setUserTitle(_ title: String, for proposal: AlbumProposal) {
         userTitles[proposal.id] = title
         Task { [userTitles] in try? await store?.setValue(userTitles, forKey: Key.titles) }
@@ -413,6 +461,8 @@ final class AppModel {
             let states = ManagedAlbumTracker().record(result, into: try await store.managedAlbums(), inventory: after)
             try await store.saveManagedAlbums(states)
             managedAlbums = states
+            // Suggestions see the new albums at once (e.g. "Album vollständig").
+            if let rematched = try await pipeline?.rematch() { snapshot = rematched }
         } catch {
             message = error.localizedDescription
         }

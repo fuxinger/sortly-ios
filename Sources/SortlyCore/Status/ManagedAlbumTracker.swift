@@ -106,6 +106,8 @@ public struct UserOverride: Hashable, Sendable, Codable, Identifiable {
         case album(CollectionID)
         case source(SortlyID)
         case area(OrganizationArea)
+        /// One existing album for one suggestion.
+        case albumForSource(CollectionID, SortlyID)
     }
 
     public enum Decision: String, Hashable, Sendable, Codable {
@@ -115,6 +117,7 @@ public struct UserOverride: Hashable, Sendable, Codable, Identifiable {
         case excludeFromAnalysis // do not analyze at all (sensitive)
         case doNotRecreateAlbum  // album was deleted by the user
         case rejectProposal      // proposal rejected, do not suggest again
+        case notMatchingAlbum    // this album does not fit this suggestion, never offer it again
     }
 
     public var id: SortlyID
@@ -142,6 +145,7 @@ public struct OverrideSet: Sendable {
     private var excludedAlbums: Set<CollectionID> = []
     private var rejectedSources: Set<SortlyID> = []
     private var deletedSources: Set<SortlyID> = []
+    private var rejectedMatches: Set<String> = []
 
     public init(_ overrides: [UserOverride] = []) {
         for o in overrides { insert(o) }
@@ -157,6 +161,7 @@ public struct OverrideSet: Sendable {
         case let (.album(c), .excludeFromAnalysis): excludedAlbums.insert(c)
         case let (.source(s), .rejectProposal): rejectedSources.insert(s)
         case let (.source(s), .doNotRecreateAlbum): deletedSources.insert(s)
+        case let (.albumForSource(c, s), .notMatchingAlbum): rejectedMatches.insert(c.rawValue + "|" + s.rawValue)
         default: break
         }
     }
@@ -175,6 +180,10 @@ public struct OverrideSet: Sendable {
     public func isExcludedAlbum(_ album: CollectionID) -> Bool { excludedAlbums.contains(album) }
     public func isRejected(_ source: SortlyID) -> Bool { rejectedSources.contains(source) }
     public func mustNotRecreate(_ source: SortlyID) -> Bool { deletedSources.contains(source) }
+    /// The user said this album does not fit this suggestion.
+    public func isRejectedMatch(_ album: CollectionID, for source: SortlyID) -> Bool {
+        rejectedMatches.contains(album.rawValue + "|" + source.rawValue)
+    }
 }
 
 // MARK: - Recording executed plans

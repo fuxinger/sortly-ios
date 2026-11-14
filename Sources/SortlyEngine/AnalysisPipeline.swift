@@ -333,7 +333,7 @@ public actor AnalysisPipeline {
             groups: groups
         )
         let proposals = ProposalEngine(settings: settings, calendar: calendar).proposals(for: analysis, overrides: overrides)
-        let matches = AlbumMatcher().match(proposals, against: inventory)
+        let matches = AlbumMatcher().match(proposals, against: inventory, overrides: overrides)
         let snapshot = ProposalSnapshot(generatedAt: Date(), scope: scope, proposals: proposals, matches: matches)
         try await store.setValue(snapshot, forKey: Key.proposals)
         return snapshot
@@ -365,6 +365,18 @@ public actor AnalysisPipeline {
 
     public func latestProposals() async throws -> ProposalSnapshot? {
         try await store.value(ProposalSnapshot.self, forKey: Key.proposals)
+    }
+
+    /// Re-runs only the album matching against the stored inventory and overrides, after
+    /// albums were created or the user said an album does not fit. The suggestions then show
+    /// the right state at once instead of after the next analysis.
+    public func rematch() async throws -> ProposalSnapshot? {
+        guard var snapshot = try await latestProposals() else { return nil }
+        let inventory = try await store.loadInventory()
+        let overrides = OverrideSet(try await store.overrides())
+        snapshot.matches = AlbumMatcher().match(snapshot.proposals, against: inventory, overrides: overrides)
+        try await store.setValue(snapshot, forKey: Key.proposals)
+        return snapshot
     }
 }
 

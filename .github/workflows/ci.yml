@@ -27,6 +27,8 @@ jobs:
             echo "::error::Use NavigationLink { destination } label: { … } instead of NavigationLink(value:)"
             exit 1
           fi
+      - name: Every UI string has English
+        run: python3 .github/scripts/check_strings.py .
       - name: Build and test
         run: swift test --parallel
       - name: Load test (20,000 photos)
