@@ -15,6 +15,15 @@ public protocol PhotoLibraryWriting: Sendable {
     func moveCollection(_ id: CollectionID, from oldParent: CollectionID?, to newParent: CollectionID?) async throws
     /// Removes an album or folder container. Media stay in the library.
     func deleteCollection(_ id: CollectionID) async throws
+    /// One album or folder, read on its own. Execution checks every step this way instead of
+    /// reading the whole album list (minutes saved on large plans).
+    func collection(_ id: CollectionID) async throws -> CollectionSnapshot?
+}
+
+extension PhotoLibraryWriting {
+    public func collection(_ id: CollectionID) async throws -> CollectionSnapshot? {
+        try await currentInventory()[id]
+    }
 }
 
 /// Persists plans so execution can resume after a crash (prompt §16.3).
@@ -159,25 +168,27 @@ public actor ChangeExecutor {
             if reconcile, let adopted = try await findCreatedByUs(title: title, parent: parent, folder: isFolder, plan: plan) {
                 return .succeeded(createdID: adopted, verifiedAt: now)
             }
+            // The folder may have been deleted meanwhile (e.g. on another device): never fall
+            // back to the top level of the library.
+            if let parent, try await library.collection(parent) == nil {
+                return .failed(reason: "parent folder no longer exists")
+            }
             let id = isFolder
                 ? try await library.createFolder(title: title, parent: parent)
                 : try await library.createAlbum(title: title, parent: parent)
-            let inventory = try await library.currentInventory()
-            guard let created = inventory[id], created.title == title, created.parentID == parent else {
+            guard let created = try await library.collection(id), created.title == title, created.parentID == parent else {
                 return .failed(reason: "created collection could not be verified")
             }
             return .succeeded(createdID: id, verifiedAt: now)
 
         case .addAssets(let albumRef, let assets):
             guard let albumID = resolve(albumRef, plan) else { return .skipped(reason: "target album was not created") }
-            let inventory = try await library.currentInventory()
-            guard let album = inventory[albumID] else { return .failed(reason: "album no longer exists") }
+            guard let album = try await library.collection(albumID) else { return .failed(reason: "album no longer exists") }
             // Idempotent: only add what is missing and still available.
             let missing = assets.filter { !album.assetIDs.contains($0) && available.contains($0) }
             if !missing.isEmpty { try await library.addAssets(missing, to: albumID) }
-            let after = try await library.currentInventory()
             let expected = Set(assets).intersection(available)
-            guard let verified = after[albumID], expected.isSubset(of: verified.assetIDs) else {
+            guard let verified = try await library.collection(albumID), expected.isSubset(of: verified.assetIDs) else {
                 return .failed(reason: "added media could not be verified")
             }
             if expected.count < assets.count {
@@ -186,26 +197,23 @@ public actor ChangeExecutor {
             return .succeeded(createdID: nil, verifiedAt: now)
 
         case .renameCollection(let id, _, let to):
-            let inventory = try await library.currentInventory()
-            guard let c = inventory[id] else { return .failed(reason: "album no longer exists") }
+            guard let c = try await library.collection(id) else { return .failed(reason: "album no longer exists") }
             if c.title != to { try await library.renameCollection(id, to: to) }
-            guard (try await library.currentInventory())[id]?.title == to else { return .failed(reason: "rename could not be verified") }
+            guard try await library.collection(id)?.title == to else { return .failed(reason: "rename could not be verified") }
             return .succeeded(createdID: nil, verifiedAt: now)
 
         case .moveCollection(let id, let from, let toRef):
             guard let target = resolve(toRef, plan) else { return .skipped(reason: "target folder was not created") }
-            let inventory = try await library.currentInventory()
-            guard let c = inventory[id] else { return .failed(reason: "album no longer exists") }
+            guard let c = try await library.collection(id) else { return .failed(reason: "album no longer exists") }
             if c.parentID != target { try await library.moveCollection(id, from: from, to: target) }
-            guard (try await library.currentInventory())[id]?.parentID == target else { return .failed(reason: "move could not be verified") }
+            guard try await library.collection(id)?.parentID == target else { return .failed(reason: "move could not be verified") }
             return .succeeded(createdID: nil, verifiedAt: now)
 
         case .removeAssets(let albumID, let assets):
-            let inventory = try await library.currentInventory()
-            guard let album = inventory[albumID] else { return .failed(reason: "album no longer exists") }
+            guard let album = try await library.collection(albumID) else { return .failed(reason: "album no longer exists") }
             let present = assets.filter { album.assetIDs.contains($0) }
             if !present.isEmpty { try await library.removeAssets(present, from: albumID) }
-            guard let after = (try await library.currentInventory())[albumID], after.assetIDs.isDisjoint(with: assets) else {
+            guard let after = try await library.collection(albumID), after.assetIDs.isDisjoint(with: assets) else {
                 return .failed(reason: "removal could not be verified")
             }
             return .succeeded(createdID: nil, verifiedAt: now)

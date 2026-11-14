@@ -259,6 +259,45 @@ struct PlanningExecutionTests {
         #expect(inv.collections.values.contains { $0.title == "Albumist" && $0.kind == .folder })
     }
 
+    @Test func executionChecksSingleAlbumsNotTheWholeList() async throws {
+        let assets: [AssetID] = (0..<30).map { AssetID("x\($0)") }
+        let library = InMemoryPhotoLibrary(assets: Set(assets))
+        let items = (0..<3).map { i in
+            ConfirmedProposal(proposal: AlbumProposal(id: SortlyID("p\(i)"), kind: .trip, title: "Reise \(i)", assetIDs: Set(assets[(i * 10)..<(i * 10 + 10)])),
+                              decision: .createNew(title: nil, folderPath: nil))
+        }
+        var plan = OrganizationPlanner().makePlan(from: items, inventory: CollectionInventory())
+        plan.confirmedAt = Date()
+        plan.status = .confirmed
+        let done = try await ChangeExecutor(library: library, store: InMemoryPlanStore()).execute(plan)
+        #expect(done.status == .completed)
+        #expect(plan.steps.count >= 6)
+        #expect(await library.inventoryReads == 1) // once before the first step, never per step
+    }
+
+    @Test func albumIsNotCreatedAtTheTopWhenItsFolderWasDeleted() async throws {
+        let library = InMemoryPhotoLibrary(assets: ["a", "b"], collections: [
+            CollectionSnapshot(id: "f", title: "Reisen", kind: .folder),
+        ])
+        let item = ConfirmedProposal(proposal: AlbumProposal(id: SortlyID("p"), kind: .trip, title: "Rom", assetIDs: ["a", "b"]),
+                                     decision: .createNew(title: nil, folderPath: nil))
+        var plan = OrganizationPlanner().makePlan(from: [item], inventory: try await library.currentInventory())
+        // Point the new album at the existing folder, then delete that folder (another device).
+        plan.steps = plan.steps.map { step in
+            var step = step
+            if case .createAlbum(let key, let title, _) = step.operation { step.operation = .createAlbum(key: key, title: title, parent: .existing("f")) }
+            return step
+        }
+        plan.steps.removeAll { if case .createFolder = $0.operation { true } else { false } }
+        plan.baseline = [:]
+        plan.confirmedAt = Date()
+        plan.status = .confirmed
+        await library.userEdit { $0.remove("f") }
+        let done = try await ChangeExecutor(library: library, store: InMemoryPlanStore()).execute(plan)
+        #expect(done.status == .completedWithErrors)
+        #expect(try await library.currentInventory().albums.isEmpty) // nothing at the top level
+    }
+
     @Test func executorRefusesToDeleteAFolderThatIsNotEmpty() async throws {
         let folder = CollectionSnapshot(id: "f", title: "Ordner", kind: .folder)
         let inside = CollectionSnapshot(id: "x", title: "Eigenes Album", parentID: "f", assetIDs: ids("a", 0..<3))

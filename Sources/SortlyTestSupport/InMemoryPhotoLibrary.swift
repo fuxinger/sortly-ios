@@ -58,7 +58,13 @@ public actor InMemoryPhotoLibrary: PhotoLibraryWriting {
     }
 
     public func canWrite() async -> Bool { writeAllowed }
-    public func currentInventory() async throws -> CollectionInventory { inventory }
+    /// How often the whole album list was read (execution should read single albums).
+    public private(set) var inventoryReads = 0
+    public func currentInventory() async throws -> CollectionInventory {
+        inventoryReads += 1
+        return inventory
+    }
+    public func collection(_ id: CollectionID) async throws -> CollectionSnapshot? { inventory[id] }
     public func availableAssets(_ ids: [AssetID]) async throws -> Set<AssetID> { Set(ids).intersection(assets) }
 
     public func createFolder(title: String, parent: CollectionID?) async throws -> CollectionID {

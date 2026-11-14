@@ -141,6 +141,16 @@ struct PhotoKitLibrary: PhotoLibraryReading, PhotoLibraryWriting {
         return CollectionInventory(collector.snapshots)
     }
 
+    /// One album or folder without reading the whole list (used to verify every plan step).
+    func collection(_ id: CollectionID) async throws -> CollectionSnapshot? {
+        let raw = id.rawValue
+        let found: PHCollection? = PHAssetCollection.fetchAssetCollections(withLocalIdentifiers: [raw], options: nil).firstObject
+            ?? PHCollectionList.fetchCollectionLists(withLocalIdentifiers: [raw], options: nil).firstObject
+        guard let found else { return nil }
+        let parent = PHCollectionList.fetchCollectionListsContaining(found, options: nil).firstObject.map { CollectionID($0.localIdentifier) }
+        return InventoryCollector.snapshot(of: found, parent: parent)
+    }
+
     func availableAssets(_ ids: [AssetID]) async throws -> Set<AssetID> {
         guard !ids.isEmpty else { return [] }
         var found = Set<AssetID>()
@@ -153,6 +163,15 @@ struct PhotoKitLibrary: PhotoLibraryReading, PhotoLibraryWriting {
 
     // MARK: Writing (closed operation set, prompt §16)
 
+    /// A missing parent folder (deleted on another device) must stop the step: creating the
+    /// album anyway would put it at the top level of the library.
+    private static func requireFolder(_ id: String?) throws {
+        guard let id else { return }
+        guard PHCollectionList.fetchCollectionLists(withLocalIdentifiers: [id], options: nil).firstObject != nil else {
+            throw PhotoKitError.collectionNotFound(id)
+        }
+    }
+
     func canWrite() async -> Bool {
         PHPhotoLibrary.authorizationStatus(for: .readWrite) == .authorized
     }
@@ -160,6 +179,7 @@ struct PhotoKitLibrary: PhotoLibraryReading, PhotoLibraryWriting {
     func createFolder(title: String, parent: CollectionID?) async throws -> CollectionID {
         let created = LockedBox<String?>(nil)
         let parentID = parent?.rawValue
+        try Self.requireFolder(parentID)
         try await PHPhotoLibrary.shared().performChanges {
             let request = PHCollectionListChangeRequest.creationRequestForCollectionList(withTitle: title)
             let placeholder = request.placeholderForCreatedCollectionList
@@ -175,6 +195,7 @@ struct PhotoKitLibrary: PhotoLibraryReading, PhotoLibraryWriting {
     func createAlbum(title: String, parent: CollectionID?) async throws -> CollectionID {
         let created = LockedBox<String?>(nil)
         let parentID = parent?.rawValue
+        try Self.requireFolder(parentID)
         try await PHPhotoLibrary.shared().performChanges {
             let request = PHAssetCollectionChangeRequest.creationRequestForAssetCollection(withTitle: title)
             let placeholder = request.placeholderForCreatedAssetCollection
@@ -270,6 +291,16 @@ private final class InventoryCollector {
     }
 
     private func add(_ collection: PHCollection, parent: CollectionID?) {
+        guard let snapshot = Self.snapshot(of: collection, parent: parent) else { return }
+        snapshots.append(snapshot)
+        if let list = collection as? PHCollectionList {
+            walk(PHCollection.fetchCollections(in: list, options: nil), parent: snapshot.id)
+        }
+    }
+
+    /// One album or folder. Albums count hidden photos too: an album that holds a hidden
+    /// photo of the user is not "only Albumist's" and must never be deleted by undo.
+    static func snapshot(of collection: PHCollection, parent: CollectionID?) -> CollectionSnapshot? {
         let id = CollectionID(collection.localIdentifier)
         var capabilities: CollectionCapabilities = []
         if collection.canPerform(.addContent) { capabilities.insert(.addContent) }
@@ -279,21 +310,20 @@ private final class InventoryCollector {
         if collection.canPerform(.createContent) { capabilities.insert(.createContent) }
 
         if let list = collection as? PHCollectionList {
-            let children = PHCollection.fetchCollections(in: list, options: nil)
             var childIDs: [CollectionID] = []
-            children.enumerateObjects { child, _, _ in childIDs.append(CollectionID(child.localIdentifier)) }
-            snapshots.append(CollectionSnapshot(id: id, title: list.localizedTitle ?? "", kind: .folder, capabilities: capabilities, parentID: parent, childIDs: childIDs))
-            walk(children, parent: id)
+            PHCollection.fetchCollections(in: list, options: nil).enumerateObjects { child, _, _ in childIDs.append(CollectionID(child.localIdentifier)) }
+            return CollectionSnapshot(id: id, title: list.localizedTitle ?? "", kind: .folder, capabilities: capabilities, parentID: parent, childIDs: childIDs)
         } else if let album = collection as? PHAssetCollection {
             var members = Set<AssetID>()
             let options = PHFetchOptions()
-            options.includeHiddenAssets = false
+            options.includeHiddenAssets = true
             PHAsset.fetchAssets(in: album, options: options).enumerateObjects { asset, _, _ in members.insert(AssetID(asset.localIdentifier)) }
             let kind: CollectionKind = switch album.assetCollectionType {
             case .smartAlbum: .smartAlbum
             default: album.assetCollectionSubtype == .albumRegular ? .userAlbum : .restrictedAlbum
             }
-            snapshots.append(CollectionSnapshot(id: id, title: album.localizedTitle ?? "", kind: kind, capabilities: capabilities, parentID: parent, assetIDs: members))
+            return CollectionSnapshot(id: id, title: album.localizedTitle ?? "", kind: kind, capabilities: capabilities, parentID: parent, assetIDs: members)
         }
+        return nil
     }
 }
