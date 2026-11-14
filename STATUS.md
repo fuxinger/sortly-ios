@@ -31,8 +31,11 @@ Arbeitskopie im Projektordner: /mnt/project-files/sortly/ (Sync: /home/user/scri
 ## Stand
 - [x] Kern, Store, Weltkarte, Engine: 143 Tests grün (Linux und macOS)
 - [x] iOS-App: alle Bildschirme geschrieben
-- [ ] iOS-Build in CI grün (in Arbeit)
-- [ ] Simulator-Build als ZIP für Appetize (CI-Schritt vorhanden)
-- [ ] Englische Übersetzung (über `xcodebuild -exportLocalizations` aus CI)
+- [x] iOS-Build in CI grün
+- [x] Simulator-Build als ZIP; Upload zu Appetize, sobald Fuchs das Secret `APPETIZE_TOKEN` anlegt
+- [x] Englische Übersetzung (String Catalogs in `App/Sortly/Resources/*.xcstrings`)
+- [x] Reise-Atlas im Apple-Stil, Teilen-Bild mit Foto; Foto-Geschichte
+- [x] Launch-Texte in `docs/launch/` (Presse und Webseite/Datenschutzerklärung laufen in eigenen Threads)
 - [ ] Gesichter/Haustiere (Opt-in), BGContinuedProcessingTask, Verwaltung der angelegten Alben
-- [ ] Doku nach Prompt §24, App-Store-Texte, Featuring-Nominierung
+- [x] Doku nach Prompt §24, App-Store-Texte, Featuring-Nominierung
+- Später (Entscheidung Fuchs): Mitteilungen/Live Activity, Widget, Personen/Haustiere (Update 1.1)

@@ -15,3 +15,4 @@
 | Einmalkauf, 10 Alben gratis | fair, kein Abo | Abo, Werbung | `Purchases.freeAlbumLimit` |
 | XcodeGen statt eingechecktem Projekt | lesbare Projektdatei, keine Konflikte | .xcodeproj | Build braucht `xcodegen generate` |
 | Standardbereiche ohne Jahre/Monate, Medientypen, Messenger | vermeidet Album-Flut; Fotos-App zeigt Datum und Medientypen schon | alles an | Nutzer schaltet diese Bereiche bei Bedarf ein |
+| Reise-Atlas im Apple-Stil (Systemfarben, Karten wie in Fotos) | einheitlich mit der App, Featuring | dunkler Neon-Look | Teilen-Bild hell, mit echtem Foto vom Lieblingsziel, vor dem Teilen abschaltbar |
