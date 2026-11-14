@@ -30,6 +30,14 @@ jobs:
       - name: Build and test
         run: swift test --parallel
 
+  names:
+    # App name candidates against the App Store (the API is only reachable from CI).
+    name: App name check
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 .github/scripts/name_check.py docs/launch/name-candidates.txt
+
   ios:
     name: iOS build and tests (macOS)
     runs-on: macos-26
