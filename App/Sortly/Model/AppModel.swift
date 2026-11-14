@@ -141,6 +141,8 @@ final class AppModel {
     /// Albums Albumist created or extended, with exactly the media it added.
     var managedAlbums: [ManagedAlbumState] = []
     var plan: ChangePlan?
+    /// A plan that stopped half way because the app was closed while it ran.
+    var interruptedPlan: ChangePlan?
     var execution = ExecutionState()
     var message: String?
     /// Where Siri, Shortcuts or a Spotlight result wants to go; the overview opens it.
@@ -203,6 +205,9 @@ final class AppModel {
                 foregroundOnlineBudget: 60
             )
             await refreshDerived()
+            // A plan that stopped half way (app closed during "Jetzt umsetzen") is offered
+            // on the overview: continue or take back.
+            interruptedPlan = try? await store.unfinishedPlans().last
             phase = onboardingDone && access.canRead ? .ready : .onboarding
         } catch {
             phase = .failed(error.localizedDescription)
@@ -619,6 +624,31 @@ final class AppModel {
     func forgetProposal(_ source: SortlyID) async {
         try? await store?.addOverride(UserOverride(scope: .source(source), decision: .rejectProposal))
         await refreshDerived()
+    }
+
+    /// Finishes an interrupted plan. Steps that already ran are skipped; a step that was
+    /// running is checked against the library first, so nothing is created twice.
+    func resumeInterruptedPlan() async {
+        guard let interrupted = interruptedPlan, !execution.isRunning else { return }
+        execution = ExecutionState()
+        await execute(interrupted)
+        if execution.failure == nil { interruptedPlan = nil }
+    }
+
+    /// Takes back what an interrupted plan already did, and drops the rest.
+    func undoInterruptedPlan() async {
+        guard let store, var interrupted = interruptedPlan, !execution.isRunning else { return }
+        do {
+            interrupted.status = .cancelled
+            try await store.save(interrupted)
+            let current = try await library.currentInventory()
+            let undoPlan = UndoPlanner().undoPlan(for: interrupted, current: current)
+            if !undoPlan.steps.isEmpty { await execute(undoPlan) }
+            interruptedPlan = nil
+            await refreshDerived()
+        } catch {
+            message = error.localizedDescription
+        }
     }
 
     func undo(_ executed: ChangePlan) async {

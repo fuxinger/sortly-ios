@@ -12,7 +12,8 @@ Quellen: **E1** Expertenrunde 14.11.2026 (Tempo, Oberfläche, Technik, Produkt) 
 | Status | Punkt | Aufwand | Quelle |
 |---|---|---|---|
 | ✅ | Rückgängig löscht nie einen Ordner, in dem noch Alben liegen (Fotos würde sie mitlöschen). Ausführung und PhotoKit verweigern das Löschen nicht leerer Ordner. | S | E1 Technik |
-| 🔜 | Abgebrochenes Umsetzen (App beendet) beim nächsten Start fortsetzen oder rückgängig machen; Verlauf zeigt auch halbe Pläne; bereits angelegte Alben werden gemerkt. | M | E1 Technik |
+| ✅ | Abgebrochenes Umsetzen (App beendet): Übersicht bietet beim nächsten Start „Fortsetzen“ oder „Rückgängig machen“; nichts wird doppelt angelegt. | M | E1 Technik |
+| 💡 | Verlauf zeigt auch abgebrochene Pläne. | S | E1 Technik |
 | ✅ | Umsetzen während einer laufenden Analyse: Albenliste vor dem Abgleich neu lesen, damit kein doppeltes Album entsteht. | M | E1 Technik |
 | ✅ | „Ausgewählte Fotos“-Zugriff: vor dem Umsetzen klarer Hinweis „Voller Zugriff nötig“ mit Link zu Einstellungen statt Fehlermeldung. | S | E1 Technik |
 | ✅ | Bereits rückgängig gemachte Pläne nicht nochmal rückgängig machen; Rückgängig-Läufe nicht als eigene Einträge zeigen. | S | E1 Technik |

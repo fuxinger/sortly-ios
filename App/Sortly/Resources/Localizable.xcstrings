@@ -5032,6 +5032,46 @@
           }
         }
       }
+    },
+    "Umsetzen wurde unterbrochen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Applying Was Interrupted"
+          }
+        }
+      }
+    },
+    "%lld von %lld Schritten sind erledigt. Albumist kann den Rest jetzt anlegen oder alles wieder zurücknehmen. Nichts wird doppelt angelegt." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld of %lld steps are done. Albumist can finish the rest now or take everything back. Nothing is created twice."
+          }
+        }
+      }
+    },
+    "Bisherige Änderungen rückgängig machen?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Undo the Changes So Far?"
+          }
+        }
+      }
+    },
+    "Albumist entfernt die schon angelegten Alben und Zuordnungen. Deine Fotos bleiben unverändert." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Albumist removes the albums and assignments it already made. Your photos stay unchanged."
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

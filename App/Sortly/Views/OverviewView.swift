@@ -11,6 +11,9 @@ struct OverviewView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: Theme.Spacing.m) {
+                if let interrupted = model.interruptedPlan {
+                    InterruptedPlanCard(plan: interrupted)
+                }
                 statusCard
                 analysisCard
                 if !model.openProposals.isEmpty {
@@ -236,5 +239,41 @@ private struct TapTarget: View {
             .font(.subheadline.weight(.semibold))
             .frame(minWidth: 44, minHeight: 44)
             .contentShape(Rectangle())
+    }
+}
+
+/// Shown after the app was closed while a plan ran: the rest can be done now, or what
+/// already happened can be taken back.
+struct InterruptedPlanCard: View {
+    @Environment(AppModel.self) private var model
+    var plan: ChangePlan
+    @State private var confirmUndo = false
+
+    var body: some View {
+        let done = plan.steps.filter { if case .succeeded = $0.state { true } else { false } }.count
+        Card {
+            Label("Umsetzen wurde unterbrochen", systemImage: "pause.circle").font(.headline)
+            Text("\(done) von \(plan.steps.count) Schritten sind erledigt. Albumist kann den Rest jetzt anlegen oder alles wieder zurücknehmen. Nichts wird doppelt angelegt.")
+                .font(.subheadline).foregroundStyle(.secondary)
+            if model.execution.isRunning {
+                ProgressView(value: Double(model.execution.completedSteps), total: Double(max(1, model.execution.totalSteps)))
+                    .tint(Theme.accent)
+            } else {
+                Button("Fortsetzen") { Task { await model.resumeInterruptedPlan() } }
+                    .buttonStyle(PrimaryButtonStyle())
+                Button("Rückgängig machen") { confirmUndo = true }
+                    .buttonStyle(SecondaryButtonStyle())
+            }
+            if let failure = model.execution.failure {
+                Text(failure).font(.footnote).foregroundStyle(.red)
+            }
+        }
+        .confirmationDialog("Bisherige Änderungen rückgängig machen?", isPresented: $confirmUndo, titleVisibility: .visible) {
+            Button("Rückgängig machen", role: .destructive) {
+                Task { await model.undoInterruptedPlan() }
+            }
+        } message: {
+            Text("Albumist entfernt die schon angelegten Alben und Zuordnungen. Deine Fotos bleiben unverändert.")
+        }
     }
 }
