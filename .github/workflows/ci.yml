@@ -71,8 +71,45 @@ jobs:
           status=$?
           grep -E "error:|warning: .*Sortly|Test Suite|Test case|Executed|TAXONOMY|VISION_IDENTIFIERS|PREVIEW_JPEG|\*\* " ../build-log.txt | grep -v "/SourcePackages/" | head -3000
           exit $status
+      - name: Export strings for translation
+        if: success() && hashFiles('App/project.yml') != ''
+        run: |
+          cd App
+          xcodebuild -exportLocalizations -project Sortly.xcodeproj -localizationPath ../build/loc -exportLanguage en CODE_SIGNING_ALLOWED=NO | tail -3
+          find ../build/loc -name "*.xliff" -exec sh -c 'base64 -i "$1" | tr -d "\n" | fold -w 4000 | sed "s/^/XLIFF /"' _ {} \;
+      - name: Upload strings
+        if: success() && hashFiles('build/loc/**') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: localizations
+          path: build/loc
+          retention-days: 7
+      - name: Upload logs
+        if: always() && hashFiles('build-log.txt') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-build-log
+          path: |
+            build-log.txt
+            build/TestResults.xcresult
+          retention-days: 7
+
+  simulator:
+    # Runs in parallel with the tests so the browser-test link is ready sooner.
+    name: Simulator app for browser testing
+    runs-on: macos-26
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - name: Select newest Xcode
+        run: |
+          XCODE=$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)
+          sudo xcode-select -s "$XCODE"
+      - name: Generate Xcode project
+        run: |
+          brew install xcodegen
+          cd App && xcodegen generate
       - name: Build simulator app for browser testing
-        if: hashFiles('App/project.yml') != ''
         run: |
           set -o pipefail
           cd App
@@ -111,25 +148,3 @@ jobs:
           key=$(jq -r '.publicKey' appetize.json)
           echo "APPETIZE_LINK https://appetize.io/app/$key"
           echo "### Im Browser testen: https://appetize.io/app/$key" >> "$GITHUB_STEP_SUMMARY"
-      - name: Export strings for translation
-        if: success() && hashFiles('App/project.yml') != ''
-        run: |
-          cd App
-          xcodebuild -exportLocalizations -project Sortly.xcodeproj -localizationPath ../build/loc -exportLanguage en CODE_SIGNING_ALLOWED=NO | tail -3
-          find ../build/loc -name "*.xliff" -exec sh -c 'base64 -i "$1" | tr -d "\n" | fold -w 4000 | sed "s/^/XLIFF /"' _ {} \;
-      - name: Upload strings
-        if: success() && hashFiles('build/loc/**') != ''
-        uses: actions/upload-artifact@v4
-        with:
-          name: localizations
-          path: build/loc
-          retention-days: 7
-      - name: Upload logs
-        if: always() && hashFiles('build-log.txt') != ''
-        uses: actions/upload-artifact@v4
-        with:
-          name: ios-build-log
-          path: |
-            build-log.txt
-            build/TestResults.xcresult
-          retention-days: 7
