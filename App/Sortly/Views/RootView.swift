@@ -55,7 +55,8 @@ struct MainTabs: View {
         }
         // iPad: tabs become a sidebar; iPhone: the Liquid Glass tab bar shrinks while scrolling.
         .tabViewStyle(.sidebarAdaptable)
-        .tabBarMinimizeBehavior(.onScrollDown)
+        // UI tests tap every tab by name; a shrunken bar hides all but the current one.
+        .tabBarMinimizeBehavior(UITestSupport.isRunning ? .never : .onScrollDown)
         // Siri, Shortcuts and Spotlight open their target from the overview.
         .onChange(of: model.route, initial: true) { _, target in
             if target != nil { tab = .overview }

@@ -124,6 +124,8 @@ struct SortingShow: View {
             ForEach(albums.indices.filter { reduceMotion ? $0 == current : abs($0 - current) <= 1 }, id: \.self) { index in
                 let offset = CGFloat(index - current)
                 AlbumStack(album: albums[index], filled: landed.contains(index), focused: index == current)
+                    // Fade the album as one picture; otherwise the placeholder shines through the cover.
+                    .compositingGroup()
                     .scaleEffect(index == current ? (pop && !reduceMotion ? 1.04 : 1) : 0.76)
                     .opacity(index == current ? 1 : (index < current ? 0.5 : 0.35))
                     .position(x: albumCenter.x + offset * spacing, y: albumCenter.y)
@@ -152,7 +154,9 @@ struct SortingShow: View {
 
     private func run() async {
         let started = Date()
-        var lastMove = Date.distantPast
+        // When the strip may move again: a move never starts while the last one is still
+        // running, otherwise a fast riffle shows two strips sliding over each other.
+        var moveEnds = Date.distantPast
         // `.task` restarts when the tab comes back: continue there, never land an album twice.
         for index in albums.indices where !landed.contains(index) {
             if Task.isCancelled { return }
@@ -169,11 +173,16 @@ struct SortingShow: View {
             if execution.unsuccessfulSteps.contains(albums[index].id) { continue }
             // Photos fly while the show keeps up; a backlog of finished albums is riffled through.
             let quick = !calm || (!essential && albumsDone() - index > 1)
-            if !quick || index == albums.count - 1 || Date().timeIntervalSince(lastMove) > 0.25 {
-                withAnimation(reduceMotion ? .easeInOut(duration: 0.3) : .smooth(duration: quick ? 0.35 : 0.5)) {
+            let mustMove = current != index && (!quick || index == albums.count - 1)
+            if mustMove, moveEnds.timeIntervalSinceNow > 0 {
+                try? await Task.sleep(for: .seconds(moveEnds.timeIntervalSinceNow))
+            }
+            if current != index && (mustMove || moveEnds.timeIntervalSinceNow <= 0) {
+                let duration = reduceMotion || quick ? 0.3 : 0.5
+                withAnimation(reduceMotion ? .easeInOut(duration: duration) : .smooth(duration: duration)) {
                     current = index
                 }
-                lastMove = Date()
+                moveEnds = Date().addingTimeInterval(duration + 0.04)
             }
             if quick {
                 await land(index, quietly: true)
@@ -187,7 +196,7 @@ struct SortingShow: View {
                 // The next album already moves to the centre and waits there while its step runs.
                 if index + 1 < albums.count && albumsDone() <= index + 1 {
                     withAnimation(.smooth(duration: 0.5)) { current = index + 1 }
-                    lastMove = Date()
+                    moveEnds = Date().addingTimeInterval(0.54)
                 }
             }
         }
@@ -387,6 +396,7 @@ private struct AlbumStack: View {
                 .font(.system(size: 34, weight: .medium))
                 .foregroundStyle(Theme.accent.opacity(0.6))
                 .symbolEffect(.pulse, isActive: focused && !filled && !reduceMotion)
+                .opacity(filled ? 0 : 1)
             if let first = album.assets.first {
                 AssetThumbnail(id: first, side: side)
                     .opacity(filled ? 1 : 0)

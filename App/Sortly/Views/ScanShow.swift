@@ -39,6 +39,7 @@ struct ScanShow: View {
                             AssetThumbnail(id: id, side: 64)
                                 .aspectRatio(1, contentMode: .fill)
                                 .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                                .compositingGroup() // fade photo and its placeholder as one
                                 .opacity(0.55 + 0.45 * glow)
                                 .scaleEffect(1 + 0.06 * glow)
                                 .brightness(0.08 * glow)

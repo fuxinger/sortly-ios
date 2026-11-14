@@ -23,6 +23,15 @@ Quellen: **E1** Expertenrunde 14.11.2026 (Tempo, Oberfläche, Technik, Produkt) 
 | ✅ | Beschädigte Datenbank: „Neu aufbauen“-Knopf statt Sackgasse. | S | E1 Technik |
 | ✅ | StoreKit: nicht geprüfte Käufe sauber abschließen und Fehlermeldung zeigen; wartende Käufe (Familienfreigabe) erklären. | S | E1 Technik |
 
+## Aus den Testläufen (T)
+
+| Status | Punkt | Aufwand | Quelle |
+|---|---|---|---|
+| ✅ | „Ähnliche Alben“ schlug vor, Albumists eigene Alben zusammenzulegen (Land enthält seine Reisen). Eigene Alben und Teil-Alben (Rom in Italien) sind jetzt ausgenommen. | S | T 14.11. |
+| ✅ | Sortier-Show: beim schnellen Blättern überlappten sich Alben, der Platzhalter schimmerte durch das Titelbild. | S | T 14.11. (Video) |
+| ✅ | UI-Test: Tab-Leiste schrumpfte beim Scrollen und versteckte die Tabs; fehlende Schritte machen jetzt ein Bildschirmfoto. | S | T 14.11. |
+| 💡 | Bedienungshilfen-Prüfung meldet zu wenig Kontrast bei den großen Glas-Knöpfen. Gemessen: Weiß auf Petrol 6:1, also bestanden; vermutlich misst die Prüfung den Glas-Effekt mit. Auf echtem Gerät nachprüfen. | S | T 14.11. |
+
 ## Tempo bei großen Mediatheken
 
 | Status | Punkt | Aufwand | Quelle |

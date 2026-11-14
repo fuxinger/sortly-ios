@@ -51,6 +51,7 @@ final class SortlyFlowUITests: XCTestCase {
     private func tap(_ element: XCUIElement, _ step: String, timeout: TimeInterval = 15) -> Bool {
         guard element.waitForExistence(timeout: timeout) else {
             print("UI_STEP_MISSING \(step)")
+            shot("x-missing-" + step.replacingOccurrences(of: " ", with: "-")) // what was on screen instead
             XCTFail("Missing: \(step)")
             return false
         }
@@ -306,6 +307,7 @@ final class SortlyFlowUITests: XCTestCase {
                 sleep(3)
                 shot("13-share-card"); audit("share card")
                 tap(button("Fertig"), "close share")
+                sleep(2) // the sheet slides away before the navigation bar answers again
             }
             back(); sleep(1)
         }

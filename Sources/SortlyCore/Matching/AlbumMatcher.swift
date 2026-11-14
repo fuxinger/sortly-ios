@@ -330,8 +330,10 @@ public struct AlbumOverlapAnalyzer: Sendable {
 
     public init() {}
 
-    public func suggestions(in inventory: CollectionInventory) -> [MergeSuggestion] {
-        let albums = inventory.albums.filter { $0.kind == .userAlbum && $0.assetIDs.count >= minAlbumSize }
+    /// `excluding`: albums Albumist created or manages. They overlap on purpose (a country
+    /// album holds its trips), so they are never offered for merging.
+    public func suggestions(in inventory: CollectionInventory, excluding excluded: Set<CollectionID> = []) -> [MergeSuggestion] {
+        let albums = inventory.albums.filter { $0.kind == .userAlbum && $0.assetIDs.count >= minAlbumSize && !excluded.contains($0.id) }
         let index = Dictionary(uniqueKeysWithValues: albums.enumerated().map { ($1.id, $0) })
         var parent = Array(albums.indices)
         func find(_ x: Int) -> Int {
@@ -366,13 +368,18 @@ public struct AlbumOverlapAnalyzer: Sendable {
         for i in albums.indices { groups[find(i), default: []].append(i) }
         return groups.values
             .filter { $0.count > 1 }
-            .map { members in
+            .compactMap { members in
                 var union = Set<AssetID>()
                 var total = 0
+                var largest = 0
                 for m in members {
                     union.formUnion(albums[m].assetIDs)
                     total += albums[m].assetIDs.count
+                    largest = max(largest, Set(albums[m].assetIDs).count)
                 }
+                // The largest album already holds every photo (e.g. "Rom" inside "Italien"):
+                // a part of a bigger album, nothing to merge.
+                guard union.count > largest else { return nil }
                 return MergeSuggestion(albumIDs: members.map { albums[$0].id }.sorted(), distinctAssetCount: union.count, totalMemberships: total)
             }
             .sorted { $0.distinctAssetCount > $1.distinctAssetCount }

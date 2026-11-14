@@ -90,6 +90,20 @@ struct MatchingTests {
         #expect(suggestions[0].totalMemberships == 182 + 274 + 316)
     }
 
+    @Test func ownAlbumsAndPartsOfBiggerAlbumsAreNotMergeCandidates() {
+        let italy = CollectionSnapshot(id: "it", title: "Italien", assetIDs: ids("x", 0..<120))
+        let rome = CollectionSnapshot(id: "rom", title: "Rom · 2024", assetIDs: ids("x", 0..<90))
+        let florence = CollectionSnapshot(id: "fl", title: "Florenz", assetIDs: ids("x", 90..<120))
+        // Rom and Florenz lie inside Italien: merging would add nothing.
+        #expect(AlbumOverlapAnalyzer().suggestions(in: CollectionInventory([italy, rome, florence])).isEmpty)
+        // Near-duplicates the user made stay candidates, Albumist's own albums do not.
+        let mine = CollectionSnapshot(id: "a", title: "Urlaub", assetIDs: ids("y", 0..<100))
+        let copy = CollectionSnapshot(id: "b", title: "Urlaub Kopie", assetIDs: ids("y", 10..<110))
+        let inventory = CollectionInventory([mine, copy])
+        #expect(AlbumOverlapAnalyzer().suggestions(in: inventory).count == 1)
+        #expect(AlbumOverlapAnalyzer().suggestions(in: inventory, excluding: ["b"]).isEmpty)
+    }
+
     @Test func identicalContentDifferentNameIsComplete() throws {
         let set = ids("t", 0..<100)
         let p = tripProposal("p", set, title: "Rom · 12.05.–19.05.2024")

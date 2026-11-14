@@ -366,7 +366,9 @@ final class AppModel {
             facts = try await pipeline.currentFacts()
             inventory = try await store.loadInventory()
             let inventory = inventory
-            mergeSuggestions = await Task.detached(priority: .utility) { AlbumOverlapAnalyzer().suggestions(in: inventory) }.value
+            // Albumist's own albums overlap on purpose (a country holds its trips).
+            let own = Set(managedAlbums.map(\.albumID))
+            mergeSuggestions = await Task.detached(priority: .utility) { AlbumOverlapAnalyzer().suggestions(in: inventory, excluding: own) }.value
             let plans = try await store.planHistory()
             history = plans.filter { $0.reverts == nil }
             undonePlans = Set(plans.filter { $0.status == .completed }.compactMap(\.reverts))
