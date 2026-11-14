@@ -142,14 +142,17 @@ struct LibraryView: View {
     @ViewBuilder
     private var bucketPicker: some View {
         if typeSize.isAccessibilitySize {
-            Picker(selection: Binding(get: { bucket }, set: { select($0) })) {
-                ForEach(Self.buckets, id: \.self) { Text($0.label).tag($0) }
+            // A menu with its own label: the system picker button cuts long names at this size.
+            Menu {
+                Picker("Anzeigen", selection: Binding(get: { bucket }, set: { select($0) })) {
+                    ForEach(Self.buckets, id: \.self) { Text($0.label).tag($0) }
+                }
+                .pickerStyle(.inline)
             } label: {
-                Text("Anzeigen")
+                MenuChoiceLabel(text: Text(bucket.label))
             }
-            .pickerStyle(.menu)
-            .tint(Theme.accent)
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .accessibilityLabel(Text("Anzeigen"))
+            .accessibilityValue(Text(bucket.label))
         } else {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: Theme.Spacing.s) {

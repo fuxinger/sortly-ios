@@ -30,6 +30,8 @@ Quellen: **E1** Expertenrunde 14.11.2026 (Tempo, Oberfläche, Technik, Produkt) 
 | ✅ | „Ähnliche Alben“ schlug vor, Albumists eigene Alben zusammenzulegen (Land enthält seine Reisen). Eigene Alben und Teil-Alben (Rom in Italien) sind jetzt ausgenommen. | S | T 14.11. |
 | ✅ | Sortier-Show: beim schnellen Blättern überlappten sich Alben, der Platzhalter schimmerte durch das Titelbild. | S | T 14.11. (Video) |
 | ✅ | UI-Test: Tab-Leiste schrumpfte beim Scrollen und versteckte die Tabs; fehlende Schritte machen jetzt ein Bildschirmfoto. | S | T 14.11. |
+| ✅ | Rückgängig fragte iOS für jedes Album einzeln „Albumist darf Album löschen?“ (37 Fragen bei 37 Alben). Alle Alben und Ordner gehen jetzt in einer Anfrage weg: eine Frage. Ordner nur, wenn alles darin mitgeht. | M | T 14.11. |
+| ✅ | Menü bei größter Schrift schnitt „Nicht sortiert“ ab. Eigenes Menü-Etikett, das umbricht. | S | T 14.11. |
 | 💡 | Bedienungshilfen-Prüfung meldet zu wenig Kontrast bei den großen Glas-Knöpfen. Gemessen: Weiß auf Petrol 6:1, also bestanden; vermutlich misst die Prüfung den Glas-Effekt mit. Auf echtem Gerät nachprüfen. | S | T 14.11. |
 
 ## Aus dem Bedienungstest (B)

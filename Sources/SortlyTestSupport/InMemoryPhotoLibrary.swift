@@ -133,6 +133,24 @@ public actor InMemoryPhotoLibrary: PhotoLibraryWriting {
         // Media are untouched – exactly like PhotoKit.
     }
 
+    /// How often a batch deletion was requested (each one is one question from Photos).
+    public private(set) var deleteRequests = 0
+
+    public func deleteCollections(_ ids: [CollectionID]) async throws {
+        try countWrite()
+        deleteRequests += 1
+        for id in ids {
+            guard let c = inventory[id] else { continue }
+            if let parent = c.parentID, var p = inventory[parent] { p.childIDs.removeAll { $0 == id }; inventory.upsert(p) }
+            var doomed = [id]
+            while let next = doomed.popLast() {
+                doomed.append(contentsOf: inventory.collections.values.filter { $0.parentID == next }.map(\.id))
+                inventory.remove(next)
+            }
+        }
+        try finishWrite()
+    }
+
     public enum CocoaLikeError: Error { case missing, notEditable }
 }
 

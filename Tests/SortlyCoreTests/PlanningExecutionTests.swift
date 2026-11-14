@@ -259,6 +259,53 @@ struct PlanningExecutionTests {
         #expect(inv.collections.values.contains { $0.title == "Albumist" && $0.kind == .folder })
     }
 
+    /// Photos asks before it deletes albums, once per request. Undo of a big plan must ask
+    /// once, not once per album (UI test 14.11.2026: 37 questions for 37 albums).
+    @Test func undoDeletesAllAlbumsAndFoldersInOneRequest() async throws {
+        let library = InMemoryPhotoLibrary(assets: allAssets)
+        let items = (0..<12).map { n in
+            ConfirmedProposal(proposal: proposal("t\(n)", .trip, "Reise \(n)", ["Reisen", "20\(10 + n % 3)"], ids("a", (n * 10)..<(n * 10 + 10))),
+                              decision: .createNew(title: nil, folderPath: nil))
+        } + [ConfirmedProposal(proposal: proposal("l", .placeCollection(.country), "Italien", ["Länder"], ids("a", 200..<220)), decision: .createNew(title: nil, folderPath: nil))]
+        let plan = confirmed(planner.makePlan(from: items, inventory: try await library.currentInventory()))
+        let executed = try await ChangeExecutor(library: library, store: InMemoryPlanStore()).execute(plan)
+        #expect(executed.status == .completed)
+        #expect(try await library.currentInventory().albums.count == 13)
+
+        let undo = confirmed(UndoPlanner().undoPlan(for: executed, current: try await library.currentInventory()))
+        let undone = try await ChangeExecutor(library: library, store: InMemoryPlanStore()).execute(undo)
+        #expect(undone.status == .completed)
+        #expect(await library.deleteRequests == 1)
+        let left = try await library.currentInventory().collections.count
+        #expect(left == 0)
+        #expect(await library.assets == allAssets)
+    }
+
+    /// The undo plan was made, then the user put an own album into one of our folders: the
+    /// batch still deletes our albums but keeps that folder and every folder above it.
+    @Test func batchDeletionKeepsAFolderThatGotAnOwnAlbumMeanwhile() async throws {
+        let library = InMemoryPhotoLibrary(assets: allAssets)
+        let items = [
+            ConfirmedProposal(proposal: proposal("r", .trip, "Rom", ["Reisen"], ids("a", 0..<10)), decision: .createNew(title: nil, folderPath: nil)),
+            ConfirmedProposal(proposal: proposal("p", .trip, "Paris", ["Reisen"], ids("a", 10..<20)), decision: .createNew(title: nil, folderPath: nil)),
+        ]
+        let plan = confirmed(planner.makePlan(from: items, inventory: try await library.currentInventory()))
+        let executed = try await ChangeExecutor(library: library, store: InMemoryPlanStore()).execute(plan)
+        let undo = confirmed(UndoPlanner().undoPlan(for: executed, current: try await library.currentInventory()))
+        let reisen = try #require(try await library.currentInventory().collections.values.first { $0.title == "Reisen" }?.id)
+        await library.userEdit { inv in
+            inv.upsert(CollectionSnapshot(id: "familie", title: "Familie", parentID: reisen, assetIDs: ids("a", 50..<55)))
+        }
+        let undone = try await ChangeExecutor(library: library, store: InMemoryPlanStore()).execute(undo)
+        #expect(undone.status == .completedWithErrors)
+        let inv = try await library.currentInventory()
+        #expect(inv.albums.first { $0.title == "Rom" } == nil)
+        #expect(inv.albums.first { $0.title == "Paris" } == nil)
+        #expect(inv["familie"]?.assetIDs == ids("a", 50..<55))
+        #expect(inv[reisen] != nil)
+        #expect(inv.collections.values.contains { $0.title == "Albumist" && $0.kind == .folder })
+    }
+
     @Test func executionChecksSingleAlbumsNotTheWholeList() async throws {
         let assets: [AssetID] = (0..<30).map { AssetID("x\($0)") }
         let library = InMemoryPhotoLibrary(assets: Set(assets))

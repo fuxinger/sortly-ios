@@ -151,3 +151,23 @@ struct StatusBadge: View {
             .background(tint.opacity(0.12), in: Capsule())
     }
 }
+
+/// The visible choice of a menu at the largest text sizes: wraps instead of being cut,
+/// with the up-down chevron of a system pop-up menu.
+struct MenuChoiceLabel: View {
+    var text: Text
+
+    var body: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 6) {
+            text
+                .fixedSize(horizontal: false, vertical: true)
+                .multilineTextAlignment(.leading)
+            Image(systemName: "chevron.up.chevron.down")
+                .imageScale(.small)
+        }
+        .font(.headline)
+        .foregroundStyle(Theme.accent)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .contentShape(Rectangle())
+    }
+}

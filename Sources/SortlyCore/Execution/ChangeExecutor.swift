@@ -15,6 +15,9 @@ public protocol PhotoLibraryWriting: Sendable {
     func moveCollection(_ id: CollectionID, from oldParent: CollectionID?, to newParent: CollectionID?) async throws
     /// Removes an album or folder container. Media stay in the library.
     func deleteCollection(_ id: CollectionID) async throws
+    /// Removes several albums and folders in one request. Photos asks the user before it
+    /// deletes albums, once per request: one request means one question instead of one per album.
+    func deleteCollections(_ ids: [CollectionID]) async throws
     /// One album or folder, read on its own. Execution checks every step this way instead of
     /// reading the whole album list (minutes saved on large plans).
     func collection(_ id: CollectionID) async throws -> CollectionSnapshot?
@@ -23,6 +26,22 @@ public protocol PhotoLibraryWriting: Sendable {
 extension PhotoLibraryWriting {
     public func collection(_ id: CollectionID) async throws -> CollectionSnapshot? {
         try await currentInventory()[id]
+    }
+
+    /// One by one: albums first, then folders from the inside out.
+    public func deleteCollections(_ ids: [CollectionID]) async throws {
+        let inventory = try await currentInventory()
+        func depth(_ id: CollectionID) -> Int {
+            var d = 0, cursor = inventory[id]?.parentID
+            while let parent = cursor { d += 1; cursor = inventory[parent]?.parentID }
+            return d
+        }
+        let ordered = ids.sorted { a, b in
+            let fa = inventory[a]?.kind == .folder, fb = inventory[b]?.kind == .folder
+            if fa != fb { return !fa }
+            return depth(a) > depth(b)
+        }
+        for id in ordered { try await deleteCollection(id) }
     }
 }
 
@@ -111,6 +130,18 @@ public actor ChangeExecutor {
             if case .succeeded = step.state { continue }
             if case .skipped = step.state { continue }
             if case .failed = step.state { continue }
+
+            // Consecutive deletions run as one request (one question from Photos, not one per album).
+            if case .deleteCollection = step.operation {
+                var batch = [index]
+                var next = index + 1
+                while next < plan.steps.count, case .deleteCollection = plan.steps[next].operation, !plan.steps[next].state.isFinished {
+                    batch.append(next)
+                    next += 1
+                }
+                try await deleteBatch(batch, plan: &plan, onEvent: onEvent)
+                continue
+            }
 
             onEvent(.stepStarted(index: index, total: plan.steps.count))
             let wasRunning: Bool
@@ -230,6 +261,57 @@ public actor ChangeExecutor {
         }
     }
 
+    /// Deletes the albums and folders of several steps together. A folder goes only if
+    /// everything inside it goes too: Photos deletes a folder's contents with it.
+    private func deleteBatch(_ indices: [Int], plan: inout ChangePlan, onEvent: @Sendable (ExecutionEvent) -> Void) async throws {
+        let now = clock()
+        for i in indices {
+            onEvent(.stepStarted(index: i, total: plan.steps.count))
+            if case .running = plan.steps[i].state { continue }
+            plan.steps[i].state = .running(startedAt: now)
+        }
+        try await store.save(plan)
+
+        var targets: [Int: CollectionID] = [:]
+        for i in indices {
+            if case .deleteCollection(let id, _) = plan.steps[i].operation { targets[i] = id }
+        }
+        var states: [Int: StepState] = [:]
+        var before = CollectionInventory([])
+        var allowed = Set<CollectionID>()
+        do {
+            before = try await library.currentInventory()
+            let requested = Set(targets.values)
+            var changed = true
+            while changed {
+                changed = false
+                for id in requested.sorted() where !allowed.contains(id) && before[id] != nil {
+                    let inside = before.collections.values.filter { $0.parentID == id }
+                    if inside.allSatisfy({ allowed.contains($0.id) }) {
+                        allowed.insert(id)
+                        changed = true
+                    }
+                }
+            }
+            if !allowed.isEmpty { try await library.deleteCollections(allowed.sorted()) }
+        } catch {
+            for i in indices { states[i] = .failed(reason: String(describing: error)) }
+        }
+        // Read back: success only for what is really gone.
+        if let after = try? await library.currentInventory() {
+            for (i, id) in targets {
+                if after[id] == nil {
+                    states[i] = .succeeded(createdID: nil, verifiedAt: now)
+                } else if states[i] == nil {
+                    states[i] = .failed(reason: allowed.contains(id) ? "deletion could not be verified" : "folder is not empty")
+                }
+            }
+        }
+        for i in indices { plan.steps[i].state = states[i] ?? .failed(reason: "deletion could not be verified") }
+        try await store.save(plan)
+        for i in indices { onEvent(.stepFinished(index: i, state: plan.steps[i].state)) }
+    }
+
     /// After a crash: was the collection already created by this plan?
     private func findCreatedByUs(title: String, parent: CollectionID?, folder: Bool, plan: ChangePlan) async throws -> CollectionID? {
         let inventory = try await library.currentInventory()
@@ -311,12 +393,14 @@ public struct UndoPlanner: Sendable {
         }
 
         // 2. Created albums: delete only if they contain nothing the user added himself.
+        //    Deletions are collected and run together at the end (one question from Photos).
         let createdSet = Set(createdAlbums)
+        var albumDeletions: [PlannedOperation] = []
         for albumID in createdAlbums {
             guard let album = current[albumID] else { continue }
             let ours = addedByUs[albumID] ?? []
             if album.assetIDs.isSubset(of: ours) {
-                append(.deleteCollection(albumID, title: album.title))
+                albumDeletions.append(.deleteCollection(albumID, title: album.title))
             } else {
                 let removable = album.assetIDs.intersection(ours).sorted()
                 if !removable.isEmpty { append(.removeAssets(album: albumID, assets: removable)) }
@@ -329,6 +413,7 @@ public struct UndoPlanner: Sendable {
             let removable = album.assetIDs.intersection(ours).sorted()
             if !removable.isEmpty { append(.removeAssets(album: albumID, assets: removable)) }
         }
+        albumDeletions.forEach(append)
         // 4. Folders we created, deepest first, only if nothing else is left inside. Deleting a
         //    folder in Photos also deletes everything in it, so a folder that still holds any
         //    album or folder (the user's own, or one from a later plan) is always kept, and

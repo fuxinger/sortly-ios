@@ -383,7 +383,26 @@ final class SortlyFlowUITests: XCTestCase {
                 }
                 if tap(undo, "undo in history", timeout: 10) {
                     tap(app.buttons["Rückgängig machen"].firstMatch, "confirm undo")
-                    sleep(15)
+                    // iOS asks before an app deletes albums. All albums go in one request, so
+                    // this must be one question, not one per album.
+                    let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
+                    var questions = 0
+                    let end = Date().addingTimeInterval(40)
+                    while Date() < end {
+                        let alert = springboard.alerts.firstMatch
+                        if alert.waitForExistence(timeout: 3) {
+                            if questions == 0 { shot("22-delete-question") }
+                            let delete = alert.buttons.matching(NSPredicate(format: "label IN %@", ["Delete", "Löschen"])).firstMatch
+                            if delete.exists { delete.tap(); questions += 1; sleep(2) } else { break }
+                        } else if app.staticTexts["Rückgängig gemacht"].exists {
+                            break
+                        }
+                    }
+                    print("UI_FACT undo questions \(questions)")
+                    XCTAssertLessThanOrEqual(questions, 1, "Undo asked more than once before deleting albums")
+                    let undone = app.staticTexts["Rückgängig gemacht"].waitForExistence(timeout: 30)
+                    print(undone ? "UI_STEP_OK undo finished" : "UI_STEP_MISSING undo finished")
+                    XCTAssertTrue(undone, "Undo did not finish")
                     shot("22-after-undo")
                 }
                 tap(button("Fertig"), "close settings")

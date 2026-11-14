@@ -177,15 +177,17 @@ extension AtlasView {
     @ViewBuilder
     var yearPicker: some View {
         if typeSize.isAccessibilitySize {
-            Picker(selection: $year) {
-                Text("Alle Jahre").tag(Int?.none)
-                ForEach(model.atlasYears, id: \.self) { Text(verbatim: String($0)).tag(Int?.some($0)) }
+            Menu {
+                Picker("Jahr", selection: $year) {
+                    Text("Alle Jahre").tag(Int?.none)
+                    ForEach(model.atlasYears, id: \.self) { Text(verbatim: String($0)).tag(Int?.some($0)) }
+                }
+                .pickerStyle(.inline)
             } label: {
-                Text("Jahr")
+                MenuChoiceLabel(text: year.map { Text(verbatim: String($0)) } ?? Text("Alle Jahre"))
             }
-            .pickerStyle(.menu)
-            .tint(Theme.accent)
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .accessibilityLabel(Text("Jahr"))
+            .accessibilityValue(year.map { Text(verbatim: String($0)) } ?? Text("Alle Jahre"))
         } else {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: Theme.Spacing.s) {

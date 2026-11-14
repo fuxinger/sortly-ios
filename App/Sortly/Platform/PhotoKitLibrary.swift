@@ -260,6 +260,44 @@ struct PhotoKitLibrary: PhotoLibraryReading, PhotoLibraryWriting {
         }
     }
 
+    /// One request for everything: Photos asks the user once ("Delete 37 albums?") instead of
+    /// once per album. A folder goes only if all it holds goes too (Photos deletes a folder's
+    /// contents with it); this is checked here again, not only in the executor.
+    func deleteCollections(_ ids: [CollectionID]) async throws {
+        let raws = ids.map(\.rawValue)
+        var safe = Set<String>()
+        PHAssetCollection.fetchAssetCollections(withLocalIdentifiers: raws, options: nil)
+            .enumerateObjects { album, _, _ in safe.insert(album.localIdentifier) }
+        let albumRaws = Array(safe)
+        var lists: [PHCollectionList] = []
+        PHCollectionList.fetchCollectionLists(withLocalIdentifiers: raws, options: nil)
+            .enumerateObjects { list, _, _ in lists.append(list) }
+        var listRaws: [String] = []
+        var changed = true
+        while changed {
+            changed = false
+            for list in lists where !safe.contains(list.localIdentifier) {
+                var allGoing = true
+                PHCollection.fetchCollections(in: list, options: nil).enumerateObjects { child, _, stop in
+                    if !safe.contains(child.localIdentifier) { allGoing = false; stop.pointee = true }
+                }
+                if allGoing {
+                    safe.insert(list.localIdentifier)
+                    listRaws.append(list.localIdentifier)
+                    changed = true
+                }
+            }
+        }
+        guard !albumRaws.isEmpty || !listRaws.isEmpty else { return }
+        try await PHPhotoLibrary.shared().performChanges {
+            // Deletes only the album/folder containers. PhotoKit keeps the media.
+            let albums = PHAssetCollection.fetchAssetCollections(withLocalIdentifiers: albumRaws, options: nil)
+            if albums.count > 0 { PHAssetCollectionChangeRequest.deleteAssetCollections(albums) }
+            let folders = PHCollectionList.fetchCollectionLists(withLocalIdentifiers: listRaws, options: nil)
+            if folders.count > 0 { PHCollectionListChangeRequest.deleteCollectionLists(folders) }
+        }
+    }
+
     func deleteCollection(_ id: CollectionID) async throws {
         let raw = id.rawValue
         // Never delete a folder that still holds something: Photos would delete its contents.
