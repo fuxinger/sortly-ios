@@ -73,7 +73,7 @@ struct OverviewView: View {
                 ProgressRing(fraction: model.progress.fullyShare)
                     .frame(width: 84, height: 84)
                 VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
-                    Text("\(model.progress.fully.formatted()) von \(model.progress.total.formatted()) organisiert")
+                    Text("\(model.progress.fully.formatted()) von \(model.progress.total.formatted()) sortiert")
                         .font(.headline)
                         .monospacedDigit()
                     Text(primaryAreasText)

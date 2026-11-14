@@ -84,7 +84,7 @@ struct ProgressRing: View {
                 .padding(lineWidth)
         }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(Text("Organisiert"))
+        .accessibilityLabel(Text("Sortiert"))
         .accessibilityValue(Text(fraction, format: .percent.precision(.fractionLength(0))))
     }
 }

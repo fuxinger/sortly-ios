@@ -31,16 +31,6 @@
         }
       }
     },
-    "%@ von %@ organisiert" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@ of %2$@ organized"
-          }
-        }
-      }
-    },
     "%@ von %@ Schritten" : {
       "localizations" : {
         "en" : {
@@ -2677,16 +2667,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Folder"
-          }
-        }
-      }
-    },
-    "Organisiert" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Organized"
           }
         }
       }
@@ -5329,6 +5309,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Step %lld of %lld"
+          }
+        }
+      }
+    },
+    "%@ von %@ sortiert" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ of %2$@ sorted"
           }
         }
       }
