@@ -1,0 +1,113 @@
+import Foundation
+import Testing
+@testable import SortlyCore
+
+@Suite("Travel atlas")
+struct TravelAtlasTests {
+    func fact(_ n: Int, country: String, city: String?, day: Int, trip: SortlyID?) -> AssetFacts {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "UTC")!
+        let date = calendar.date(from: DateComponents(year: 2023, month: 7, day: day, hour: 12))!
+        return AssetFacts(
+            asset: AssetSnapshot(id: AssetID("a\(n)"), creationDate: date),
+            place: PlaceComponents(isoCountryCode: country, country: country, locality: city),
+            tripID: trip
+        )
+    }
+
+    @Test func countsCountriesCitiesAndTrips() {
+        let rome = SortlyID("trip-rome"), paris = SortlyID("trip-paris")
+        var facts: [AssetFacts] = []
+        for i in 0..<5 { facts.append(fact(i, country: "DE", city: "München", day: 1, trip: nil)) }
+        for i in 5..<15 { facts.append(fact(i, country: "IT", city: "Rom", day: 3 + (i - 5) % 6, trip: rome)) }
+        for i in 15..<19 { facts.append(fact(i, country: "FR", city: "Paris", day: 20, trip: paris)) }
+        facts.append(fact(99, country: "AT", city: "Wien", day: 25, trip: nil)) // below minimum
+        var utc = Calendar(identifier: .gregorian)
+        utc.timeZone = TimeZone(identifier: "UTC")!
+        let atlas = TravelAtlas.compute(facts: facts, calendar: utc)
+        #expect(atlas.countryCodes == ["DE", "IT", "FR"])
+        #expect(atlas.cityCount == 4)
+        #expect(atlas.tripCount == 2)
+        #expect(atlas.sinceYear == 2023)
+        #expect(atlas.longestTripDays == 6)
+        #expect(atlas.favoriteTripCity == "Rom")
+        #expect(atlas.countriesByFirstVisit == ["DE", "IT", "FR"])
+        #expect(atlas.continents == [.europe])
+        #expect(TravelAtlas.flag("it") == "🇮🇹")
+        #expect(atlas.trips.map(\.place) == ["Rom", "Paris"])
+        #expect(atlas.trips.first?.days == 6)
+        #expect(TravelAtlas.flag("X") == "")
+    }
+
+    @Test func coverPrefersFavoritePhotoFromFavoriteCity() {
+        let rome = SortlyID("trip-rome")
+        var facts: [AssetFacts] = []
+        for i in 0..<6 {
+            var f = fact(i, country: "IT", city: "Rom", day: 3, trip: rome)
+            f.asset.pixelWidth = 4000; f.asset.pixelHeight = 3000
+            facts.append(f)
+        }
+        var big = fact(10, country: "IT", city: "Rom", day: 4, trip: rome)
+        big.asset.subtypes = [.screenshot]; big.asset.pixelWidth = 9000; big.asset.pixelHeight = 9000
+        var video = fact(11, country: "IT", city: "Rom", day: 4, trip: rome)
+        video.asset.kind = .video; video.asset.pixelWidth = 8000; video.asset.pixelHeight = 8000
+        var favorite = fact(12, country: "IT", city: "Rom", day: 5, trip: rome)
+        favorite.asset.isFavorite = true; favorite.asset.pixelWidth = 1000; favorite.asset.pixelHeight = 800
+        facts += [big, video, favorite]
+        #expect(TravelAtlas.compute(facts: facts).favoriteTripCover == AssetID("a12"))
+        facts.removeLast()
+        let cover = TravelAtlas.compute(facts: facts).favoriteTripCover
+        #expect(cover != AssetID("a10") && cover != AssetID("a11") && cover != nil)
+    }
+    @Test func yearAtlasShowsOnlyThatYearAndNewCountries() {
+        var utc = Calendar(identifier: .gregorian)
+        utc.timeZone = TimeZone(identifier: "UTC")!
+        func at(_ n: Int, _ country: String, _ year: Int) -> AssetFacts {
+            var f = fact(n, country: country, city: nil, day: 1, trip: nil)
+            f.asset.creationDate = utc.date(from: DateComponents(year: year, month: 5, day: 1, hour: 12))
+            return f
+        }
+        var facts: [AssetFacts] = []
+        for i in 0..<3 { facts.append(at(i, "IT", 2023)) }
+        for i in 3..<6 { facts.append(at(i, "IT", 2024)) }
+        for i in 6..<9 { facts.append(at(i, "ES", 2024)) }
+        facts.append(at(9, "PT", 2022)) // below the minimum
+        #expect(TravelAtlas.years(facts: facts, calendar: utc) == [2024, 2023])
+        let y2024 = TravelAtlas.compute(facts: facts, year: 2024, calendar: utc)
+        #expect(y2024.year == 2024)
+        #expect(y2024.countryCodes == ["IT", "ES"])
+        #expect(y2024.newCountryCodes == ["ES"])
+        let all = TravelAtlas.compute(facts: facts, year: nil, calendar: utc)
+        #expect(all.year == nil && all.countryCodes == ["IT", "ES"] && all.newCountryCodes.isEmpty)
+    }
+}
+
+@Suite("Photo story facts")
+struct PhotoStoryTests {
+    @Test func yearFactsMentionMonthTopicsAndTrips() {
+        var utc = Calendar(identifier: .gregorian)
+        utc.timeZone = TimeZone(identifier: "UTC")!
+        let trip = SortlyID("t1")
+        var facts: [AssetFacts] = []
+        for i in 0..<12 {
+            let date = utc.date(from: DateComponents(year: 2024, month: 8, day: 1 + i % 5, hour: 12))!
+            facts.append(AssetFacts(
+                asset: AssetSnapshot(id: AssetID("p\(i)"), creationDate: date),
+                place: PlaceComponents(isoCountryCode: "IT", country: "Italien", locality: "Rom"),
+                tripID: trip,
+                categories: ["animal.dog": .likely]
+            ))
+        }
+        facts.append(AssetFacts(asset: AssetSnapshot(id: "old", creationDate: utc.date(from: DateComponents(year: 2019, month: 3, day: 1)))))
+        let lines = PhotoStory.facts(.year(2024), facts: facts, calendar: utc)
+        let text = lines.joined(separator: "\n")
+        #expect(text.contains("Jahr: 2024. Fotos: 12"))
+        #expect(text.contains("August"))
+        #expect(text.contains("Hunde (12 Fotos)"))
+        #expect(text.contains("Rom (Italien, 5 Tage)"))
+        #expect(PhotoStory.availableYears(facts, calendar: utc) == [2024, 2019])
+        #expect(PhotoStory.facts(.year(2001), facts: facts, calendar: utc).isEmpty)
+        #expect(!PhotoStory.facts(.all, facts: facts, calendar: utc).isEmpty)
+    }
+
+}

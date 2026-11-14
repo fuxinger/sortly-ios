@@ -3,35 +3,78 @@ name: CI
 on:
   push:
     branches: [main]
+    paths-ignore: ['**.md']
   pull_request:
+    paths-ignore: ['**.md']
   workflow_dispatch:
+
+# Read-only token: no job writes to the repository.
+permissions:
+  contents: read
+
+env:
+  # brew would otherwise update itself first (about a minute per macOS job).
+  HOMEBREW_NO_AUTO_UPDATE: 1
+  HOMEBREW_NO_INSTALL_CLEANUP: 1
 
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
+  lint:
+    # Fast checks that need no compiler; they fail within seconds.
+    name: App rules and strings
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+      - name: Navigation rule
+        # Navigation uses destination-based links only. A value-based link inside a screen that
+        # was itself pushed by a destination-based link leads nowhere (dead row, warning triangle).
+        run: |
+          if grep -rn "NavigationLink(value:" App/Sortly; then
+            echo "::error::Use NavigationLink { destination } label: { … } instead of NavigationLink(value:)"
+            exit 1
+          fi
+      - name: Every UI string has English
+        run: python3 .github/scripts/check_strings.py .
+
   core-linux:
     name: Core tests (Linux)
     runs-on: ubuntu-24.04
     container: swift:6.2-noble
+    timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Install SQLite headers
         run: apt-get update -qq && apt-get install -y -qq libsqlite3-dev
       - name: Build and test
         run: swift test --parallel
+      - name: Load test (20,000 and 100,000 photos, time and memory limits)
+        run: SORTLY_LOAD_TEST=1 swift test --skip-build --filter LoadTests 2>&1 | grep -E "LOAD_|passed|failed|error"; exit ${PIPESTATUS[0]}
+        shell: bash
+
+  names:
+    # App name candidates against the App Store (the API is only reachable from CI).
+    name: App name check
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - run: python3 .github/scripts/name_check.py docs/launch/name-candidates.txt
 
   ios:
     name: iOS build and tests (macOS)
-    runs-on: macos-26
+    runs-on: xcode-27
     timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Select newest Xcode
         run: |
           ls -d /Applications/Xcode*.app
-          XCODE=$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)
+          XCODE=$(ls -d /Applications/Xcode_*.app 2>/dev/null | sort -V | tail -1)
+          [ -n "$XCODE" ] || XCODE=$(ls -d /Applications/Xcode*.app | sort -V | tail -1)
           sudo xcode-select -s "$XCODE"
           xcodebuild -version
           xcrun simctl list runtimes
@@ -46,36 +89,100 @@ jobs:
         if: hashFiles('App/project.yml') != ''
         id: sim
         run: |
-          UDID=$(xcrun simctl list devices available -j | python3 -c '
-          import json,sys
-          d=json.load(sys.stdin)["devices"]
-          best=None
-          for rt,devs in d.items():
-              if "iOS" not in rt: continue
-              for x in devs:
-                  if x["name"].startswith("iPhone"):
-                      best=(rt,x["udid"],x["name"])
-          print(best[1])')
+          UDID=$(xcrun simctl list devices available -j | python3 .github/scripts/pick_simulator.py)
           echo "udid=$UDID" >> "$GITHUB_OUTPUT"
       - name: Build and test app
         if: hashFiles('App/project.yml') != ''
         run: |
-          set -o pipefail
+          set +e
           cd App
           xcodebuild test \
             -project Sortly.xcodeproj \
             -scheme Sortly \
             -destination "id=${{ steps.sim.outputs.udid }}" \
             -resultBundlePath ../build/TestResults.xcresult \
-            CODE_SIGNING_ALLOWED=NO \
-            | tee ../build-log.txt | grep -E "error:|warning:|Test Suite|Executed|\*\* " || true
-          test ${PIPESTATUS[0]} -eq 0
+            CODE_SIGNING_ALLOWED=NO > ../build-log.txt 2>&1
+          status=$?
+          grep -E "error:|warning: .*Sortly|Test Suite|Test case|Executed|TAXONOMY|VISION_IDENTIFIERS|PREVIEW_JPEG|\*\* |✘|recorded an issue|Test run with|Testing failed|Fatal error|crashed" ../build-log.txt | grep -v "/SourcePackages/" | head -3000
+          exit $status
+      - name: Export strings for translation
+        if: success() && hashFiles('App/project.yml') != ''
+        run: |
+          cd App
+          xcodebuild -exportLocalizations -project Sortly.xcodeproj -localizationPath ../build/loc -exportLanguage en CODE_SIGNING_ALLOWED=NO | tail -3
+          find ../build/loc -name "*.xliff" -exec sh -c 'base64 -i "$1" | tr -d "\n" | fold -w 4000 | sed "s/^/XLIFF /"' _ {} \;
+      - name: Upload strings
+        if: success() && hashFiles('build/loc/**') != ''
+        uses: actions/upload-artifact@v6
+        with:
+          name: localizations
+          path: build/loc
+          retention-days: 7
       - name: Upload logs
         if: always() && hashFiles('build-log.txt') != ''
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ios-build-log
           path: |
             build-log.txt
             build/TestResults.xcresult
           retention-days: 7
+
+  simulator:
+    # Runs in parallel with the tests so the browser-test link is ready sooner.
+    name: Simulator app for browser testing
+    runs-on: xcode-27
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v5
+      - name: Select newest Xcode
+        run: |
+          XCODE=$(ls -d /Applications/Xcode_*.app 2>/dev/null | sort -V | tail -1)
+          [ -n "$XCODE" ] || XCODE=$(ls -d /Applications/Xcode*.app | sort -V | tail -1)
+          sudo xcode-select -s "$XCODE"
+      - name: Generate Xcode project
+        run: |
+          brew install xcodegen
+          cd App && xcodegen generate
+      - name: Build simulator app for browser testing
+        run: |
+          set -o pipefail
+          mkdir -p build
+          cd App
+          xcodebuild build \
+            -project Sortly.xcodeproj \
+            -scheme Sortly \
+            -configuration Release \
+            -sdk iphonesimulator \
+            -destination "generic/platform=iOS Simulator" \
+            -derivedDataPath ../build/sim \
+            CODE_SIGNING_ALLOWED=NO > ../build/sim-build.log 2>&1 \
+            || { grep -E "error:" -A3 ../build/sim-build.log | head -60; exit 1; }
+          tail -5 ../build/sim-build.log
+          cd ../build/sim/Build/Products/Release-iphonesimulator
+          ditto -c -k --sequesterRsrc --keepParent Sortly.app ../../../../Sortly-simulator.zip
+          ls -la ../../../../Sortly-simulator.zip
+      - name: Upload simulator app
+        if: success() && hashFiles('build/Sortly-simulator.zip') != ''
+        uses: actions/upload-artifact@v6
+        with:
+          name: Sortly-simulator-app
+          path: build/Sortly-simulator.zip
+          retention-days: 30
+      - name: Upload to Appetize for browser testing
+        # Runs only when the repository has the secret APPETIZE_TOKEN. Keeps one app
+        # (note "sortly-ci") and updates it, so the test link stays the same.
+        if: success() && hashFiles('build/Sortly-simulator.zip') != ''
+        continue-on-error: true
+        env:
+          APPETIZE_TOKEN: ${{ secrets.APPETIZE_TOKEN }}
+        run: |
+          if [ -z "$APPETIZE_TOKEN" ]; then echo "No APPETIZE_TOKEN secret, skipping."; exit 0; fi
+          key=$(curl -sS -H "X-API-KEY: $APPETIZE_TOKEN" https://api.appetize.io/v1/apps \
+            | jq -r '[.data[]? | select(.note == "sortly-ci")][0].publicKey // empty')
+          url=https://api.appetize.io/v1/apps${key:+/$key}
+          curl -sS --fail-with-body -X POST "$url" -H "X-API-KEY: $APPETIZE_TOKEN" \
+            -F "file=@build/Sortly-simulator.zip" -F "platform=ios" -F "note=sortly-ci" > appetize.json
+          key=$(jq -r '.publicKey' appetize.json)
+          echo "APPETIZE_LINK https://appetize.io/app/$key"
+          echo "### Im Browser testen: https://appetize.io/app/$key" >> "$GITHUB_STEP_SUMMARY"

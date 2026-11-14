@@ -1,0 +1,95 @@
+import SwiftUI
+import SortlyCore
+
+/// Albums Albumist created or extended. Each one can be taken back: Albumist removes only the
+/// photos it added itself and deletes an album only if it created it and nothing else is in it.
+struct ManagedAlbumsView: View {
+    @Environment(AppModel.self) private var model
+    @State private var pending: ManagedAlbumState?
+    @State private var plan: ChangePlan?
+    @State private var showPlan = false
+    /// The suggestions behind the album being removed; they are not offered again afterwards.
+    @State private var removingSources: Set<SortlyID> = []
+    @State private var nothingToDo = false
+
+    var body: some View {
+        List {
+            if model.managedAlbums.isEmpty {
+                ContentUnavailableView("Noch keine Alben", systemImage: "rectangle.stack",
+                                       description: Text("Hier erscheinen Alben, die Albumist angelegt oder ergänzt hat."))
+            } else {
+                Section {
+                    ForEach(model.managedAlbums, id: \.albumID) { state in
+                        Button { pending = state } label: { row(state) }
+                            .foregroundStyle(.primary)
+                    }
+                } footer: {
+                    Text("Tippe auf ein Album, um Albumists Änderungen daran zurückzunehmen. Fotos, die du selbst hinzugefügt hast, bleiben drin. Deine Originale bleiben immer in der Mediathek.")
+                }
+            }
+        }
+        .navigationTitle("Von Albumist angelegt")
+        .navigationBarTitleDisplayMode(.inline)
+        .confirmationDialog(
+            pending.map { Text("„\($0.lastKnownTitle)“ zurücknehmen?") } ?? Text(""),
+            isPresented: Binding(get: { pending != nil }, set: { if !$0 { pending = nil } }),
+            titleVisibility: .visible,
+            presenting: pending
+        ) { state in
+            Button(state.createdBySortly ? "Album entfernen" : "Albumists Fotos herausnehmen", role: .destructive) {
+                Task { await prepare(state) }
+            }
+        } message: { state in
+            if state.createdBySortly {
+                Text("Albumist hat dieses Album angelegt. Es wird gelöscht, die Fotos bleiben in deiner Mediathek. Hast du selbst Fotos hineingelegt, bleibt das Album mit diesen Fotos bestehen.")
+            } else {
+                Text("Die \(state.addedBySortly.count) Fotos, die Albumist hinzugefügt hat, werden aus dem Album genommen. Alles andere bleibt, wie es ist.")
+            }
+        }
+        .alert("Nichts zu tun", isPresented: $nothingToDo) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("Die Fotos von Albumist sind schon nicht mehr in diesem Album.")
+        }
+        .navigationDestination(isPresented: $showPlan) {
+            PlanReviewView(prebuilt: plan)
+        }
+        .onChange(of: model.execution.finished) { _, finished in
+            guard finished != nil, !removingSources.isEmpty else { return }
+            let sources = removingSources
+            removingSources = []
+            Task { for source in sources { await model.forgetProposal(source) } }
+        }
+    }
+
+    private func row(_ state: ManagedAlbumState) -> some View {
+        HStack(spacing: Theme.Spacing.m) {
+            IconTile(systemName: state.createdBySortly ? "rectangle.stack.badge.plus" : "plus.rectangle.on.rectangle", tint: Theme.accent)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(state.lastKnownTitle).font(.body.weight(.medium))
+                Group {
+                    if state.createdBySortly {
+                        Text("Neu angelegt · \(state.addedBySortly.count) Fotos von Albumist")
+                    } else {
+                        Text("Ergänzt · \(state.addedBySortly.count) Fotos von Albumist")
+                    }
+                }
+                .font(.footnote).foregroundStyle(.secondary)
+            }
+            Spacer(minLength: 0)
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityHint(Text("Änderungen von Albumist zurücknehmen"))
+    }
+
+    private func prepare(_ state: ManagedAlbumState) async {
+        pending = nil
+        guard let removal = await model.removalPlan(for: state) else {
+            nothingToDo = true
+            return
+        }
+        removingSources = state.allSourceIDs
+        plan = removal
+        showPlan = true
+    }
+}

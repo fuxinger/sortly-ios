@@ -11,7 +11,7 @@ public struct GeoCoordinate: Hashable, Sendable, Codable {
     }
 
     /// PhotoKit occasionally reports (0,0) or out-of-range values for broken EXIF data.
-    /// Those are treated as "no location" – SORTLY never invents a place.
+    /// Those are treated as "no location" – Albumist never invents a place.
     public var isPlausible: Bool {
         latitude.isFinite && longitude.isFinite
             && (-90...90).contains(latitude) && (-180...180).contains(longitude)
@@ -24,7 +24,7 @@ public enum MediaKind: String, Sendable, Codable, CaseIterable {
     case image, video, audio, unknown
 }
 
-/// Mirrors the public `PHAssetMediaSubtype` values plus facts SORTLY derives from public
+/// Mirrors the public `PHAssetMediaSubtype` values plus facts Albumist derives from public
 /// resource information (RAW, burst). Every flag here must be backed by a public API.
 public struct MediaSubtypes: OptionSet, Hashable, Sendable, Codable {
     public let rawValue: UInt32
@@ -106,6 +106,13 @@ public struct AssetSnapshot: Hashable, Sendable, Codable, Identifiable {
         self.isFavorite = isFavorite
         self.originalFilename = originalFilename
         self.uniformTypeIdentifier = uniformTypeIdentifier
+    }
+
+    /// Whether a stored modification date (`.distantPast` for none) is the asset's current
+    /// one. Dates pass through the database as seconds since 1970, which can move the last
+    /// bit, so they count as equal within a millisecond.
+    public static func sameModification(_ stored: Date, _ current: Date?) -> Bool {
+        abs(stored.timeIntervalSince1970 - (current ?? .distantPast).timeIntervalSince1970) < 0.001
     }
 
     /// A location that is safe to use for geographic decisions.

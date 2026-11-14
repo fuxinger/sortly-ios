@@ -1,7 +1,7 @@
 import Foundation
 
 /// A place where the user photographs repeatedly (prompt §4.3).
-/// SORTLY never labels such a place as "home" or "work" by itself – it only reports facts.
+/// Albumist never labels such a place as "home" or "work" by itself – it only reports facts.
 public struct FrequentPlace: Hashable, Sendable, Codable, Identifiable {
     public var id: SortlyID
     public var centroid: GeoCoordinate

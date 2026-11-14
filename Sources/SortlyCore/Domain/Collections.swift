@@ -4,7 +4,7 @@ import Foundation
 public enum CollectionKind: String, Sendable, Codable {
     /// `PHAssetCollection` of type `.album`, subtype `.albumRegular` – a normal user album.
     case userAlbum
-    /// `PHCollectionList` folder created by the user (or by SORTLY).
+    /// `PHCollectionList` folder created by the user (or by Albumist).
     case folder
     /// Smart album maintained by Photos (Favorites, Screenshots, ...). Read-only.
     case smartAlbum
@@ -59,7 +59,7 @@ public struct CollectionSnapshot: Hashable, Sendable, Codable, Identifiable {
         kind == .userAlbum && capabilities.contains(.addContent)
     }
 
-    /// Fingerprint used to detect changes made outside SORTLY between preview and execution.
+    /// Fingerprint used to detect changes made outside Albumist between preview and execution.
     public var fingerprint: String {
         StableHash.hex([title, parentID?.rawValue ?? "-", StableHash.setFingerprint(assetIDs.map(\.rawValue))].joined(separator: "|"))
     }
@@ -109,10 +109,10 @@ public struct CollectionInventory: Sendable, Codable, Hashable {
         return folders.first { self.path(of: $0.id) + [$0.title] == path }
     }
 
-    /// Inverted index asset -> albums containing it (user albums only).
+    /// Inverted index asset -> albums containing it (all album kinds, no folders).
     public func albumMembershipIndex() -> [AssetID: [CollectionID]] {
         var index: [AssetID: [CollectionID]] = [:]
-        for album in albums where album.kind == .userAlbum || album.kind == .restrictedAlbum {
+        for album in albums {
             for asset in album.assetIDs {
                 index[asset, default: []].append(album.id)
             }

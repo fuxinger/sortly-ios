@@ -54,6 +54,68 @@ struct TripTests {
         #expect((trips.first?.distinctStops ?? 0) >= 3)
     }
 
+    /// Someone who mostly takes photos on holiday: a handful of photos at home per year and
+    /// a few days of photos per trip (the simulator demo library has exactly this shape).
+    /// A short burst of photo days somewhere must never make that place "home".
+    @Test func sparseHomePhotographerStillGetsEveryTrip() {
+        var lib = LibraryBuilder()
+        let cal = Fixture.calendar
+        func date(_ y: Int, _ m: Int, _ d: Int, plusDays: Int = 0, hour: Int) -> Date {
+            cal.date(byAdding: .day, value: plusDays, to: cal.date(from: DateComponents(year: y, month: m, day: d, hour: hour))!)!
+        }
+        let trips: [(GeoCoordinate, Int, Int, Int, Int, Int)] = [   // place, year, month, day, days, photos
+            (GeoCoordinate(latitude: 48.8566, longitude: 2.3522), 2018, 10, 5, 3, 12),    // Paris
+            (GeoCoordinate(latitude: 41.3874, longitude: 2.1686), 2019, 6, 20, 5, 14),    // Barcelona
+            (GeoCoordinate(latitude: 40.7128, longitude: -74.0060), 2019, 11, 2, 6, 16),  // New York
+            (GeoCoordinate(latitude: 48.2082, longitude: 16.3738), 2020, 2, 21, 2, 10),   // Wien
+            (GeoCoordinate(latitude: 62.1008, longitude: 7.2059), 2021, 7, 12, 5, 14),    // Geiranger
+            (GeoCoordinate(latitude: 43.5081, longitude: 16.4402), 2021, 8, 20, 7, 14),   // Split
+            (GeoCoordinate(latitude: 38.7223, longitude: -9.1393), 2022, 4, 14, 4, 12),   // Lissabon
+            (Fixture.Places.florence, 2022, 9, 3, 3, 11),
+            (GeoCoordinate(latitude: 55.6761, longitude: 12.5683), 2023, 5, 18, 3, 10),   // Kopenhagen
+            (GeoCoordinate(latitude: 64.1466, longitude: -21.9426), 2023, 8, 1, 4, 12),   // Reykjavík
+            (GeoCoordinate(latitude: 63.4186, longitude: -19.0060), 2023, 8, 5, 3, 10),   // Vík, same Iceland trip
+            (Fixture.Places.rome, 2024, 5, 10, 5, 20),
+            (GeoCoordinate(latitude: 35.0116, longitude: 135.7681), 2024, 10, 8, 6, 16),  // Kyoto
+        ]
+        for i in 0..<45 {
+            _ = lib.photo(at: date(2018 + i % 7, 1 + (i * 5) % 12, 1 + (i * 7) % 27, hour: 10 + i % 9), Fixture.Places.munichHome, jitterMeters: 3_000)
+        }
+        for i in 0..<12 {
+            _ = lib.photo(at: date(2020 + i % 5, 1 + (i * 3) % 12, 5 + i, hour: 15), GeoCoordinate(latitude: 48.3520, longitude: 11.7930))
+        }
+        for (place, y, m, d, days, photos) in trips {
+            for i in 0..<photos { _ = lib.photo(at: date(y, m, d, plusDays: i % days, hour: 9 + i % 10), place, jitterMeters: 2_000) }
+        }
+        let found = detector.detect(in: lib.assets)
+        #expect(found.count == 12)
+        #expect(found.allSatisfy { $0.maxDistanceFromHomeMeters > 250_000 })
+        let tripPhotos: Int = found.reduce(0) { $0 + $1.allAssetIDs.count }
+        let expectedPhotos: Int = trips.reduce(0) { $0 + $1.5 }
+        #expect(tripPhotos == expectedPhotos)
+    }
+
+    /// A brand-new library (two weeks at home, then a weekend away) keeps its home: the
+    /// spread rule must not turn the first weeks into a trip.
+    @Test func newLibraryKeepsItsHome() {
+        var lib = LibraryBuilder()
+        lib.daily(from: "2026-03-01", to: "2026-03-14", at: Fixture.Places.munichHome, perDay: 3)
+        let away = lib.daily(from: "2026-03-15", to: "2026-03-16", at: Fixture.Places.gardaLake, perDay: 5)
+        let trips = detector.detect(in: lib.assets)
+        #expect(trips.count == 1)
+        #expect(Set(trips.first?.geotaggedAssetIDs ?? []) == Set(away))
+    }
+
+    /// Daily photos at home plus a three-week holiday at one place: still one trip.
+    @Test func longHolidayAtOnePlaceIsATrip() {
+        var lib = LibraryBuilder()
+        lib.daily(from: "2025-01-01", to: "2025-12-31", at: Fixture.Places.munichHome, perDay: 2, skipping: [("2025-07-01", "2025-07-24")])
+        let beach = lib.daily(from: "2025-07-02", to: "2025-07-23", at: Fixture.Places.naples, perDay: 4)
+        let trips = detector.detect(in: lib.assets)
+        #expect(trips.count == 1)
+        #expect(Set(trips.first?.geotaggedAssetIDs ?? []) == Set(beach))
+    }
+
     @Test func movingHouseDoesNotCreateEndlessTrip() {
         var lib = LibraryBuilder()
         // Lived in Rome until mid 2023, then moved to Munich.

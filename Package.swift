@@ -1,5 +1,5 @@
 // swift-tools-version: 6.0
-// SORTLY – platform-independent core.
+// Albumist – platform-independent core.
 // The iOS app (App/) links these libraries. Everything in here builds and tests on
 // macOS, iOS and Linux so the business logic is verifiable without a Mac.
 import PackageDescription
@@ -9,11 +9,13 @@ let strictSettings: [SwiftSetting] = [
 ]
 
 let package = Package(
-    name: "SortlyCore",
+    name: "SortlyKit",
     platforms: [.iOS("26.0"), .macOS("15.0")],
     products: [
         .library(name: "SortlyCore", targets: ["SortlyCore"]),
         .library(name: "SortlyStore", targets: ["SortlyStore"]),
+        .library(name: "SortlyWorldMap", targets: ["SortlyWorldMap"]),
+        .library(name: "SortlyEngine", targets: ["SortlyEngine"]),
         .library(name: "SortlyTestSupport", targets: ["SortlyTestSupport"]),
     ],
     targets: [
@@ -36,18 +38,34 @@ let package = Package(
             swiftSettings: strictSettings
         ),
         .target(
+            name: "SortlyWorldMap",
+            dependencies: ["SortlyCore"],
+            resources: [.copy("Resources/world.sortlymap"), .copy("Resources/LICENSE-NaturalEarth.txt")],
+            swiftSettings: strictSettings
+        ),
+        .target(
+            name: "SortlyEngine",
+            dependencies: ["SortlyCore", "SortlyStore"],
+            swiftSettings: strictSettings
+        ),
+        .target(
             name: "SortlyTestSupport",
             dependencies: ["SortlyCore"],
             swiftSettings: strictSettings
         ),
         .testTarget(
             name: "SortlyCoreTests",
-            dependencies: ["SortlyCore", "SortlyTestSupport"],
+            dependencies: ["SortlyCore", "SortlyWorldMap", "SortlyTestSupport"],
             swiftSettings: strictSettings
         ),
         .testTarget(
             name: "SortlyStoreTests",
             dependencies: ["SortlyStore", "SortlyCore", "SortlyTestSupport"],
+            swiftSettings: strictSettings
+        ),
+        .testTarget(
+            name: "SortlyEngineTests",
+            dependencies: ["SortlyEngine", "SortlyStore", "SortlyCore", "SortlyWorldMap", "SortlyTestSupport"],
             swiftSettings: strictSettings
         ),
     ],

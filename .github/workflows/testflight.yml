@@ -1,0 +1,121 @@
+name: TestFlight
+
+# Builds a signed App Store build and uploads it to TestFlight, so Albumist can be installed on
+# a real iPhone. Runs only when the four App Store Connect secrets exist (docs/TESTFLIGHT.md);
+# until then it stops after one quick check on Linux and costs no macOS minutes.
+on:
+  push:
+    branches: [claude/sortly-app, main]
+    paths-ignore: ['**.md']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: testflight
+  cancel-in-progress: true
+
+env:
+  HOMEBREW_NO_AUTO_UPDATE: 1
+  HOMEBREW_NO_INSTALL_CLEANUP: 1
+
+jobs:
+  check:
+    name: TestFlight secrets
+    runs-on: ubuntu-24.04
+    outputs:
+      ready: ${{ steps.secrets.outputs.ready }}
+    steps:
+      - id: secrets
+        env:
+          KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+          TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          if [ -n "$KEY_ID" ] && [ -n "$ISSUER_ID" ] && [ -n "$KEY_P8" ] && [ -n "$TEAM_ID" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::TestFlight skipped: the App Store Connect secrets are not set yet (docs/TESTFLIGHT.md)."
+          fi
+
+  upload:
+    name: Build and upload to TestFlight
+    needs: check
+    if: needs.check.outputs.ready == 'true'
+    runs-on: xcode-27
+    timeout-minutes: 60
+    env:
+      KEY_ID: ${{ secrets.ASC_KEY_ID }}
+      ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+      TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+    steps:
+      - uses: actions/checkout@v5
+      - name: Select newest Xcode
+        run: |
+          XCODE=$(ls -d /Applications/Xcode_*.app 2>/dev/null | sort -V | tail -1)
+          [ -n "$XCODE" ] || XCODE=$(ls -d /Applications/Xcode*.app | sort -V | tail -1)
+          sudo xcode-select -s "$XCODE"
+          xcodebuild -version
+      - name: Paths
+        run: |
+          echo "KEY_PATH=$RUNNER_TEMP/asc/AuthKey.p8" >> "$GITHUB_ENV"
+          echo "ARCHIVE=$RUNNER_TEMP/Albumist.xcarchive" >> "$GITHUB_ENV"
+          echo "EXPORT_OPTIONS=$RUNNER_TEMP/ExportOptions.plist" >> "$GITHUB_ENV"
+      - name: Generate Xcode project
+        run: |
+          brew install xcodegen
+          cd App && xcodegen generate
+      - name: App Store Connect key
+        env:
+          KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+        run: |
+          mkdir -p "$(dirname "$KEY_PATH")"
+          printf '%s\n' "$KEY_P8" > "$KEY_PATH"
+          chmod 600 "$KEY_PATH"
+      - name: Archive (signed, automatic signing in the cloud)
+        run: |
+          cd App
+          set +e
+          xcodebuild archive \
+            -project Sortly.xcodeproj \
+            -scheme Sortly \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath "$ARCHIVE" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$KEY_PATH" \
+            -authenticationKeyID "$KEY_ID" \
+            -authenticationKeyIssuerID "$ISSUER_ID" \
+            DEVELOPMENT_TEAM="$TEAM_ID" \
+            CODE_SIGN_STYLE=Automatic \
+            CURRENT_PROJECT_VERSION="${{ github.run_number }}" > ../archive-log.txt 2>&1
+          status=$?
+          grep -E "error:|\*\* ARCHIVE" ../archive-log.txt | head -80
+          exit $status
+      - name: Upload to TestFlight
+        run: |
+          plutil -create xml1 "$EXPORT_OPTIONS"
+          plutil -insert method -string app-store-connect "$EXPORT_OPTIONS"
+          plutil -insert destination -string upload "$EXPORT_OPTIONS"
+          plutil -insert signingStyle -string automatic "$EXPORT_OPTIONS"
+          plutil -insert teamID -string "$TEAM_ID" "$EXPORT_OPTIONS"
+          plutil -insert uploadSymbols -bool YES "$EXPORT_OPTIONS"
+          set +e
+          xcodebuild -exportArchive \
+            -archivePath "$ARCHIVE" \
+            -exportOptionsPlist "$EXPORT_OPTIONS" \
+            -exportPath "$RUNNER_TEMP/export" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$KEY_PATH" \
+            -authenticationKeyID "$KEY_ID" \
+            -authenticationKeyIssuerID "$ISSUER_ID" > upload-log.txt 2>&1
+          status=$?
+          grep -E "error:|Upload|EXPORT|\*\* " upload-log.txt | head -80
+          [ $status -eq 0 ] && echo "TESTFLIGHT_BUILD ${{ github.run_number }} uploaded; it appears in TestFlight after Apple's processing (usually 5 to 30 minutes)."
+          exit $status
+      - name: Remove key
+        if: always()
+        run: rm -rf "$(dirname "$KEY_PATH")"

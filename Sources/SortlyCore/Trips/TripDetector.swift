@@ -174,10 +174,31 @@ public struct TripDetector: Sendable {
             i += 1
         }
 
+        let (kind, stops) = Self.classify(dates: members.map { $0.creationDate! }, coordinates: coordinates, calendar: calendar)
+
+        return Trip(
+            id: .stable("trip", members.first!.id.rawValue),
+            start: start,
+            end: end,
+            geotaggedAssetIDs: members.map(\.id),
+            inferredAssetIDs: inferred,
+            centroid: centroid,
+            maxDistanceFromHomeMeters: maxDistance,
+            distinctStops: stops,
+            kind: kind
+        )
+    }
+
+    /// Kind of a trip from its photos (sorted by date) and the number of distinct overnight
+    /// stops. Days and evening hours are counted in `calendar`, which should use the
+    /// destination's time zone when it is known: an evening flight home across midnight is
+    /// still a day trip there.
+    public static func classify(dates: [Date], coordinates: [GeoCoordinate], calendar: Calendar) -> (kind: TripKind, stops: Int) {
+        guard let start = dates.first, let end = dates.last else { return (.dayTrip, 1) }
         // Distinct stops: ~25 km cells where photos were taken in the evening/night.
         var stopCells = Set<GeoCell>()
-        for (asset, c) in zip(members, coordinates) {
-            let hour = calendar.component(.hour, from: asset.creationDate!)
+        for (date, c) in zip(dates, coordinates) {
+            let hour = calendar.component(.hour, from: date)
             if hour >= 18 || hour < 6 { stopCells.insert(GeoCell(c, sizeMeters: 25_000)) }
         }
         let allCells = Set(coordinates.map { GeoCell($0, sizeMeters: 25_000) })
@@ -197,18 +218,30 @@ public struct TripDetector: Sendable {
         } else {
             kind = .vacation
         }
+        return (kind, max(stopCells.count, 1))
+    }
 
-        return Trip(
-            id: .stable("trip", members.first!.id.rawValue),
-            start: start,
-            end: end,
-            geotaggedAssetIDs: members.map(\.id),
-            inferredAssetIDs: inferred,
-            centroid: centroid,
-            maxDistanceFromHomeMeters: maxDistance,
-            distinctStops: max(stopCells.count, 1),
-            kind: kind
-        )
+    /// The trips with kind and stops counted in their destination's time zone (the most
+    /// common one among their photos' places), where that differs from `calendar`'s.
+    public static func inDestinationTime(_ trips: [Trip], assets: [AssetID: AssetSnapshot], timeZones: [AssetID: String], calendar: Calendar) -> [Trip] {
+        trips.map { trip in
+            var counts: [String: Int] = [:]
+            for id in trip.geotaggedAssetIDs { if let zone = timeZones[id] { counts[zone, default: 0] += 1 } }
+            guard let identifier = counts.max(by: { ($0.value, $1.key) < ($1.value, $0.key) })?.key,
+                  let zone = TimeZone(identifier: identifier), zone.identifier != calendar.timeZone.identifier else { return trip }
+            var local = calendar
+            local.timeZone = zone
+            let members = trip.geotaggedAssetIDs.compactMap { assets[$0] }
+                .compactMap { a -> (Date, GeoCoordinate)? in
+                    guard let date = a.creationDate, let c = a.usableLocation else { return nil }
+                    return (date, c)
+                }
+                .sorted { $0.0 < $1.0 }
+            guard !members.isEmpty else { return trip }
+            var result = trip
+            (result.kind, result.distinctStops) = classify(dates: members.map(\.0), coordinates: members.map(\.1), calendar: local)
+            return result
+        }
     }
 }
 
@@ -235,6 +268,13 @@ struct HabitualArea: Sendable {
     private let calendar: Calendar
     private var homesByDay: [Date: [Int]] = [:]
     private var globalHome: Int?
+    /// Photo days per cluster, ascending.
+    private var clusterDays: [[Date]] = []
+    private var requireSpread = false
+    /// A place only counts as home when its photo days inside the window lie at least this
+    /// far apart. A burst of holiday days (one trip, even a long one) never makes a place
+    /// "home", which matters for people who mostly take photos while travelling.
+    static let minimumHomeSpread: TimeInterval = 21 * 86_400
 
     init(assets: [AssetSnapshot], calendar: Calendar, windowDays: Int) {
         self.calendar = calendar
@@ -262,9 +302,16 @@ struct HabitualArea: Sendable {
         }
         clusterCentroids = result.clusters.map(\.centroid)
         days = dayPoints.enumerated().map { Day(day: $1.0, coordinate: $1.1, cluster: labels[$0]) }
+        clusterDays = Array(repeating: [], count: result.clusters.count)
+        for d in days where d.cluster >= 0 { clusterDays[d.cluster].append(d.day) }
+        // Spread is only demanded once some place shows it; a library of a few weeks keeps
+        // the plain majority rule (otherwise its home would turn into one long trip).
+        requireSpread = clusterDays.contains { ($0.last ?? .distantPast).timeIntervalSince($0.first ?? .distantPast) >= Self.minimumHomeSpread }
 
         var global: [Int: Int] = [:]
-        for d in days where d.cluster >= 0 { global[d.cluster, default: 0] += 1 }
+        for d in days where d.cluster >= 0 && isSpread(d.cluster, from: .distantPast, to: .distantFuture) {
+            global[d.cluster, default: 0] += 1
+        }
         if let best = global.max(by: { ($0.value, -$0.key) < ($1.value, -$1.key) }), best.value >= 5 { globalHome = best.key }
 
         // Sliding window over the sorted days: O(days) instead of O(days²).
@@ -280,7 +327,9 @@ struct HabitualArea: Sendable {
                 if days[lo].cluster >= 0 { counts[days[lo].cluster, default: 0] -= 1 }
                 lo += 1
             }
-            homesByDay[d.day] = Self.select(counts: counts.filter { $0.value > 0 }, total: hi - lo, fallback: globalHome)
+            let lower = d.day.addingTimeInterval(-window), upper = d.day.addingTimeInterval(window)
+            let candidates = counts.filter { $0.value > 0 && isSpread($0.key, from: lower, to: upper) }
+            homesByDay[d.day] = Self.select(counts: candidates, total: hi - lo, fallback: globalHome)
         }
     }
 
@@ -301,7 +350,21 @@ struct HabitualArea: Sendable {
             total += 1
             if d.cluster >= 0 { counts[d.cluster, default: 0] += 1 }
         }
-        return Self.select(counts: counts, total: total, fallback: globalHome)
+        return Self.select(counts: counts.filter { isSpread($0.key, from: lower, to: upper) }, total: total, fallback: globalHome)
+    }
+
+    /// True if the cluster's photo days between `lower` and `upper` span at least `minimumHomeSpread`.
+    private func isSpread(_ cluster: Int, from lower: Date, to upper: Date) -> Bool {
+        guard requireSpread else { return true }
+        let list = clusterDays[cluster]
+        var lo = 0, hi = list.count
+        while lo < hi { let mid = (lo + hi) / 2; if list[mid] < lower { lo = mid + 1 } else { hi = mid } }
+        let first = lo
+        lo = first; hi = list.count
+        while lo < hi { let mid = (lo + hi) / 2; if list[mid] <= upper { lo = mid + 1 } else { hi = mid } }
+        let last = lo - 1
+        guard first < list.count, last >= first else { return false }
+        return list[last].timeIntervalSince(list[first]) >= Self.minimumHomeSpread
     }
 
     private static func select(counts: [Int: Int], total: Int, fallback: Int?) -> [Int] {

@@ -1,0 +1,80 @@
+{
+  "sourceLanguage" : "de",
+  "strings" : {
+    "Neue Fotos sortieren mit ${applicationName}" : {
+      "localizations" : {
+        "de" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Neue Fotos sortieren mit ${applicationName}",
+              "Fotos mit ${applicationName} sortieren",
+              "${applicationName} neue Fotos"
+            ]
+          }
+        },
+        "en" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Sort new photos with ${applicationName}",
+              "Sort photos with ${applicationName}",
+              "${applicationName} new photos"
+            ]
+          }
+        }
+      }
+    },
+    "Fotos aus ${target} in ${applicationName}" : {
+      "localizations" : {
+        "de" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Fotos aus ${target} in ${applicationName}",
+              "Zeig meine Fotos aus ${target} in ${applicationName}",
+              "${applicationName} Fotos aus ${target}",
+              "Fotos aus einem Land in ${applicationName}"
+            ]
+          }
+        },
+        "en" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Photos from ${target} in ${applicationName}",
+              "Show my photos from ${target} in ${applicationName}",
+              "${applicationName} photos from ${target}",
+              "Photos from a country in ${applicationName}"
+            ]
+          }
+        }
+      }
+    },
+    "Offene Vorschläge in ${applicationName}" : {
+      "localizations" : {
+        "de" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Offene Vorschläge in ${applicationName}",
+              "Was hat ${applicationName} für mich",
+              "${applicationName} Vorschläge"
+            ]
+          }
+        },
+        "en" : {
+          "stringSet" : {
+            "state" : "translated",
+            "values" : [
+              "Open suggestions in ${applicationName}",
+              "What does ${applicationName} have for me",
+              "${applicationName} suggestions"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}
