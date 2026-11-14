@@ -22,6 +22,13 @@ final class SortlyFlowUITests: XCTestCase {
         app.buttons.matching(NSPredicate(format: "label CONTAINS %@", text)).firstMatch
     }
 
+    /// A tab bar button; the iOS 26 tab bar shrinks while scrolling, so it is expanded first.
+    private func tabButton(_ name: String) -> XCUIElement {
+        let button = app.tabBars.buttons[name]
+        if !button.isHittable { app.swipeDown(); sleep(1) }
+        return button
+    }
+
     private func anything(_ text: String) -> XCUIElement {
         app.descendants(matching: .any).matching(NSPredicate(format: "label CONTAINS %@", text)).firstMatch
     }
@@ -219,7 +226,7 @@ final class SortlyFlowUITests: XCTestCase {
         }
 
         // Library
-        if tap(app.tabBars.buttons["Mediathek"], "library tab") {
+        if tap(tabButton("Mediathek"), "library tab") {
             sleep(2)
             shot("14-library"); audit("library")
             let photo = app.buttons.matching(NSPredicate(format: "label MATCHES %@", ".*20[0-9][0-9].*")).firstMatch
@@ -243,13 +250,13 @@ final class SortlyFlowUITests: XCTestCase {
         }
 
         // Albums
-        if tap(app.tabBars.buttons["Alben"], "albums tab") {
+        if tap(tabButton("Alben"), "albums tab") {
             sleep(2)
             shot("18-albums"); audit("albums")
         }
 
         // Search
-        let searchTab = app.tabBars.buttons["Suche"].exists ? app.tabBars.buttons["Suche"] : app.tabBars.buttons.element(boundBy: app.tabBars.buttons.count - 1)
+        let searchTab = tabButton("Suche").exists ? tabButton("Suche") : app.tabBars.buttons.element(boundBy: app.tabBars.buttons.count - 1)
         if tap(searchTab, "search tab") {
             sleep(1)
             shot("19-search-empty")
@@ -263,7 +270,7 @@ final class SortlyFlowUITests: XCTestCase {
         }
 
         // Settings and undo
-        if tap(app.tabBars.buttons["Übersicht"], "overview tab") {
+        if tap(tabButton("Übersicht"), "overview tab") {
             if tap(app.buttons["Einstellungen"], "settings") {
                 sleep(1)
                 shot("21-settings"); audit("settings")
@@ -290,7 +297,7 @@ final class SortlyFlowUITests: XCTestCase {
             shot("31-atlas-xxxl-dark")
             back()
         }
-        if tap(app.tabBars.buttons["Mediathek"], "library xxxl") {
+        if tap(tabButton("Mediathek"), "library xxxl") {
             sleep(2)
             shot("32-library-xxxl-dark"); audit("library xxxl dark")
         }
@@ -372,13 +379,13 @@ final class SortlyFlowUITests: XCTestCase {
         sleep(5)
         sweep("Übersicht", depth: 0)
         for tab in ["Mediathek", "Alben", "Suche"] {
-            let button = app.tabBars.buttons[tab]
+            let button = tabButton(tab)
             guard button.waitForExistence(timeout: 5) else { print("UI_STEP_MISSING sweep tab \(tab)"); continue }
             button.tap(); sleep(2)
             sweep(tab, depth: 0)
         }
         // Suggestions list, the screen that had dead rows.
-        app.tabBars.buttons["Übersicht"].tap(); sleep(1)
+        tabButton("Übersicht").tap(); sleep(1)
         let suggestions = button("Vorschläge prüfen")
         if suggestions.waitForExistence(timeout: 5) {
             suggestions.tap(); sleep(2)
