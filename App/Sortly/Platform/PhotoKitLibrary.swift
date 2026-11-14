@@ -241,6 +241,11 @@ struct PhotoKitLibrary: PhotoLibraryReading, PhotoLibraryWriting {
 
     func deleteCollection(_ id: CollectionID) async throws {
         let raw = id.rawValue
+        // Never delete a folder that still holds something: Photos would delete its contents.
+        if let list = PHCollectionList.fetchCollectionLists(withLocalIdentifiers: [raw], options: nil).firstObject,
+           PHCollection.fetchCollections(in: list, options: nil).count > 0 {
+            return
+        }
         try await PHPhotoLibrary.shared().performChanges {
             // Deletes only the album/folder container. PhotoKit keeps the media.
             let albums = PHAssetCollection.fetchAssetCollections(withLocalIdentifiers: [raw], options: nil)

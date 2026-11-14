@@ -272,6 +272,9 @@ final class SortlyFlowUITests: XCTestCase {
             shot("10-plan"); audit("plan")
             if tap(button("Jetzt umsetzen"), "apply plan", timeout: 30) {
                 let applied = Date()
+                // Mid-show frames of "photos fly into albums".
+                usleep(1_100_000); shot("10b-show")
+                usleep(900_000); shot("10c-show")
                 XCTAssertTrue(button("Rückgängig machen").waitForExistence(timeout: 900), "Plan did not finish")
                 print("UI_TIMING apply \(Int(Date().timeIntervalSince(applied))) s")
                 sleep(1)

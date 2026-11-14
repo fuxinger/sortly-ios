@@ -11,13 +11,21 @@ struct PlanReviewView: View {
     /// A plan built elsewhere (album merge); otherwise the accepted proposals are planned.
     var prebuilt: ChangePlan? = nil
     @State private var loading = true
+    /// Albums of the plan that is running, for the "photos fly into albums" show.
+    @State private var show: [SortingShow.Album]?
     @ScaledMetric(relativeTo: .body) private var iconWidth: CGFloat = 28
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Theme.Spacing.m) {
-                if let result = model.execution.finished, !model.execution.isRunning {
+                if let show {
+                    SortingShow(albums: show) {
+                        withAnimation(.smooth(duration: 0.45)) { self.show = nil }
+                    }
+                    .transition(.opacity)
+                } else if let result = model.execution.finished, !model.execution.isRunning {
                     ResultCard(plan: result)
+                        .transition(.opacity.combined(with: .scale(scale: 0.96)))
                 } else if model.execution.isRunning {
                     runningCard
                 } else if loading {
@@ -40,7 +48,7 @@ struct PlanReviewView: View {
         .background(Theme.background)
         .navigationTitle("Umsetzen")
         .navigationBarTitleDisplayMode(.inline)
-        .modifier(ExecutionHaptics(execution: model.execution))
+        .modifier(ExecutionHaptics(execution: model.execution, holdSuccess: show != nil))
         .task {
             if !model.execution.isRunning {
                 if let prebuilt { model.plan = prebuilt } else { await model.buildPlan() }
@@ -105,6 +113,8 @@ struct PlanReviewView: View {
             UnlockCard(albumsInPlan: albums)
         } else {
             Button {
+                let albums = SortingShow.albums(from: plan, inventory: model.inventory)
+                if !albums.isEmpty { show = albums }
                 Task { await model.execute(plan) }
             } label: {
                 Text("Jetzt umsetzen")
@@ -153,10 +163,13 @@ struct PlanReviewView: View {
 /// (A separate modifier keeps the screen's body quick to type-check.)
 private struct ExecutionHaptics: ViewModifier {
     var execution: AppModel.ExecutionState
+    /// While the sorting show plays, the success tap waits for its end.
+    var holdSuccess: Bool
 
     func body(content: Content) -> some View {
-        content
-            .sensoryFeedback(.success, trigger: execution.finished?.id) { (old: SortlyID?, new: SortlyID?) in
+        let finished: SortlyID? = holdSuccess ? nil : execution.finished?.id
+        return content
+            .sensoryFeedback(.success, trigger: finished) { (old: SortlyID?, new: SortlyID?) in
                 old == nil && new != nil
             }
             .sensoryFeedback(.error, trigger: execution.failure) { (old: String?, new: String?) in

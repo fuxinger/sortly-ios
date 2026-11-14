@@ -4700,6 +4700,46 @@
           }
         }
       }
+    },
+    "Fotos einsortiert" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Photos sorted"
+          }
+        }
+      }
+    },
+    "Album %lld von %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Album %lld of %lld"
+          }
+        }
+      }
+    },
+    "Überspringen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skip"
+          }
+        }
+      }
+    },
+    "Fotos werden einsortiert" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sorting photos"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

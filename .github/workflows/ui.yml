@@ -53,6 +53,19 @@ jobs:
             --predicate 'process == "Sortly" AND (subsystem == "com.apple.SwiftUI" OR messageType == fault OR eventMessage CONTAINS[c] "navigationDestination")' \
             > swiftui-log.txt 2>&1 &
           LOGPID=$!
+          # Video of the plan being applied (the "photos fly into albums" show): recording starts
+          # when the test opens the plan and stops a few seconds after the plan is done.
+          UDID="${{ steps.sim.outputs.udid }}"
+          mkdir -p build
+          (
+            until grep -aq "UI_STEP_OK open plan" ui-log.txt 2>/dev/null; do sleep 1; done
+            xcrun simctl io "$UDID" recordVideo --codec=h264 --force build/sorting-show.mp4 > /dev/null 2>&1 &
+            REC=$!
+            for i in $(seq 1 240); do grep -aq "UI_TIMING apply" ui-log.txt 2>/dev/null && break; sleep 1; done
+            sleep 3
+            kill -INT $REC 2>/dev/null; wait $REC
+          ) &
+          WATCHPID=$!
           cd App
           xcodebuild test \
             -project Sortly.xcodeproj \
@@ -62,6 +75,8 @@ jobs:
             CODE_SIGNING_ALLOWED=NO > ../ui-log.txt 2>&1
           status=$?
           kill $LOGPID 2>/dev/null
+          pkill -INT -f "recordVideo" 2>/dev/null; sleep 2; kill $WATCHPID 2>/dev/null
+          ls -la ../build/sorting-show.mp4 2>/dev/null && echo "UI_VIDEO sorting-show.mp4"
           grep -aE "error:|UI_STEP|UI_SWEEP|UI_TIMING|UI_FACT|A11Y_|PREVIEW_JPEG|Test Case|Executed|\*\* |Testing failed|Fatal error|crashed" ../ui-log.txt | grep -v "/SourcePackages/" | head -8000
           # Unique runtime warnings from the app (timestamps cut off; scene setup and view dumps are noise).
           grep -avE "^Filtering|^Timestamp|SwiftUI:Scenes|_UIHostingView|renderbox" ../swiftui-log.txt | cut -c 25- | sort | uniq -c | sort -rn | head -40 | sed 's/^/UI_RUNTIME_WARNING /'
@@ -73,3 +88,10 @@ jobs:
             echo "::warning::SwiftUI state was changed during a view update (see UI_RUNTIME_WARNING)"
           fi
           exit $status
+      - name: Upload video of the sorting show
+        if: always() && hashFiles('build/sorting-show.mp4') != ''
+        uses: actions/upload-artifact@v6
+        with:
+          name: sorting-show-video
+          path: build/sorting-show.mp4
+          retention-days: 14
