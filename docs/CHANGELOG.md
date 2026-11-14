@@ -41,8 +41,8 @@
   hast, zählt im Beleg nicht als Fehler. „Diagnose teilen“ in den Einstellungen und im Beleg:
   Zustände, Zahlen und Fehlercodes, keine Fotos, Namen oder Orte.
 ### Korrigiert
-- Textknöpfe „So lassen“, „Alle … Alben anzeigen“ und „Auswählen und später anlegen“
-  haben jetzt die volle Tippfläche von 44 Punkt (Barrierefreiheitsprüfung im Simulator).
+- Textknöpfe „So lassen“, „Alle … Alben anzeigen“, „Auswählen und später anlegen“ und
+  „Als Album anlegen“ (Suche) haben jetzt die volle Tippfläche von 44 Punkt (Barrierefreiheitsprüfung im Simulator).
 - Gegenprüfung 14.11.2026 (43 Befunde, `docs/review/AUDIT_2026-11-14.md`): Ausführungsjournal
   mit echten Änderungen, sicherer Wiederanlauf und Rückgängig, geschützte Löschungen, eine
   Ausführung zur Zeit, Abschluss in einer Transaktion, Reisen behalten ihre Identität, alte

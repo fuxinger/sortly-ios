@@ -58,8 +58,12 @@ struct SearchView: View {
                             Text("\(results.count.formatted()) Treffer").font(.footnote).foregroundStyle(.secondary).monospacedDigit()
                             Spacer()
                             // The search becomes an album in Photos (through the normal preview).
-                            Button("Als Album anlegen") { addingToAlbum = results }
-                                .font(.footnote.weight(.semibold))
+                            Button { addingToAlbum = results } label: {
+                                Text("Als Album anlegen")
+                                    .font(.footnote.weight(.semibold))
+                                    .frame(minHeight: 44)
+                                    .contentShape(Rectangle())
+                            }
                         }
                         LazyVGrid(columns: [GridItem(.adaptive(minimum: 96), spacing: 3)], spacing: 3) {
                             ForEach(results.prefix(shown), id: \.self) { id in
