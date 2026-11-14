@@ -559,6 +559,16 @@
         }
       }
     },
+    "%lld von %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld of %2$lld"
+          }
+        }
+      }
+    },
     "%lld von 7 Kontinenten" : {
       "localizations" : {
         "en" : {
@@ -594,6 +604,28 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "Review %lld suggestions"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld Vorschläge warten auf dich." : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld suggestion is waiting for you."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld suggestions are waiting for you."
                 }
               }
             }
@@ -849,6 +881,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Analysis up to date"
+          }
+        }
+      }
+    },
+    "Analyse fertig" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Analysis complete"
           }
         }
       }
@@ -1163,6 +1205,16 @@
         }
       }
     },
+    "Deine Fotos sind analysiert." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your photos have been analyzed."
+          }
+        }
+      }
+    },
     "Deine Fotos, endlich sortiert." : {
       "localizations" : {
         "en" : {
@@ -1263,12 +1315,12 @@
         }
       }
     },
-    "Die erste Analyse kann bei großen Mediatheken eine Weile dauern. Sie läuft weiter, während du die App benutzt, und setzt nach einer Pause genau dort fort." : {
+    "Die erste Analyse kann bei großen Mediatheken eine Weile dauern. Sie läuft weiter, auch wenn du die App verlässt, und zeigt den Fortschritt auf dem Sperrbildschirm. Wenn du magst, sagt SORTLY dir Bescheid, sobald sie fertig ist." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The first analysis can take a while for large libraries. It keeps running while you use the app and continues exactly where it paused."
+            "value" : "The first analysis can take a while for large libraries. It keeps running even when you leave the app and shows its progress on the Lock Screen. If you like, SORTLY lets you know as soon as it’s done."
           }
         }
       }
@@ -1973,6 +2025,16 @@
         }
       }
     },
+    "Läuft weiter, auch wenn du die App verlässt" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keeps running even when you leave the app"
+          }
+        }
+      }
+    },
     "Löscht nur SORTLYs eigene Analyse. Deine Fotos und Alben bleiben, wie sie sind." : {
       "localizations" : {
         "en" : {
@@ -2621,6 +2683,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "SORTLY"
+          }
+        }
+      }
+    },
+    "SORTLY analysiert deine Fotos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SORTLY is analyzing your photos"
           }
         }
       }

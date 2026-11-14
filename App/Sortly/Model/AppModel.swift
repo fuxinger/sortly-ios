@@ -133,7 +133,8 @@ final class AppModel {
     func finishOnboarding(scope: OrganizationScope) {
         onboardingDone = true
         phase = .ready
-        startAnalysis(scope: scope)
+        ContinuedAnalysis.requestNotificationPermission()
+        startAnalysis(scope: scope, userInitiated: true)
     }
 
     // MARK: Settings
@@ -149,8 +150,11 @@ final class AppModel {
 
     // MARK: Analysis
 
-    func startAnalysis(scope: OrganizationScope = .all, mode: AnalysisPipeline.Mode = .incremental) {
+    /// `userInitiated`: started by a tap, so it may continue in the background with progress
+    /// on the Lock Screen (iOS 26 continued processing).
+    func startAnalysis(scope: OrganizationScope = .all, mode: AnalysisPipeline.Mode = .incremental, userInitiated: Bool = false) {
         guard !analysis.isRunning, let pipeline else { return }
+        if userInitiated { ContinuedAnalysis.begin() }
         analysis.isRunning = true
         analysis.completed = 0
         analysis.total = 0
@@ -171,6 +175,7 @@ final class AppModel {
             analysis.isRunning = false
             analysis.stage = nil
             await refreshDerived()
+            ContinuedAnalysis.notifyFinished(openSuggestions: openProposals.count)
             BackgroundWork.scheduleRefinement()
         }
     }

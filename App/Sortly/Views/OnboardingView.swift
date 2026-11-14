@@ -141,7 +141,7 @@ struct OnboardingView: View {
             }
             .pickerStyle(.inline)
             .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous))
-            Text("Die erste Analyse kann bei großen Mediatheken eine Weile dauern. Sie läuft weiter, während du die App benutzt, und setzt nach einer Pause genau dort fort.")
+            Text("Die erste Analyse kann bei großen Mediatheken eine Weile dauern. Sie läuft weiter, auch wenn du die App verlässt, und zeigt den Fortschritt auf dem Sperrbildschirm. Wenn du magst, sagt SORTLY dir Bescheid, sobald sie fertig ist.")
                 .font(.footnote).foregroundStyle(.secondary)
             Spacer()
             Button("Analyse starten") {

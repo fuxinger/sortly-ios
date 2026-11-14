@@ -110,7 +110,7 @@ struct SettingsView: View {
             Button("Neu aufbauen", role: .destructive) {
                 Task {
                     await model.resetAnalysis()
-                    model.startAnalysis()
+                    model.startAnalysis(userInitiated: true)
                 }
             }
         } message: {

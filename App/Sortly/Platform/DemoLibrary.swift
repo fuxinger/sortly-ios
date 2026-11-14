@@ -129,17 +129,7 @@ final class DemoLibrary {
             }
             let items = chunk
             do {
-                try await PHPhotoLibrary.shared().performChanges {
-                    for item in items {
-                        let request = PHAssetCreationRequest.forAsset()
-                        let options = PHAssetResourceCreationOptions()
-                        options.originalFilename = item.name
-                        options.uniformTypeIdentifier = item.type.identifier
-                        request.addResource(with: .photo, data: item.data, options: options)
-                        request.creationDate = item.date
-                        request.location = item.location
-                    }
-                }
+                try await Self.save(items)
                 created += items.count
             } catch {
                 model.message = error.localizedDescription
@@ -149,7 +139,37 @@ final class DemoLibrary {
         }
         isDone = true
         UserDefaults.standard.set(true, forKey: "demo.seeded")
-        model.startAnalysis()
+        model.startAnalysis(userInitiated: true)
+    }
+
+    /// Nonisolated on purpose: PhotoKit runs the change block on its own queue, and a
+    /// main-actor closure there traps at runtime (Swift 6 isolation check).
+    nonisolated static func save(_ items: [Item]) async throws {
+        try await PHPhotoLibrary.shared().performChanges {
+            for item in items {
+                let request = PHAssetCreationRequest.forAsset()
+                let options = PHAssetResourceCreationOptions()
+                options.originalFilename = item.name
+                options.uniformTypeIdentifier = item.type.identifier
+                request.addResource(with: .photo, data: item.data, options: options)
+                request.creationDate = item.date
+                request.location = item.location
+            }
+        }
+    }
+
+    /// Nonisolated for the same reason: the result handler may arrive on a background queue.
+    nonisolated static func requestImage(_ identifier: String, side: CGFloat) async -> UIImage? {
+        guard let asset = PHAsset.fetchAssets(withLocalIdentifiers: [identifier], options: nil).firstObject else { return nil }
+        let options = PHImageRequestOptions()
+        options.deliveryMode = .highQualityFormat
+        options.isNetworkAccessAllowed = false
+        return await withCheckedContinuation { continuation in
+            PHImageManager.default().requestImage(for: asset, targetSize: CGSize(width: side, height: side),
+                                                  contentMode: .aspectFit, options: options) { image, _ in
+                continuation.resume(returning: image)
+            }
+        }
     }
 
     struct Item: @unchecked Sendable {
@@ -169,16 +189,7 @@ final class DemoLibrary {
         let assets = PHAsset.fetchAssets(with: options)
         var images: [UIImage] = []
         for index in 0..<assets.count {
-            let request = PHImageRequestOptions()
-            request.deliveryMode = .highQualityFormat
-            request.isNetworkAccessAllowed = false
-            let image: UIImage? = await withCheckedContinuation { continuation in
-                PHImageManager.default().requestImage(for: assets.object(at: index), targetSize: CGSize(width: 2400, height: 2400),
-                                                      contentMode: .aspectFit, options: request) { image, _ in
-                    continuation.resume(returning: image)
-                }
-            }
-            if let image { images.append(image) }
+            if let image = await Self.requestImage(assets.object(at: index).localIdentifier, side: 2400) { images.append(image) }
         }
         return images
     }

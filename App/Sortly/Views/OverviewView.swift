@@ -93,7 +93,7 @@ struct OverviewView: View {
             } else if let reason = model.analysis.lastReport?.pausedBecause {
                 Text(reason.label).font(.headline)
                 Text("Die Analyse setzt genau dort fort, wo sie aufgehört hat.").font(.subheadline).foregroundStyle(.secondary)
-                Button("Fortsetzen") { model.startAnalysis() }.buttonStyle(SecondaryButtonStyle())
+                Button("Fortsetzen") { model.startAnalysis(userInitiated: true) }.buttonStyle(SecondaryButtonStyle())
             } else {
                 HStack {
                     VStack(alignment: .leading, spacing: 2) {

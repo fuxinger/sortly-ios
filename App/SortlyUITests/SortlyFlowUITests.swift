@@ -97,6 +97,14 @@ final class SortlyFlowUITests: XCTestCase {
         }
     }
 
+    private func allowNotificationsIfAsked() {
+        let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
+        for label in ["Erlauben", "Allow"] {
+            let allow = springboard.buttons[label]
+            if allow.waitForExistence(timeout: 4) { allow.tap(); print("UI_STEP_OK notification alert"); return }
+        }
+    }
+
     // MARK: Tests
 
     func test1_FullFlow() {
@@ -117,6 +125,7 @@ final class SortlyFlowUITests: XCTestCase {
             tap(button("Weiter"), "access granted", timeout: 20)
             shot("04-trial"); audit("trial")
             tap(button("Analyse starten"), "start analysis")
+            allowNotificationsIfAsked()
         }
 
         // Demo library

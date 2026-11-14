@@ -469,8 +469,8 @@ struct ShareCardImage: Transferable {
     }
 
     /// Loads the cover photo in good quality from the device only (no iCloud download).
-    @MainActor
-    static func loadCover(_ id: AssetID) async -> UIImage? {
+    /// Nonisolated: PhotoKit may call the result handler on a background queue.
+    nonisolated static func loadCover(_ id: AssetID) async -> UIImage? {
         guard let asset = PHAsset.fetchAssets(withLocalIdentifiers: [id.rawValue], options: nil).firstObject else { return nil }
         let options = PHImageRequestOptions()
         options.deliveryMode = .highQualityFormat
