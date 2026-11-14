@@ -4,7 +4,7 @@ import SortlyCore
 /// Local persistence for Albumist. Stores metadata and analysis results only – never image
 /// data or copies of originals (prompt §13). All access is serialized by this actor.
 public actor SortlyStore: ChangePlanStoring {
-    private let db: SQLiteDatabase
+    let db: SQLiteDatabase
     private let encoder: JSONEncoder
     private let decoder: JSONDecoder
     public private(set) var hasFullTextSearch = false

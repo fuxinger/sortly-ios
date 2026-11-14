@@ -124,6 +124,7 @@ final class AppModel {
         for asset in assets {
             try? await store.addOverride(UserOverride(scope: .assetInSource(asset, proposal.id), decision: .neverAdd))
         }
+        saveSafetyBackup()
         if let rematched = try? await pipeline?.rematch() { snapshot = rematched }
     }
 
@@ -220,12 +221,16 @@ final class AppModel {
     private func load() async {
         guard phase == .loading else { return }
         do {
+            if UITestSupport.rebuildsDatabase, let url = try? Self.databaseURL() { Self.quarantineDatabase(at: url) }
             let store = try SortlyStore(url: try Self.databaseURL())
             self.store = store
+            access = await library.access()
+            // A rebuilt (or newly restored) database gets the user's decisions back first.
+            await restoreFromBackupIfNeeded(store)
+            lastSafetyBackup = Self.safetyBackupDate()
             settings = try await store.value(OrganizationSettings.self, forKey: Key.settings) ?? OrganizationSettings()
             decisions = try await store.value([SortlyID: ProposalDecision].self, forKey: Key.decisions) ?? [:]
             userTitles = try await store.value([SortlyID: String].self, forKey: Key.titles) ?? [:]
-            access = await library.access()
             let map = await Task.detached(priority: .userInitiated) { try? WorldMapResource.load() }.value
             worldMap = map
             pipeline = AnalysisPipeline(
@@ -256,6 +261,11 @@ final class AppModel {
         bootstrapTask = nil
         phase = .loading
         await bootstrap()
+        // The new database is empty: the analysis starts right away, as at a normal launch.
+        if phase == .ready && access.canRead && !UITestSupport.isRunning {
+            LibraryChangeWatcher.shared.start()
+            startAnalysis()
+        }
     }
 
     /// Moves the database together with its write-ahead log and shared memory file into a
@@ -278,6 +288,149 @@ final class AppModel {
         let old = ((try? fm.contentsOfDirectory(at: folder, includingPropertiesForKeys: nil)) ?? [])
             .sorted { $0.lastPathComponent > $1.lastPathComponent }
         for stale in old.dropFirst(2) { try? fm.removeItem(at: stale) }
+    }
+
+    // MARK: Safety backup
+
+    /// When the decisions were last copied for the device backup (shown under Verlauf).
+    private(set) var lastSafetyBackup: Date?
+    /// Set when this start restored the decisions from the copy; the overview says so once.
+    var restoredFromBackup: BackupRestore?
+
+    struct BackupRestore: Equatable {
+        /// When the copy was made.
+        var date: Date
+        var albums: Albums
+
+        enum Albums: Equatable {
+            /// The copy had no album records or history.
+            case noAlbums
+            /// Album records and history came back too.
+            case included
+            /// The copy came from another library (new iPhone): only the decisions came back.
+            case otherLibrary
+            /// Album records wait until Albumist may see all photos (to check the library).
+            case waiting
+        }
+    }
+    @ObservationIgnored private var safetyBackupTask: Task<Void, Never>?
+
+    /// The copy of the user's decisions. Unlike the database it is part of the iPhone backup.
+    static func safetyBackupURL() throws -> URL {
+        try FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
+            .appendingPathComponent("\(AppInfo.supportFolderName) Backup", isDirectory: true)
+            .appendingPathComponent("decisions.json")
+    }
+
+    static func safetyBackupDate() -> Date? {
+        guard let url = try? safetyBackupURL() else { return nil }
+        return (try? FileManager.default.attributesOfItem(atPath: url.path))?[.modificationDate] as? Date
+    }
+
+    /// Copies the decisions shortly after a change (several changes in a row are one write),
+    /// or at once.
+    func saveSafetyBackup(immediately: Bool = false) {
+        guard store != nil, UITestSupport.allowsSafetyBackup else { return }
+        safetyBackupTask?.cancel()
+        safetyBackupTask = Task { [weak self] in
+            if !immediately {
+                try? await Task.sleep(for: .seconds(2))
+                guard !Task.isCancelled else { return }
+            }
+            await self?.writeSafetyBackup()
+        }
+    }
+
+    /// Writes the copy and returns once it is on disk (the app is going to the background).
+    func writeSafetyBackupNow() async {
+        safetyBackupTask?.cancel()
+        await writeSafetyBackup()
+    }
+
+    private func writeSafetyBackup() async {
+        // While album records of the copy still wait for photo access, the copy stays as it is.
+        guard let store, UITestSupport.allowsSafetyBackup, pendingLibraryRestore == nil,
+              let backup = try? await store.safetyBackup(), let url = try? Self.safetyBackupURL() else { return }
+        // Nothing decided yet and no earlier copy: nothing to keep.
+        if backup.isEmpty && !FileManager.default.fileExists(atPath: url.path) { return }
+        let written: Bool = await Task.detached(priority: .utility) {
+            do {
+                try backup.write(to: url)
+                try? FileManager.default.setAttributes([.protectionKey: FileProtectionType.completeUntilFirstUserAuthentication],
+                                                       ofItemAtPath: url.path)
+                return true
+            } catch {
+                return false
+            }
+        }.value
+        if written { lastSafetyBackup = backup.createdAt }
+    }
+
+    /// Album records and history from the copy that still wait for photo access (to check
+    /// that the copy belongs to this library). While they wait, the copy is not overwritten.
+    @ObservationIgnored private var pendingLibraryRestore: SafetyBackup?
+
+    /// Restores the copy into a database without decisions (rebuilt after damage, or a new
+    /// install from an iPhone backup). The decisions come back at once; album records and
+    /// history only when the copy belongs to this library, which needs photo access to check.
+    /// Returns true when something was restored.
+    @discardableResult
+    private func restoreFromBackupIfNeeded(_ store: SortlyStore) async -> Bool {
+        pendingLibraryRestore = nil
+        guard UITestSupport.allowsSafetyBackup, let url = try? Self.safetyBackupURL(),
+              let backup = try? SafetyBackup.read(from: url), !backup.isEmpty else { return false }
+        var restored = false
+        if (try? await store.hasSafetyData()) == false {
+            restored = (try? await store.restore(backup, includingLibraryState: false)) == true
+        }
+        var albums = restoredFromBackup?.albums ?? .noAlbums
+        if !backup.managedAlbums.isEmpty || !backup.plans.isEmpty, (try? await store.hasLibraryState()) == false {
+            switch await belongsToThisLibrary(backup) {
+            case true?:
+                if (try? await store.restoreLibraryState(backup)) == true {
+                    restored = true
+                    albums = .included
+                }
+            case false?:
+                // Another library (new iPhone with new album identifiers): the old album
+                // records would read as "deleted by you". The copy is renewed without them.
+                albums = .otherLibrary
+                saveSafetyBackup(immediately: true)
+            case nil:
+                albums = .waiting
+                pendingLibraryRestore = backup
+            }
+        }
+        if restored || restoredFromBackup != nil {
+            restoredFromBackup = BackupRestore(date: backup.createdAt, albums: albums)
+        }
+        return restored
+    }
+
+    /// Nil while that cannot be told yet: no photo access, or limited access that may hide
+    /// the albums.
+    private func belongsToThisLibrary(_ backup: SafetyBackup) async -> Bool? {
+        guard !backup.managedAlbums.isEmpty else { return true }
+        guard access.canRead, let inventory = try? await library.currentInventory() else { return nil }
+        if backup.matchesLibrary(albums: Set(inventory.albums.map(\.id))) { return true }
+        return access == .full ? false : nil
+    }
+
+    /// After the photo access was granted or widened: album records waiting in the copy
+    /// come back now if they belong to this library.
+    private func restoreWaitingLibraryState() async {
+        guard pendingLibraryRestore != nil, access.canRead, let store else { return }
+        guard await restoreFromBackupIfNeeded(store) else {
+            // Another library: the card already says so; the copy was renewed.
+            return
+        }
+        settings = (try? await store.value(OrganizationSettings.self, forKey: Key.settings)) ?? settings
+        decisions = (try? await store.value([SortlyID: ProposalDecision].self, forKey: Key.decisions)) ?? decisions
+        userTitles = (try? await store.value([SortlyID: String].self, forKey: Key.titles)) ?? userTitles
+        await pipeline?.update(settings: settings)
+        await refreshDerived()
+        interruptedPlan = try? await store.unfinishedPlans().last
+        saveSafetyBackup()
     }
 
     static func databaseURL() throws -> URL {
@@ -306,11 +459,13 @@ final class AppModel {
 
     func requestAccess() async {
         access = await library.requestAccess()
+        await restoreWaitingLibraryState()
     }
 
     /// Reads the access again, e.g. after the user came back from the Settings app.
     func refreshAccess() async {
         access = await library.access()
+        await restoreWaitingLibraryState()
     }
 
     func finishOnboarding(scope: OrganizationScope) {
@@ -327,6 +482,7 @@ final class AppModel {
         let settings = settings
         Task {
             try? await store?.setValue(settings, forKey: Key.settings)
+            saveSafetyBackup()
             await pipeline?.update(settings: settings)
             await refreshDerived()
         }
@@ -368,6 +524,8 @@ final class AppModel {
             analysis.isRunning = false
             analysis.stage = nil
             await refreshDerived()
+            // Trip identities (names and corrections stay with their trip) are kept in the copy.
+            saveSafetyBackup()
             // "Analyse fertig" only when it really finished (not paused, stopped or failed).
             if analysis.lastReport?.isComplete == true, !Task.isCancelled {
                 ContinuedAnalysis.notifyFinished(openSuggestions: openProposals.count)
@@ -390,6 +548,7 @@ final class AppModel {
             let report = try await pipeline.run(mode: .refinement)
             analysis.lastReport = report
             await refreshDerived()
+            saveSafetyBackup(immediately: true)
             return report.pausedBecause == nil
         } catch {
             return false
@@ -542,7 +701,10 @@ final class AppModel {
         persistDecisions()
         if decision == .reject {
             let override = UserOverride(scope: .source(proposal.id), decision: .rejectProposal)
-            Task { try? await store?.addOverride(override) }
+            Task {
+                try? await store?.addOverride(override)
+                saveSafetyBackup()
+            }
         } else if wasRejected || decision.isAccepted {
             // "Nicht jetzt" is reversible: accepting later lifts the stored rejection.
             Task { await removeRejection(of: [proposal.id]) }
@@ -556,6 +718,7 @@ final class AppModel {
             guard case .source(let s) = o.scope, sources?.contains(s) ?? true else { continue }
             try? await store.removeOverride(o.id)
         }
+        saveSafetyBackup()
     }
 
     /// Number of suggestions the user put aside with "Nicht jetzt".
@@ -592,6 +755,7 @@ final class AppModel {
         guard let store else { return }
         do {
             try await store.addOverride(UserOverride(scope: .albumForSource(album, proposal.id), decision: .notMatchingAlbum))
+            saveSafetyBackup()
             switch decisions[proposal.id] {
             case .extendExisting(album)?, .keepExisting(album)?:
                 decisions[proposal.id] = nil
@@ -613,12 +777,18 @@ final class AppModel {
 
     func setUserTitle(_ title: String, for proposal: AlbumProposal) {
         userTitles[proposal.id] = title
-        Task { [userTitles] in try? await store?.setValue(userTitles, forKey: Key.titles) }
+        Task { [userTitles] in
+            try? await store?.setValue(userTitles, forKey: Key.titles)
+            saveSafetyBackup()
+        }
     }
 
     private func persistDecisions() {
         let decisions = storedDecisions(decisions)
-        Task { try? await store?.setValue(decisions, forKey: Key.decisions) }
+        Task {
+            try? await store?.setValue(decisions, forKey: Key.decisions)
+            saveSafetyBackup()
+        }
         SpotlightIndex.scheduleUpdate(self)
     }
 
@@ -762,6 +932,7 @@ final class AppModel {
             ])
             decisions = newDecisions
             managedAlbums = states
+            saveSafetyBackup()
             SpotlightIndex.scheduleUpdate(self)
             // Suggestions see the new albums at once (e.g. "Album vollständig").
             if let rematched = try await pipeline?.rematch() { snapshot = rematched }
@@ -869,6 +1040,7 @@ final class AppModel {
                 // Overrides and the new last-known state in one transaction: a manual change
                 // is never marked as seen without its override.
                 try await store.applyReconciliation(overrides: result.newOverrides, managedAlbums: result.updatedStates)
+                saveSafetyBackup()
             } catch {
                 managedAlbums = stored
                 message = error.localizedDescription
@@ -897,6 +1069,7 @@ final class AppModel {
     /// After a removal the suggestion behind the album is not offered again.
     func forgetProposal(_ source: SortlyID) async {
         try? await store?.addOverride(UserOverride(scope: .source(source), decision: .rejectProposal))
+        saveSafetyBackup()
         await refreshDerived()
     }
 
@@ -996,6 +1169,7 @@ final class AppModel {
     func ignore(_ assets: [AssetID]) {
         Task {
             for id in assets { try? await store?.addOverride(UserOverride(scope: .asset(id), decision: .ignoreAsset)) }
+            saveSafetyBackup()
             await refreshDerived()
         }
     }

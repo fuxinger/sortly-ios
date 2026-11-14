@@ -126,7 +126,7 @@ Quellen: **E1** Expertenrunde 14.11.2026 (Tempo, Oberfläche, Technik, Produkt) 
 | ✅ | Datenschutz-Seite in der App (offline lesbar). Für App Store Connect fehlt noch eine öffentliche Adresse. | S | E1 Produkt |
 | ✅ | Namensvorschläge für Reisen in der eingestellten Sprache (bisher immer Deutsch). | S | E1 Produkt |
 | 💡 | „Album aktuell halten“: neue Fotos nachts automatisch in bestätigte Alben. Hauptthema für Update 1.1. | M | E1 Produkt |
-| 💡 | Entscheidungen ins Backup, damit sie einen Gerätewechsel überstehen. | S–M | E1 Produkt |
+| ✅ | Entscheidungen ins Backup, damit sie einen Gerätewechsel überstehen (siehe I12). | S–M | E1 Produkt |
 | 💡 | Atlas-Widget und In-App-Event „Dein Reisejahr“ im Dezember/Januar. | M | E1 Produkt |
 | 💡 | Siri-Antwort mit Knöpfen „Anlegen / Nicht jetzt“ statt App öffnen. | M | E1 Produkt |
 | 💡 | Familienfreigabe für den Kauf, Small Business Program (15 % statt 30 %). | S | E1 Produkt |
@@ -141,7 +141,8 @@ Funktionsliste; nichts, was Fotos löscht oder ohne Bestätigung ändert.
 | Status | Punkt | Aufwand | Quelle |
 |---|---|---|---|
 | 🔜 | **I01 Änderungsbeleg:** pro Plan eine Seite „Das hat Albumist geändert“ mit echten Zahlen aus dem neuen Ausführungsjournal und „Originale unverändert“. Grundlage ist jetzt da (Journal mit echten Änderungen). | M | G I01 |
-| 🔜 | **I12 Sicherung der Entscheidungen:** abgelehnte Vorschläge, verwaltete Alben und Verlauf zusätzlich in einer kleinen Datei, die das iPhone-Backup mitnimmt; Wiederherstellen nach Neuaufbau der Datenbank. Schließt die Restlücke von Befund 3.2. | M | G I12 |
+| ✅ | **I12 Sicherung der Entscheidungen:** Ausnahmen, Regeln, Einstellungen, eigene Namen, verwaltete Alben und Verlauf liegen zusätzlich in einer kleinen Datei im Geräte-Backup; Wiederherstellen nach Neuaufbau der Datenbank oder auf einem neuen Gerät, Alben und Verlauf nur bei passender Mediathek. Schließt die Restlücke von Befund 3.2. | M | G I12 |
+| 💡 | **I12b Sicherung auf neuem iPhone mit iCloud-Fotos:** Album- und Foto-Kennungen zusätzlich als iCloud-Kennung (`PHCloudIdentifier`) sichern und beim Wiederherstellen umrechnen, damit auch Alben, Verlauf und Ausnahmen auf einem neuen Gerät zurückkommen. | M | I12 |
 | 🔜 | **I16 Geführte Reparatur:** bei unterbrochenen oder fehlgeschlagenen Plänen ein klarer Weg „Fortsetzen / Rückgängig / so lassen“ plus Diagnose-Export ohne Fotos und Namen. | M | G I16 |
 | 💡 | **I04 Lebende Alben:** neue Fotos einer Reise oder eines Themas als kleine Ergänzung vorschlagen statt neu zu sortieren. Passt zum Wochenhinweis für 1.1. | L | G I04 |
 | 💡 | **I07 Reise-Werkstatt:** Reisen teilen und zusammenlegen in der Oberfläche (der Kern kann es schon: `TripCorrections`, Reise-Identität bleibt jetzt erhalten). | L | G I07 |

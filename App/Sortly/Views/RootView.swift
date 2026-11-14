@@ -18,8 +18,13 @@ struct RootView: View {
                 // from the library. Photos, albums and the purchase are not affected.
                 Button("Neu aufbauen") { Task { await model.rebuildAfterFailure() } }
                     .buttonStyle(.borderedProminent)
-                Text("Albumist beginnt dann neu. Deine Fotos, Alben und dein Kauf bleiben, wie sie sind.")
-                    .font(.footnote).foregroundStyle(.secondary)
+                if AppModel.safetyBackupDate() != nil {
+                    Text("Albumist beginnt dann neu und holt deine Entscheidungen aus der Sicherung zurück. Deine Fotos, Alben und dein Kauf bleiben, wie sie sind.")
+                        .font(.footnote).foregroundStyle(.secondary)
+                } else {
+                    Text("Albumist beginnt dann neu. Deine Fotos, Alben und dein Kauf bleiben, wie sie sind.")
+                        .font(.footnote).foregroundStyle(.secondary)
+                }
             }
         case .onboarding:
             OnboardingView()

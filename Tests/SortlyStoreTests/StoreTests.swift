@@ -282,4 +282,100 @@ struct StoreTests {
         #expect(elapsed < 30)
         print("[measure] upsert 20k assets: \(String(format: "%.2f", elapsed)) s")
     }
+
+    // MARK: Safety backup (cross-review idea I12, finding 3.2)
+
+    /// A store with one of each kind of safety data, plus computed and in-flight values that
+    /// must not be part of the copy.
+    func storeWithDecisions() async throws -> (SortlyStore, ChangePlan) {
+        let s = try store()
+        try await s.addOverride(UserOverride(scope: .asset("a"), decision: .ignoreAsset))
+        try await s.saveRule(OrganizationRule(name: "Rom", area: .places, condition: .predicate(.city("Rom")), target: .existingAlbum("x")))
+        try await s.saveManagedAlbums([ManagedAlbumState(albumID: "album-rom", sourceID: SortlyID("p"), lastKnownTitle: "Rom", lastKnownParentID: nil,
+                                                         lastKnownMembers: ["1"], addedBySortly: ["1"], createdBySortly: true)])
+        var plan = OrganizationPlanner().makePlan(from: [], inventory: CollectionInventory())
+        plan.status = .completed
+        try await s.save(plan)
+        try await s.setValue(["p": "Sommer in Rom"], forKey: "user.titles")
+        try await s.setValue([1, 2], forKey: "analysis.trips")
+        try await s.setValue(["x"], forKey: "execution.pendingFinalization")
+        return (s, plan)
+    }
+
+    @Test func backupRestoresDecisionsIntoARebuiltDatabase() async throws {
+        let (original, plan) = try await storeWithDecisions()
+        let backup = try await original.safetyBackup(now: Date(timeIntervalSince1970: 7))
+        let file = FileManager.default.temporaryDirectory.appendingPathComponent("albumist-backup-\(UUID().uuidString).json")
+        defer { try? FileManager.default.removeItem(at: file) }
+        try backup.write(to: file)
+        let read = try #require(try SafetyBackup.read(from: file))
+        #expect(read == backup)
+
+        let rebuilt = try store()
+        #expect(try await rebuilt.hasSafetyData() == false)
+        #expect(try await rebuilt.restore(read, includingLibraryState: true))
+        #expect(try await rebuilt.overrides() == original.overrides())
+        #expect(try await rebuilt.currentRules() == original.currentRules())
+        #expect(try await rebuilt.managedAlbums() == original.managedAlbums())
+        #expect(try await rebuilt.planHistory().map(\.id) == [plan.id])
+        #expect(try await rebuilt.value([String: String].self, forKey: "user.titles") == ["p": "Sommer in Rom"])
+        // Analysis results are recomputed, in-flight markers belong to the old database.
+        #expect(try await rebuilt.value([Int].self, forKey: "analysis.trips") == nil)
+        #expect(try await rebuilt.value([String].self, forKey: "execution.pendingFinalization") == nil)
+        // The copy of the restored database is the same copy.
+        #expect(try await rebuilt.safetyBackup(now: Date(timeIntervalSince1970: 7)) == backup)
+    }
+
+    @Test func restoreNeverOverwritesExistingDecisions() async throws {
+        let (original, _) = try await storeWithDecisions()
+        let backup = try await original.safetyBackup()
+        let current = try store()
+        let mine = UserOverride(scope: .asset("b"), decision: .ignoreAsset)
+        try await current.addOverride(mine)
+        #expect(try await current.restore(backup, includingLibraryState: true) == false)
+        #expect(try await current.overrides() == [mine])
+        #expect(try await current.managedAlbums().isEmpty)
+    }
+
+    @Test func backupFromAnotherLibraryRestoresOnlyDecisions() async throws {
+        let (original, _) = try await storeWithDecisions()
+        let backup = try await original.safetyBackup()
+        // On a new iPhone the album identifiers differ: the managed album is not there.
+        #expect(backup.matchesLibrary(albums: ["album-rom", "other"]))
+        #expect(!backup.matchesLibrary(albums: ["other"]))
+        let fresh = try store()
+        #expect(try await fresh.restore(backup, includingLibraryState: false))
+        #expect(try await fresh.overrides().count == 1)
+        #expect(try await fresh.value([String: String].self, forKey: "user.titles") == ["p": "Sommer in Rom"])
+        #expect(try await fresh.managedAlbums().isEmpty)
+        #expect(try await fresh.planHistory().isEmpty)
+    }
+
+    @Test func albumRecordsFollowOnceThePhotoAccessConfirmsTheLibrary() async throws {
+        let (original, _) = try await storeWithDecisions()
+        let backup = try await original.safetyBackup()
+        let fresh = try store()
+        // Before photo access: the decisions come back at once, the album records wait.
+        #expect(try await fresh.restore(backup, includingLibraryState: false))
+        #expect(try await !fresh.hasLibraryState())
+        // Settings saved during onboarding do not block the album records.
+        try await fresh.setValue(["x": "y"], forKey: "user.onboardingChoice")
+        #expect(try await fresh.restoreLibraryState(backup))
+        #expect(try await fresh.managedAlbums().map(\.albumID) == ["album-rom"])
+        #expect(try await fresh.planHistory().count == 1)
+        #expect(try await fresh.overrides().count == 1)
+        // Never twice, and never over album records the database already has.
+        #expect(try await !fresh.restoreLibraryState(backup))
+        #expect(try await fresh.planHistory().count == 1)
+    }
+
+    @Test func backupFromANewerAppIsLeftAlone() async throws {
+        var backup = try await storeWithDecisions().0.safetyBackup()
+        backup.formatVersion = SafetyBackup.formatVersion + 1
+        let file = FileManager.default.temporaryDirectory.appendingPathComponent("albumist-backup-\(UUID().uuidString).json")
+        defer { try? FileManager.default.removeItem(at: file) }
+        try backup.write(to: file)
+        #expect(try SafetyBackup.read(from: file) == nil)
+        #expect(try SafetyBackup.read(from: file.appendingPathExtension("missing")) == nil)
+    }
 }

@@ -4,6 +4,7 @@ import SwiftUI
 struct SortlyApp: App {
     @State private var model = AppModel.shared
     @State private var purchases = Purchases.shared
+    @Environment(\.scenePhase) private var scenePhase
 
     init() {
         BackgroundWork.register()
@@ -22,6 +23,35 @@ struct SortlyApp: App {
                     // Photos may have changed while Albumist was closed (albums made in Photos).
                     if model.phase == .ready && model.access.canRead && !UITestSupport.isRunning { model.startAnalysis() }
                 }
+                .onChange(of: scenePhase) { _, phase in
+                    // The copy of the decisions for the iPhone backup is current before iOS may
+                    // end the app (a background task keeps the app awake for the short write).
+                    guard phase == .background else { return }
+                    let assertion = BackgroundAssertion(name: "Albumist decisions copy")
+                    Task {
+                        await model.writeSafetyBackupNow()
+                        assertion.end()
+                    }
+                }
         }
+    }
+}
+
+/// Asks iOS for a little time in the background and gives it back when the work is done
+/// (or when the time runs out).
+@MainActor
+final class BackgroundAssertion {
+    private var id: UIBackgroundTaskIdentifier = .invalid
+
+    init(name: String) {
+        id = UIApplication.shared.beginBackgroundTask(withName: name) { [weak self] in
+            MainActor.assumeIsolated { self?.end() }
+        }
+    }
+
+    func end() {
+        guard id != .invalid else { return }
+        UIApplication.shared.endBackgroundTask(id)
+        id = .invalid
     }
 }

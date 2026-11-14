@@ -22,6 +22,9 @@ struct OverviewView: View {
                 if let interrupted = model.interruptedPlan {
                     InterruptedPlanCard(plan: interrupted)
                 }
+                if let restore = model.restoredFromBackup {
+                    RestoredFromBackupCard(restore: restore)
+                }
                 if model.access == .limited { LimitedAccessCard() }
                 statusCard
                 analysisCard
@@ -277,6 +280,37 @@ private struct TapTarget: View {
             .font(.subheadline.weight(.semibold))
             .frame(minWidth: 44, minHeight: 44)
             .contentShape(Rectangle())
+    }
+}
+
+/// Shown once after Albumist started with an empty database (rebuilt after damage, or a new
+/// iPhone) and took the user's decisions back from the copy in the device backup.
+struct RestoredFromBackupCard: View {
+    @Environment(AppModel.self) private var model
+    var restore: AppModel.BackupRestore
+
+    var body: some View {
+        let date = restore.date.formatted(date: .long, time: .omitted)
+        Card {
+            Label("Entscheidungen zurückgeholt", systemImage: "arrow.clockwise.circle").font(.headline)
+            Group {
+                switch restore.albums {
+                case .included:
+                    Text("Albumist hat deine Entscheidungen, Einstellungen, Alben und den Verlauf aus der Sicherung vom \(date) übernommen. Die Analyse deiner Fotos läuft neu.")
+                case .noAlbums:
+                    Text("Albumist hat deine Entscheidungen und Einstellungen aus der Sicherung vom \(date) übernommen. Die Analyse deiner Fotos läuft neu.")
+                case .waiting:
+                    Text("Albumist hat deine Entscheidungen und Einstellungen aus der Sicherung vom \(date) übernommen. Die Alben von Albumist und der Verlauf folgen, sobald Albumist alle Fotos sehen darf.")
+                case .otherLibrary:
+                    Text("Albumist hat deine Entscheidungen und Einstellungen aus der Sicherung vom \(date) übernommen. Die Sicherung stammt aus einer anderen Mediathek, darum beginnt der Verlauf hier neu. Deine Alben in Fotos bleiben, wie sie sind.")
+                }
+            }
+            .font(.subheadline).foregroundStyle(.secondary)
+            .fixedSize(horizontal: false, vertical: true)
+            Button("OK") { model.restoredFromBackup = nil }
+                .buttonStyle(SecondaryButtonStyle())
+                .accessibilityIdentifier("overview.restoredFromBackup.ok")
+        }
     }
 }
 

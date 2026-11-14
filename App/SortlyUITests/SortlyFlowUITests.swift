@@ -572,4 +572,52 @@ final class SortlyFlowUITests: XCTestCase {
         }
         print("UI_SWEEP_DONE")
     }
+
+    // MARK: Safety backup
+
+    /// Fourth run: the decisions of the earlier runs are copied when the app goes to the
+    /// background, the database is then set aside (as with "Neu aufbauen") and the next start
+    /// must bring the decisions and the history back and say so.
+    func test4_DecisionsComeBackAfterRebuild() {
+        continueAfterFailure = true
+        launch(["-SortlyUITestBackup"])
+        sleep(5)
+        // Going to the background writes the copy.
+        XCUIDevice.shared.press(.home)
+        sleep(4)
+        launch(["-SortlyUITestBackup", "-SortlyUITestRebuildDatabase"])
+        let card = app.staticTexts["Entscheidungen zurückgeholt"]
+        let restored = card.waitForExistence(timeout: 30)
+        print(restored ? "UI_STEP_OK restored card" : "UI_STEP_MISSING restored card")
+        XCTAssertTrue(restored, "The decisions did not come back after the database was rebuilt")
+        sleep(1)
+        shot("40-restored-card"); audit("restored card")
+        let withHistory = anything("Alben und den Verlauf aus der Sicherung").exists
+        print("UI_FACT restore included history \(withHistory)")
+        XCTAssertTrue(withHistory, "Album records and history were not restored into the same library")
+
+        // The history is back and the settings say when the copy was made.
+        if tap(app.buttons["Einstellungen"], "settings after restore") {
+            sleep(1)
+            let list = app.collectionViews.firstMatch
+            let saved = anything("Zuletzt gesichert")
+            var swipes = 0
+            while !saved.exists && swipes < 10 {
+                (list.exists ? list : app).swipeUp()
+                swipes += 1
+            }
+            print(saved.exists ? "UI_STEP_OK backup date in settings" : "UI_STEP_MISSING backup date in settings")
+            let empty = app.staticTexts["Noch keine Änderungen"].exists
+            print("UI_FACT history empty after restore \(empty)")
+            XCTAssertFalse(empty, "The history is empty after the restore")
+            shot("41-settings-backup")
+            tap(button("Fertig"), "close settings after restore")
+        }
+        if tap(app.buttons["overview.restoredFromBackup.ok"], "dismiss restored card") {
+            sleep(1)
+            let gone = !card.exists
+            print(gone ? "UI_STEP_OK restored card dismissed" : "UI_STEP_MISSING restored card dismissed")
+            XCTAssertTrue(gone, "The restored card did not go away")
+        }
+    }
 }

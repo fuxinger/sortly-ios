@@ -55,6 +55,13 @@ Eine SQLite-Datei in *Application Support/Albumist* (vom Backup ausgeschlossen, 
 Mediathek rekonstruierbar). Schema und Migrationen: `DATA_MODEL.md`. Es werden keine Bilder
 gespeichert; Vorschaubilder kommen jedes Mal frisch aus PhotoKit.
 
+Was nicht rekonstruierbar ist (Ausnahmen, Regeln, Einstellungen außer `analysis.*` und
+`execution.*`, verwaltete Alben, Pläne), kopiert `SafetyBackup` als rohe Zeilen in
+*Application Support/Albumist Backup/decisions.json*, die im Geräte-Backup liegt. Geschrieben
+wird zwei Sekunden nach einer Entscheidung, nach jeder Analyse und beim Wechsel in den
+Hintergrund. Beim Start einer leeren Datenbank kommen die Entscheidungen sofort zurück, Alben und
+Verlauf erst, wenn die Mediathek passt (mindestens die Hälfte der verwalteten Alben existiert).
+
 ## Nebenläufigkeit
 Swift 6 mit strikter Prüfung. `AnalysisPipeline`, `PlaceResolutionService` und `SortlyStore`
 sind Actors; die UI-Schicht ist `@MainActor`.

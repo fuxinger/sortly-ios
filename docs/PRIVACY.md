@@ -10,6 +10,12 @@ erkanntem Text (nur für die Suche) und Entscheidungen. Der ganze Ordner ist vom
 ausgeschlossen und mit iOS-Dateischutz verschlüsselt (`completeUntilFirstUserAuthentication`:
 nach einem Neustart unlesbar, bis das iPhone einmal entsperrt wurde; stärker geht nicht, weil
 die Analyse auch nachts bei gesperrtem Gerät läuft).
+
+Eine kleine Kopie nur der Entscheidungen liegt in *Application Support/Albumist Backup*
+(`decisions.json`, gleicher Dateischutz) und ist Teil des Geräte-Backups: Ausnahmen, Regeln,
+Einstellungen, eigene Namen, Reise-Kennungen, die von Albumist angelegten Alben und der Verlauf
+(Album- und Foto-Kennungen, Albumtitel). Kein erkannter Text, keine Analyseergebnisse (Orte,
+Koordinaten, Bildinhalte), keine Bilder. Sie verlässt das Gerät nur mit dem Backup des Nutzers.
 Es werden **keine Bildkopien** gespeichert. Wenige Einstellungen liegen in `UserDefaults`
 (Onboarding erledigt, Zahl der Gratis-Alben, Zeitpunkt des letzten Scans).
 Für Spotlight und Siri legt Albumist im lokalen Spotlight-Index des iPhones nur Ländernamen mit
@@ -54,7 +60,7 @@ abschaltbar). Das gerenderte Bild hat keine EXIF- oder GPS-Daten.
 | Bereich | Ergebnis |
 |---|---|
 | Netzwerk | Kein eigener Netzwerkcode (`URLSession` o. ä. kommt nicht vor). Nur Apple-Dienste: Geocoder (abschaltbar), iCloud-Fotos (Zustimmung), StoreKit. |
-| Speicherung | Datenbank verschlüsselt (Dateischutz), nicht im Backup, keine Bildkopien, sensible Texte nicht gespeichert, Kontonummern maskiert. |
+| Speicherung | Datenbank verschlüsselt (Dateischutz), nicht im Backup, keine Bildkopien, sensible Texte nicht gespeichert, Kontonummern maskiert. Nur die Entscheidungen liegen als kleine Kopie im Geräte-Backup. |
 | SQL | Nur gebundene Parameter, keine zusammengesetzten SQL-Texte aus Nutzereingaben. |
 | Käufe | Nur von Apple signierte Transaktionen (`.verified`) schalten frei; Test-Freischaltung existiert nur in Debug-Builds. |
 | Fotos | Geschlossene Operationsmenge: Alben/Ordner anlegen, ergänzen, umbenennen, verschieben; Mitgliedschaften entfernen. Es gibt keinen Code, der Medien löscht oder verändert. |

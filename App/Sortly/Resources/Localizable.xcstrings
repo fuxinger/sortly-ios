@@ -1091,6 +1091,56 @@
         }
       }
     },
+    "Albumist beginnt dann neu und holt deine Entscheidungen aus der Sicherung zurück. Deine Fotos, Alben und dein Kauf bleiben, wie sie sind." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Albumist then starts fresh and restores your decisions from the copy. Your photos, albums and purchase stay as they are."
+          }
+        }
+      }
+    },
+    "Albumist hat deine Entscheidungen und Einstellungen aus der Sicherung vom %@ übernommen. Die Alben von Albumist und der Verlauf folgen, sobald Albumist alle Fotos sehen darf." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Albumist restored your decisions and settings from the copy of %@. Albumist’s albums and the history follow as soon as Albumist may see all photos."
+          }
+        }
+      }
+    },
+    "Albumist hat deine Entscheidungen und Einstellungen aus der Sicherung vom %@ übernommen. Die Analyse deiner Fotos läuft neu." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Albumist restored your decisions and settings from the copy of %@. Your photos are being analyzed again."
+          }
+        }
+      }
+    },
+    "Albumist hat deine Entscheidungen und Einstellungen aus der Sicherung vom %@ übernommen. Die Sicherung stammt aus einer anderen Mediathek, darum beginnt der Verlauf hier neu. Deine Alben in Fotos bleiben, wie sie sind." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Albumist restored your decisions and settings from the copy of %@. The copy comes from another library, so the history starts fresh here. Your albums in Photos stay as they are."
+          }
+        }
+      }
+    },
+    "Albumist hat deine Entscheidungen, Einstellungen, Alben und den Verlauf aus der Sicherung vom %@ übernommen. Die Analyse deiner Fotos läuft neu." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Albumist restored your decisions, settings, albums and history from the copy of %@. Your photos are being analyzed again."
+          }
+        }
+      }
+    },
     "Alle" : {
       "localizations" : {
         "en" : {
@@ -1461,6 +1511,16 @@
         }
       }
     },
+    "Deine Entscheidungen, Alben und der Verlauf liegen als kleine Kopie im Backup deines Geräts. Zuletzt gesichert: %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A small copy of your decisions, albums and history is part of your device backup. Last saved: %@."
+          }
+        }
+      }
+    },
     "Deine Foto-Geschichte" : {
       "localizations" : {
         "en" : {
@@ -1737,6 +1797,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "English"
+          }
+        }
+      }
+    },
+    "Entscheidungen zurückgeholt" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Decisions Restored"
           }
         }
       }
@@ -2607,6 +2677,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Selected photos only"
+          }
+        }
+      }
+    },
+    "Nur deine Entscheidungen, Regeln, Einstellungen, die Alben von Albumist und der Verlauf liegen zusätzlich als kleine, verschlüsselte Kopie im Backup deines Geräts, damit sie einen Gerätewechsel überstehen. Erkannter Text und Analyseergebnisse gehören nicht dazu." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Only your decisions, rules, settings, Albumist’s albums and the history are also kept as a small, encrypted copy in your device backup, so they survive a move to a new device. Recognized text and analysis results are not part of it."
           }
         }
       }
@@ -4651,12 +4731,12 @@
         }
       }
     },
-    "Eine kleine Datenbank auf deinem Gerät: Datum, Ort und Analyseergebnisse deiner Fotos sowie deine Entscheidungen. Keine Bildkopien. Sie ist verschlüsselt und nicht im iCloud-Backup." : {
+    "Eine kleine Datenbank auf deinem Gerät: Datum, Ort und Analyseergebnisse deiner Fotos sowie deine Entscheidungen. Keine Bildkopien. Sie ist verschlüsselt und nicht im Backup." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "A small database on your device: the date, place and analysis results of your photos, and your decisions. No copies of images. It is encrypted and not part of your iCloud backup."
+            "value" : "A small database on your device: date, place and analysis results of your photos, and your decisions. No copies of images. It is encrypted and not included in backups."
           }
         }
       }
@@ -4711,12 +4791,12 @@
         }
       }
     },
-    "„Analyse neu aufbauen“ löscht alle Analysedaten. Wenn du die App löschst, ist alles weg. Deine Alben in Fotos bleiben." : {
+    "„Analyse neu aufbauen“ löscht alle Analysedaten, deine Entscheidungen bleiben. Wenn du die App löschst, ist alles weg, auch die Kopie. Deine Alben in Fotos bleiben." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "“Rebuild analysis” deletes all analysis data. Deleting the app removes everything. Your albums in Photos stay."
+            "value" : "“Rebuild Analysis” deletes all analysis data; your decisions stay. If you delete the app, everything is gone, including the copy. Your albums in Photos stay."
           }
         }
       }

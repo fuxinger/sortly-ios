@@ -91,7 +91,7 @@ struct SettingsView: View {
                 }
             }
 
-            Section("Verlauf") {
+            Section {
                 if let interrupted = model.interruptedPlan {
                     InterruptedHistoryRow(plan: interrupted)
                 }
@@ -103,6 +103,14 @@ struct SettingsView: View {
                 }
                 if model.historyHasMore {
                     Button("Ältere anzeigen") { Task { await model.loadMoreHistory() } }
+                }
+            } header: {
+                Text("Verlauf")
+            } footer: {
+                // The analysis can be rebuilt, the decisions cannot: they are copied into the
+                // device backup (I12), so a new iPhone or a rebuilt database gets them back.
+                if let saved = model.lastSafetyBackup {
+                    Text("Deine Entscheidungen, Alben und der Verlauf liegen als kleine Kopie im Backup deines Geräts. Zuletzt gesichert: \(saved.formatted(date: .abbreviated, time: .shortened)).")
                 }
             }
 
@@ -264,7 +272,8 @@ struct PrivacyView: View {
                 Text("Deine Fotos bleiben auf deinem Gerät. Albumist hat keinen Server, kein Konto, keine Werbung und kein Tracking.")
             }
             Section("Was Albumist speichert") {
-                Text("Eine kleine Datenbank auf deinem Gerät: Datum, Ort und Analyseergebnisse deiner Fotos sowie deine Entscheidungen. Keine Bildkopien. Sie ist verschlüsselt und nicht im iCloud-Backup.")
+                Text("Eine kleine Datenbank auf deinem Gerät: Datum, Ort und Analyseergebnisse deiner Fotos sowie deine Entscheidungen. Keine Bildkopien. Sie ist verschlüsselt und nicht im Backup.")
+                Text("Nur deine Entscheidungen, Regeln, Einstellungen, die Alben von Albumist und der Verlauf liegen zusätzlich als kleine, verschlüsselte Kopie im Backup deines Geräts, damit sie einen Gerätewechsel überstehen. Erkannter Text und Analyseergebnisse gehören nicht dazu.")
                 Text("Ausweise und medizinische Dokumente werden nicht als Text gespeichert. IBANs und Kartennummern werden unkenntlich gemacht.")
             }
             Section("Was dein Gerät verlässt") {
@@ -272,7 +281,7 @@ struct PrivacyView: View {
                 Text("Käufe laufen über Apple. Albumist sieht keine Zahlungsdaten.")
             }
             Section("Löschen") {
-                Text("„Analyse neu aufbauen“ löscht alle Analysedaten. Wenn du die App löschst, ist alles weg. Deine Alben in Fotos bleiben.")
+                Text("„Analyse neu aufbauen“ löscht alle Analysedaten, deine Entscheidungen bleiben. Wenn du die App löschst, ist alles weg, auch die Kopie. Deine Alben in Fotos bleiben.")
             }
             Section {
                 Link("Vollständige Datenschutzerklärung", destination: AppInfo.privacyPolicyURL)

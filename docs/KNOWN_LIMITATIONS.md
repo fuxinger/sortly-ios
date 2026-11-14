@@ -30,8 +30,11 @@ mit eingeschränkten Rechten: nur lesend.
 - PhotoKit kennt kein bedingtes Löschen: Zwischen dem letzten Lesen und dem Löschen eines
   leeren Albums kann noch ein Foto hineinkommen (Millisekunden). Albumist liest direkt davor.
 - Ein beim Wiederanlauf übernommenes leeres Album bleibt nach Rückgängig stehen (gewollt).
-- Nutzerentscheidungen und Verlauf werden noch nicht getrennt gesichert; bei einem Neuaufbau
-  der Datenbank bleiben die letzten zwei Stände in der Quarantäne.
+- Die Sicherung der Entscheidungen (I12) erkennt eine andere Mediathek an den Album-Kennungen.
+  Mit iCloud-Fotos auf einem neuen iPhone können die Kennungen abweichen; dann kommen nur die
+  Entscheidungen zurück, nicht Alben und Verlauf. Mit eingeschränktem Fotozugriff wartet die
+  Prüfung, bis Albumist alle Fotos sehen darf. Auf echten Geräten (Backup und Wiederherstellen)
+  ist das noch ungetestet.
 - Reiseart (Tagesausflug, Wochenende) richtet sich nach der Zielzeitzone nur, wenn die
   Online-Ortsbestimmung sie geliefert hat; sonst nach dem Gerätekalender.
 - Eine Änderung nur der GPS-Genauigkeit eines Fotos wird nicht als Ortsänderung erkannt.
