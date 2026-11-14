@@ -60,6 +60,7 @@ struct ProposalListView: View {
 
 struct ProposalRow: View {
     @Environment(AppModel.self) private var model
+    @Environment(\.dynamicTypeSize) private var typeSize
     var proposal: AlbumProposal
 
     var body: some View {
@@ -68,7 +69,7 @@ struct ProposalRow: View {
                 .frame(width: 56, height: 56)
                 .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.tile, style: .continuous))
             VStack(alignment: .leading, spacing: 3) {
-                Text(model.userTitles[proposal.id] ?? proposal.title).font(.body.weight(.medium)).lineLimit(2)
+                Text(model.userTitles[proposal.id] ?? proposal.title).font(.body.weight(.medium)).lineLimit(typeSize.isAccessibilitySize ? 5 : 2)
                 Text("\(proposal.assetIDs.count) Aufnahmen").font(.footnote).foregroundStyle(.secondary)
                 if let status = model.match(for: proposal)?.status {
                     StatusBadge(text: status.label, tint: status.tint)

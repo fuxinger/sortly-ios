@@ -5,6 +5,7 @@ import SortlyEngine
 /// Overview (direction A): organized share, analysis state, open proposals, areas.
 struct OverviewView: View {
     @Environment(AppModel.self) private var model
+    @Environment(\.dynamicTypeSize) private var typeSize
     @State private var showSettings = false
 
     var body: some View {
@@ -54,8 +55,12 @@ struct OverviewView: View {
     }
 
     private var statusCard: some View {
-        Card {
-            HStack(spacing: Theme.Spacing.l) {
+        // Largest text sizes stack the ring above the text instead of squeezing it.
+        let layout = typeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: Theme.Spacing.m))
+            : AnyLayout(HStackLayout(spacing: Theme.Spacing.l))
+        return Card {
+            layout {
                 ProgressRing(fraction: model.progress.fullyShare)
                     .frame(width: 84, height: 84)
                 VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
@@ -79,10 +84,16 @@ struct OverviewView: View {
     private var analysisCard: some View {
         Card {
             if model.analysis.isRunning {
-                HStack {
-                    Text(model.analysis.stage?.label ?? "Analyse läuft").font(.headline)
-                    Spacer()
-                    Button("Pause") { model.pauseAnalysis() }.font(.subheadline.weight(.semibold))
+                ViewThatFits(in: .horizontal) {
+                    HStack {
+                        Text(model.analysis.stage?.label ?? "Analyse läuft").font(.headline)
+                        Spacer()
+                        Button("Pause") { model.pauseAnalysis() }.font(.subheadline.weight(.semibold))
+                    }
+                    VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
+                        Text(model.analysis.stage?.label ?? "Analyse läuft").font(.headline)
+                        Button("Pause") { model.pauseAnalysis() }.font(.subheadline.weight(.semibold))
+                    }
                 }
                 ProgressView(value: model.analysis.fraction)
                     .tint(Theme.accent)
@@ -95,7 +106,10 @@ struct OverviewView: View {
                 Text("Die Analyse setzt genau dort fort, wo sie aufgehört hat.").font(.subheadline).foregroundStyle(.secondary)
                 Button("Fortsetzen") { model.startAnalysis(userInitiated: true) }.buttonStyle(SecondaryButtonStyle())
             } else {
-                HStack {
+                let stack = typeSize.isAccessibilitySize
+                    ? AnyLayout(VStackLayout(alignment: .leading, spacing: Theme.Spacing.s))
+                    : AnyLayout(HStackLayout())
+                stack {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Analyse aktuell").font(.headline)
                         if let date = model.analysis.lastRun {
@@ -104,7 +118,7 @@ struct OverviewView: View {
                             Text("Neue Fotos werden beim nächsten Start erkannt.").font(.subheadline).foregroundStyle(.secondary)
                         }
                     }
-                    Spacer()
+                    if !typeSize.isAccessibilitySize { Spacer() }
                     Button("Neu prüfen") { model.startAnalysis() }.font(.subheadline.weight(.semibold))
                 }
                 if let pending = model.analysis.lastReport?.placesPendingOnline, pending > 0 {
@@ -148,22 +162,39 @@ struct OverviewView: View {
         let existing = proposals.filter { p in
             model.match(for: p).map { [MatchStatus.alreadyComplete, .extendable, .possibleMatch].contains($0.status) } ?? false
         }.count
-        return HStack(spacing: Theme.Spacing.m) {
-            IconTile(systemName: area.symbol, tint: area.tint)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(area.title).font(.body.weight(.medium))
-                Group {
-                    if proposals.isEmpty {
-                        Text("Noch keine Vorschläge")
-                    } else {
-                        Text("\(proposals.count) Vorschläge · \(existing) Alben gefunden")
-                    }
+        let text = VStack(alignment: .leading, spacing: 2) {
+            Text(area.title).font(.body.weight(.medium))
+            Group {
+                if proposals.isEmpty {
+                    Text("Noch keine Vorschläge")
+                } else {
+                    Text("\(proposals.count) Vorschläge · \(existing) Alben gefunden")
                 }
-                .font(.footnote).foregroundStyle(.secondary)
             }
-            Spacer()
-            if open > 0 { StatusBadge(text: "\(open) offen") }
-            Image(systemName: "chevron.right").font(.footnote.weight(.semibold)).foregroundStyle(.tertiary)
+            .font(.footnote).foregroundStyle(.secondary)
+        }
+        let chevron = Image(systemName: "chevron.right").font(.footnote.weight(.semibold)).foregroundStyle(.tertiary)
+        return Group {
+            if typeSize.isAccessibilitySize {
+                // Largest text sizes: icon and badge on top, the text gets the full width.
+                VStack(alignment: .leading, spacing: Theme.Spacing.s) {
+                    HStack {
+                        IconTile(systemName: area.symbol, tint: area.tint)
+                        Spacer()
+                        if open > 0 { StatusBadge(text: "\(open) offen") }
+                        chevron
+                    }
+                    text
+                }
+            } else {
+                HStack(spacing: Theme.Spacing.m) {
+                    IconTile(systemName: area.symbol, tint: area.tint)
+                    text
+                    Spacer()
+                    if open > 0 { StatusBadge(text: "\(open) offen") }
+                    chevron
+                }
+            }
         }
         .padding(.horizontal, Theme.Spacing.l)
         .padding(.vertical, Theme.Spacing.m)
