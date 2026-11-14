@@ -95,7 +95,7 @@ struct PlanReviewView: View {
             if summary.deletedContainers > 0 { row("rectangle.stack.badge.minus", "Entfernte Alben", summary.deletedContainers) }
         }
 
-        let albumList = plan.albumPreview(inventory: model.inventory)
+        let albumList = plan.albumPreview(inventory: model.inventory, order: model.acceptedProposals.inDisplayOrder().map(\.id))
         if !albumList.isEmpty { PlanAlbumList(albums: albumList) }
 
         Card {
@@ -245,8 +245,7 @@ struct ResultCard: View {
                     if isUndo {
                         Text("Albumist hat seine Alben und Zuordnungen wieder entfernt. Deine Fotos sind unverändert.")
                     } else {
-                        Text(Counted.join([String(localized: "\(summary.newAlbums) neue Alben"), String(localized: "\(summary.extendedAlbums) ergänzt"),
-                                           String(localized: "\(summary.distinctAssets) Fotos einsortiert")], separator: ", ") + ".")
+                        Text(Counted.resultLine(summary))
                     }
                 }
                 .font(.subheadline)

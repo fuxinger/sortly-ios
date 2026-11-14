@@ -188,8 +188,7 @@ struct HistoryRow: View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
                 Text((plan.confirmedAt ?? plan.createdAt).formatted(date: .abbreviated, time: .shortened))
-                Text(Counted.join([String(localized: "\(summary.newAlbums) neu"), String(localized: "\(summary.extendedAlbums) ergänzt"),
-                                   String(localized: "\(summary.distinctAssets) Fotos")], separator: ", "))
+                Text(Counted.historyLine(summary))
                     .font(.footnote).foregroundStyle(.secondary)
             }
             Spacer()

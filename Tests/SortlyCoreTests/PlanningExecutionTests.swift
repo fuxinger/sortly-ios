@@ -476,4 +476,38 @@ struct PlanPreviewTests {
         #expect(sommer?.addedCount == 4)
         #expect(sommer?.folderPath == [])
     }
+
+    /// The preview lists albums like the list the user chose from, not in planner order
+    /// (the planner sorts by id, so the order looked random).
+    @Test func previewFollowsTheGivenOrder() {
+        let a = AlbumProposal(id: SortlyID("a"), kind: .placeCollection(.country), title: "Spanien", folderPath: ["Länder"], assetIDs: ids("a", 0..<3))
+        let b = AlbumProposal(id: SortlyID("b"), kind: .placeCollection(.country), title: "Deutschland", folderPath: ["Länder"], assetIDs: ids("b", 0..<9))
+        let c = AlbumProposal(id: SortlyID("c"), kind: .trip, title: "Kyoto", folderPath: ["Reisen"], assetIDs: ids("c", 0..<5))
+        let plan = planner.makePlan(from: [a, b, c].map { ConfirmedProposal(proposal: $0, decision: .createNew(title: nil, folderPath: nil)) },
+                                    inventory: CollectionInventory([]))
+        let ordered = plan.albumPreview(inventory: CollectionInventory([]), order: [SortlyID("b"), SortlyID("c"), SortlyID("a")])
+        #expect(ordered.map(\.title) == ["Deutschland", "Kyoto", "Spanien"])
+        #expect(ordered.map(\.sourceID) == [SortlyID("b"), SortlyID("c"), SortlyID("a")])
+        // Albums missing from the order keep plan order at the end.
+        let partly = plan.albumPreview(inventory: CollectionInventory([]), order: [SortlyID("c")])
+        #expect(partly.first?.title == "Kyoto")
+        #expect(partly.count == 3)
+    }
+}
+
+struct ProposalDisplayOrderTests {
+    @Test func areasThenTripsNewestFirstThenBiggest() {
+        func day(_ d: Int) -> DateInterval {
+            let start = Date(timeIntervalSince1970: TimeInterval(d) * 86_400)
+            return DateInterval(start: start, duration: 86_400)
+        }
+        let small = AlbumProposal(id: SortlyID("p1"), kind: .placeCollection(.country), title: "Dänemark", assetIDs: ids("p", 0..<2))
+        let big = AlbumProposal(id: SortlyID("p2"), kind: .placeCollection(.country), title: "Deutschland", assetIDs: ids("q", 0..<9))
+        let oldTrip = AlbumProposal(id: SortlyID("t1"), kind: .trip, title: "Island", assetIDs: ids("r", 0..<20), dateRange: day(100))
+        let newTrip = AlbumProposal(id: SortlyID("t2"), kind: .trip, title: "Kyoto", assetIDs: ids("s", 0..<3), dateRange: day(900))
+        let ordered = [newTrip, small, oldTrip, big].inDisplayOrder()
+        #expect(ordered.map(\.title) == ["Deutschland", "Dänemark", "Kyoto", "Island"])
+        // Same input in another order gives the same result (stable for the card and the preview).
+        #expect([big, oldTrip, small, newTrip].inDisplayOrder().map(\.id) == ordered.map(\.id))
+    }
 }

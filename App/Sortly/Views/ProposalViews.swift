@@ -10,12 +10,8 @@ struct ProposalListView: View {
     private var proposals: [AlbumProposal] {
         model.proposals
             .filter { area == nil || $0.kind.area == area }
-            // A stable order: rows never jump when one is accepted. Trips newest first,
-            // everything else by size.
-            .sorted { lhs, rhs in
-                if area == .trips, let l = lhs.dateRange?.start, let r = rhs.dateRange?.start, l != r { return l > r }
-                return (-lhs.assetIDs.count, lhs.title) < (-rhs.assetIDs.count, rhs.title)
-            }
+            // The app's one suggestion order (also used by "Dein Startpaket" and the preview).
+            .inDisplayOrder()
     }
 
     /// Suggestions grouped by area in the app's area order; trips newest first.
@@ -28,11 +24,7 @@ struct ProposalListView: View {
     private var sections: [AreaSection] {
         let groups = Dictionary(grouping: proposals) { $0.kind.area }
         return OrganizationArea.allCases.compactMap { area in
-            guard var items = groups[area] else { return nil }
-            if area == .trips {
-                items.sort { ($0.dateRange?.start ?? .distantPast) > ($1.dateRange?.start ?? .distantPast) }
-            }
-            return AreaSection(area: area, items: items)
+            groups[area].map { AreaSection(area: area, items: $0) }
         }
     }
 

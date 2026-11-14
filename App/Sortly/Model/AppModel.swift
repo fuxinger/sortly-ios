@@ -419,7 +419,7 @@ final class AppModel {
 
     /// The best suggestions for a first round ("Dein Startpaket"): safe ones only (at least
     /// likely, nothing sensitive, no name needed, a clear action), trips and places first,
-    /// then the biggest.
+    /// then the biggest. Returned in display order, the order the preview lists them in.
     func starterSet(limit: Int) -> [AlbumProposal] {
         func rank(_ p: AlbumProposal) -> Int {
             switch p.kind.area {
@@ -431,7 +431,7 @@ final class AppModel {
         return Array(openProposals
             .filter { $0.reliability >= .likely && !$0.isSensitive && !$0.requiresUserName && recommendedDecision(for: $0).isAccepted }
             .sorted { (rank($0), $0.assetIDs.count, $1.title) > (rank($1), $1.assetIDs.count, $0.title) }
-            .prefix(limit))
+            .prefix(limit)).inDisplayOrder()
     }
 
     /// "Die ersten N jetzt anlegen": keeps the biggest accepted suggestions within the free

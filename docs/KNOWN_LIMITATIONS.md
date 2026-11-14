@@ -31,4 +31,4 @@ mit eingeschränkten Rechten: nur lesend.
 - Die Apple-Intelligence-Funktionen sind im Cloud-Simulator nicht verfügbar und deshalb
   ungetestet; sie sind abgesichert (bei Fehler oder Nichtverfügbarkeit greift die normale Suche).
 - StoreKit-Kauf ist erst mit App-Store-Connect-Eintrag testbar.
-- Der App-Name muss vor der Veröffentlichung geändert werden.
+- Der sichtbare Name ist Albumist; Ordner, Module und Targets heißen noch „Sortly“ (nur intern).
