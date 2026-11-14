@@ -10,6 +10,7 @@
 | 6 | Apple Intelligence (wenn verfügbar): Suche in Sätzen, Namensvorschläge | in Arbeit |
 | 7 | TestFlight mit echten Nutzern (braucht Apple-Developer-Konto) | offen |
 | 8 | Update 1.1: Personen und Haustiere (Opt-in), Widget, Belege verstehen | geplant |
+| 8a | Mitteilungen: „Analyse fertig“, Fortschritt auf dem Sperrbildschirm (Live Activity / BGContinuedProcessingTask), wöchentlicher Hinweis (Opt-in) | auf später verschoben (Entscheidung 2026-11-14) |
 | 9 | Weitere Sprachen nach Downloads | geplant |
 
 ## Abhängigkeiten
