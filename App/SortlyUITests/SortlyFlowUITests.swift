@@ -418,7 +418,19 @@ final class SortlyFlowUITests: XCTestCase {
                     swipes += 1
                 }
                 if tap(undo, "undo in history", timeout: 10) {
-                    tap(app.buttons["Rückgängig machen"].firstMatch, "confirm undo")
+                    // Another "Rückgängig machen" (the result card further back) can exist in
+                    // the hierarchy; tap the one in the dialog that is really on screen.
+                    let dialog = app.staticTexts["Diese Änderungen rückgängig machen?"].waitForExistence(timeout: 5)
+                    print(dialog ? "UI_STEP_OK undo dialog" : "UI_STEP_MISSING undo dialog")
+                    shot("21b-undo-dialog")
+                    let confirms = app.buttons.matching(identifier: "Rückgängig machen").allElementsBoundByIndex
+                    print("UI_FACT undo confirm buttons \(confirms.count), hittable \(confirms.filter(\.isHittable).count)")
+                    if let confirm = confirms.first(where: \.isHittable) {
+                        confirm.tap()
+                        print("UI_STEP_OK confirm undo")
+                    } else {
+                        print("UI_STEP_MISSING confirm undo")
+                    }
                     // iOS asks before an app deletes albums. All albums go in one request, so
                     // this must be one question, not one per album.
                     let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
@@ -438,6 +450,10 @@ final class SortlyFlowUITests: XCTestCase {
                     XCTAssertLessThanOrEqual(questions, 1, "Undo asked more than once before deleting albums")
                     let undone = app.staticTexts["Rückgängig gemacht"].waitForExistence(timeout: 30)
                     print(undone ? "UI_STEP_OK undo finished" : "UI_STEP_MISSING undo finished")
+                    if !undone {
+                        for alert in app.alerts.allElementsBoundByIndex { print("UI_FACT app alert \(alert.label)") }
+                        shot("22-undo-not-finished")
+                    }
                     XCTAssertTrue(undone, "Undo did not finish")
                     shot("22-after-undo")
                 }
