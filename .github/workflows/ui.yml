@@ -40,8 +40,17 @@ jobs:
         run: |
           UDID=$(xcrun simctl list devices available -j | python3 .github/scripts/pick_simulator.py --pro)
           echo "udid=$UDID" >> "$GITHUB_OUTPUT"
-          xcrun simctl boot "$UDID" || true
-          xcrun simctl bootstatus "$UDID" -b
+          # CoreSimulator on the hosted Macs sometimes aborts during the first
+          # bootstatus (NSInternalInconsistencyException 'devicePair'); a retry
+          # after a short pause succeeds, so the run is not lost to it.
+          booted=0
+          for attempt in 1 2 3; do
+            xcrun simctl boot "$UDID" 2>/dev/null || true
+            if xcrun simctl bootstatus "$UDID" -b; then booted=1; break; fi
+            echo "bootstatus failed (attempt $attempt), retrying"
+            sleep 15
+          done
+          [ "$booted" = 1 ] || { echo "simulator did not boot"; exit 1; }
           xcrun simctl privacy "$UDID" grant photos app.albumist.ios || echo "privacy grant failed"
           xcrun simctl status_bar "$UDID" override --time "9:41" --batteryState charged --batteryLevel 100 --cellularBars 4 --wifiBars 3 || true
       - name: Run UI flow

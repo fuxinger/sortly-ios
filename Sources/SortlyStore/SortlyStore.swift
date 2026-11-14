@@ -41,14 +41,39 @@ public actor SortlyStore: ChangePlanStoring {
     /// Inserts or updates asset metadata in one transaction. Returns ids whose metadata
     /// changed (new or modified), which drives incremental re-analysis (prompt §14.4).
     @discardableResult
+    ///
+    /// A snapshot without file details (`uniformTypeIdentifier == nil`, see
+    /// `PhotoLibraryReading.fetchAssets`) keeps the stored type and RAW flag. When the image
+    /// itself changed (edited, new size), its recognized text and content labels are dropped so
+    /// they are read again; when its location changed or was removed, so is its place.
     public func upsertAssets(_ assets: [AssetSnapshot]) throws -> Set<AssetID> {
         var changed = Set<AssetID>()
         try db.transaction {
-            for a in assets {
+            for incoming in assets {
+                var a = incoming
+                let row = try db.query("""
+                    SELECT fingerprint, subtypes, uti, latitude, longitude, modification_date, pixel_width, pixel_height
+                    FROM assets WHERE id = ?
+                    """, [.text(a.id.rawValue)]).first
+                if let row, a.uniformTypeIdentifier == nil, let storedType = row["uti"]?.string {
+                    a.uniformTypeIdentifier = storedType
+                    let stored = MediaSubtypes(rawValue: UInt32(truncatingIfNeeded: row["subtypes"]?.int ?? 0))
+                    if stored.contains(.raw) { a.subtypes.insert(.raw) }
+                }
                 let fingerprint = Self.fingerprint(a)
-                let existing = try db.query("SELECT fingerprint FROM assets WHERE id = ?", [.text(a.id.rawValue)]).first?["fingerprint"]?.string
-                if existing == fingerprint { continue }
+                if row?["fingerprint"]?.string == fingerprint { continue }
                 changed.insert(a.id)
+                if let row {
+                    let id: SQLValue = .text(a.id.rawValue)
+                    if row["latitude"]?.double != a.location?.latitude || row["longitude"]?.double != a.location?.longitude {
+                        try db.execute("DELETE FROM asset_places WHERE asset_id = ?", [id])
+                    }
+                    if row["modification_date"]?.double != a.modificationDate?.timeIntervalSince1970
+                        || row["pixel_width"]?.int != a.pixelWidth || row["pixel_height"]?.int != a.pixelHeight {
+                        try db.execute("DELETE FROM analysis_results WHERE asset_id = ? AND kind IN ('content', 'text')", [id])
+                        try db.execute("DELETE FROM text_plain WHERE asset_id = ?", [id])
+                    }
+                }
                 try db.execute("""
                     INSERT INTO assets (id, kind, subtypes, creation_date, modification_date, latitude, longitude, location_accuracy,
                         pixel_width, pixel_height, duration, burst_id, is_favorite, original_filename, uti, fingerprint, analysis_version)
@@ -57,7 +82,7 @@ public actor SortlyStore: ChangePlanStoring {
                         modification_date = excluded.modification_date, latitude = excluded.latitude, longitude = excluded.longitude,
                         location_accuracy = excluded.location_accuracy, pixel_width = excluded.pixel_width, pixel_height = excluded.pixel_height,
                         duration = excluded.duration, burst_id = excluded.burst_id, is_favorite = excluded.is_favorite,
-                        original_filename = COALESCE(excluded.original_filename, assets.original_filename), uti = excluded.uti,
+                        original_filename = COALESCE(excluded.original_filename, assets.original_filename), uti = COALESCE(excluded.uti, assets.uti),
                         fingerprint = excluded.fingerprint, analysis_version = 0
                     """, [
                         .text(a.id.rawValue), .text(a.kind.rawValue), .integer(Int64(a.subtypes.rawValue)), Self.date(a.creationDate),
@@ -87,6 +112,18 @@ public actor SortlyStore: ChangePlanStoring {
             for id in stale { try db.execute("DELETE FROM assets WHERE id = ?", [.text(id)]) }
         }
         return stale.count
+    }
+
+    /// Assets whose file details (name, type, RAW) are stored, with the modification date they
+    /// were read at (`.distantPast` for none). The library reads the details again only for
+    /// assets missing here or changed since, so a new or rebuilt database gets all of them.
+    public func assetsWithFileDetails() throws -> [AssetID: Date] {
+        var out: [AssetID: Date] = [:]
+        for r in try db.query("SELECT id, modification_date FROM assets WHERE uti IS NOT NULL") {
+            guard let id = r["id"]?.string else { continue }
+            out[AssetID(id)] = r["modification_date"]?.double.map { Date(timeIntervalSince1970: $0) } ?? .distantPast
+        }
+        return out
     }
 
     public func assetCount() throws -> Int {
@@ -280,6 +317,11 @@ public actor SortlyStore: ChangePlanStoring {
         let clause = terms.map { _ in "content LIKE ?" }.joined(separator: " AND ")
         return try db.query("SELECT asset_id FROM text_plain WHERE \(clause) LIMIT ?", terms.map { .text("%\($0)%") } + [.integer(Int64(limit))])
             .compactMap { $0["asset_id"]?.string.map { AssetID($0) } }
+    }
+
+    /// Drops an asset's text from the search (its new text is empty or was withheld).
+    public func removeText(for asset: AssetID) throws {
+        try db.execute("DELETE FROM text_plain WHERE asset_id = ?", [.text(asset.rawValue)])
     }
 
     public func recognizedText(for asset: AssetID) throws -> String? {

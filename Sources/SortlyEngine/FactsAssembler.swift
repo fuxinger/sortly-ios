@@ -8,12 +8,35 @@ public struct TextResult: Hashable, Sendable, Codable {
     public var screenshotCategories: [String]
     /// The original is only in iCloud and downloading was not allowed: read later.
     public var waitingForOriginal: Bool
+    /// Reads that gave no final result yet (only the small preview could be read, or the
+    /// image could not be read at all). Retried a few times, spaced out. `nil` = final.
+    public var retries: Int?
+    public var lastAttempt: Date?
 
-    public init(text: TextAnalysis? = nil, document: DocumentInfo? = nil, screenshotCategories: [String] = [], waitingForOriginal: Bool = false) {
+    public init(text: TextAnalysis? = nil, document: DocumentInfo? = nil, screenshotCategories: [String] = [], waitingForOriginal: Bool = false,
+                retries: Int? = nil, lastAttempt: Date? = nil) {
         self.text = text
         self.document = document
         self.screenshotCategories = screenshotCategories
         self.waitingForOriginal = waitingForOriginal
+        self.retries = retries
+        self.lastAttempt = lastAttempt
+    }
+
+    /// Up to this many reads without a final result; then the result stays as it is.
+    public static let maxRetries = 3
+    /// Time between two of those reads.
+    public static let retrySpacing: TimeInterval = 3600
+
+    /// Whether the text stage should read this photo again.
+    public func shouldRetry(networkAllowed: Bool, now: Date) -> Bool {
+        if waitingForOriginal { return networkAllowed }
+        // Results from older versions: a preview read or an unreadable image count as one try.
+        let tries = retries ?? ((text == nil || text?.source == .localPreview) ? 1 : 0)
+        guard tries > 0, tries < Self.maxRetries else { return false }
+        if let lastAttempt, now.timeIntervalSince(lastAttempt) < Self.retrySpacing { return false }
+        // A preview read gets better only from the original, which may need the network.
+        return text?.source == .localPreview ? networkAllowed : true
     }
 }
 

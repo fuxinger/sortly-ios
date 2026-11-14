@@ -39,22 +39,84 @@ enum ImageLoader {
             options.resizeMode = .exact
             target = CGSize(width: 2_400, height: 2_400)
         }
-        return try await withCheckedThrowingContinuation { continuation in
-            let resumed = LockedBox(false)
-            PHImageManager.default().requestImage(for: asset, targetSize: target, contentMode: .aspectFit, options: options) { image, info in
-                let isDegraded = (info?[PHImageResultIsDegradedKey] as? Bool) ?? false
-                if isDegraded && quality == .original { return } // wait for the final image
-                guard !resumed.value else { return }
-                resumed.value = true
-                if let image, let cg = image.cgImage {
-                    continuation.resume(returning: LoadedImage(cgImage: cg, orientation: CGImagePropertyOrientation(image.imageOrientation)))
-                } else if (info?[PHImageResultIsInCloudKey] as? Bool) == true {
-                    continuation.resume(throwing: AnalysisError.originalNotAvailable)
-                } else {
-                    continuation.resume(returning: nil)
+        // One request resumes the caller exactly once: with the final image, with an error, or
+        // with CancellationError when the analysis stops (the PhotoKit request, maybe an
+        // iCloud download, is cancelled with it instead of running on).
+        let request = ImageRequest()
+        return try await withTaskCancellationHandler {
+            try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<LoadedImage?, Error>) in
+                guard request.start(continuation) else { return }
+                let id = PHImageManager.default().requestImage(for: asset, targetSize: target, contentMode: .aspectFit, options: options) { image, info in
+                    if (info?[PHImageCancelledKey] as? Bool) == true {
+                        request.finish(.failure(CancellationError()))
+                        return
+                    }
+                    let isDegraded = (info?[PHImageResultIsDegradedKey] as? Bool) ?? false
+                    if isDegraded && quality == .original { return } // wait for the final image
+                    if let image, let cg = image.cgImage {
+                        request.finish(.success(LoadedImage(cgImage: cg, orientation: CGImagePropertyOrientation(image.imageOrientation))))
+                    } else if (info?[PHImageResultIsInCloudKey] as? Bool) == true {
+                        request.finish(.failure(AnalysisError.originalNotAvailable))
+                    } else {
+                        request.finish(.success(nil))
+                    }
                 }
+                request.attach(id)
             }
+        } onCancel: {
+            request.cancel()
         }
+    }
+}
+
+/// State of one PhotoKit image request. PhotoKit may call back more than once (degraded,
+/// then final), on any thread, even before `requestImage` returns; cancellation can come at
+/// any point in between. Every path goes through the lock, so the continuation is resumed
+/// once and a cancelled request is cancelled in PhotoKit too.
+private final class ImageRequest: @unchecked Sendable {
+    private let lock = NSLock()
+    private var continuation: CheckedContinuation<LoadedImage?, Error>?
+    private var requestID: PHImageRequestID?
+    private var cancelled = false
+
+    /// Stores the continuation, or resumes it at once when the task was already cancelled.
+    func start(_ continuation: CheckedContinuation<LoadedImage?, Error>) -> Bool {
+        lock.lock()
+        if cancelled {
+            lock.unlock()
+            continuation.resume(throwing: CancellationError())
+            return false
+        }
+        self.continuation = continuation
+        lock.unlock()
+        return true
+    }
+
+    func attach(_ id: PHImageRequestID) {
+        lock.lock()
+        requestID = id
+        let cancelNow = cancelled
+        lock.unlock()
+        if cancelNow { PHImageManager.default().cancelImageRequest(id) }
+    }
+
+    func finish(_ result: Result<LoadedImage?, Error>) {
+        lock.lock()
+        let pending = continuation
+        continuation = nil
+        lock.unlock()
+        pending?.resume(with: result)
+    }
+
+    func cancel() {
+        lock.lock()
+        cancelled = true
+        let id = requestID
+        let pending = continuation
+        continuation = nil
+        lock.unlock()
+        if let id { PHImageManager.default().cancelImageRequest(id) }
+        pending?.resume(throwing: CancellationError())
     }
 }
 

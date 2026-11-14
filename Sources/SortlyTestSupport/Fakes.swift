@@ -72,7 +72,18 @@ public actor InMemoryLibraryReader: PhotoLibraryReading {
     public func set(access: LibraryAccess) { accessLevel = access }
 
     public func access() async -> LibraryAccess { accessLevel }
-    public func fetchAssets(includeHidden: Bool) async throws -> [AssetSnapshot] { assets }
+    /// Like PhotoKit: file details (name, type, RAW flag) only for assets that are new to the
+    /// store or changed since their details were stored.
+    public func fetchAssets(includeHidden: Bool, knownDetails: [AssetID: Date]) async throws -> [AssetSnapshot] {
+        assets.map { asset in
+            guard let known = knownDetails[asset.id], AssetSnapshot.sameModification(known, asset.modificationDate) else { return asset }
+            var bare = asset
+            bare.uniformTypeIdentifier = nil
+            bare.originalFilename = nil
+            bare.subtypes.remove(.raw)
+            return bare
+        }
+    }
     public func currentInventory() async throws -> CollectionInventory { inventory }
 }
 
@@ -103,7 +114,7 @@ public final class FakeContentAnalyzer: ContentAnalyzing, @unchecked Sendable {
     public func recognizeText(_ asset: AssetSnapshot, allowNetwork: Bool) async throws -> TextAnalysis {
         counts.withLock { $0.text += 1 }
         if cloudOnly.contains(asset.id) && !allowNetwork { throw AnalysisError.originalNotAvailable }
-        return TextAnalysis(text: text(asset), source: cloudOnly.contains(asset.id) ? .original : .localPreview)
+        return TextAnalysis(text: text(asset), source: .original)
     }
 }
 

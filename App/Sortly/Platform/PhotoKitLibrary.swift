@@ -29,8 +29,6 @@ final class LockedBox<Value: Sendable>: @unchecked Sendable {
 /// Reads and writes the user's photo library through PhotoKit. Only the closed set of
 /// album/folder operations exists here: no API that deletes or modifies media.
 struct PhotoKitLibrary: PhotoLibraryReading, PhotoLibraryWriting {
-    private static let lastResourceScanKey = "photokit.lastResourceScan"
-
     // MARK: Access
 
     func access() async -> LibraryAccess {
@@ -54,7 +52,7 @@ struct PhotoKitLibrary: PhotoLibraryReading, PhotoLibraryWriting {
 
     // MARK: Reading
 
-    func fetchAssets(includeHidden: Bool) async throws -> [AssetSnapshot] {
+    func fetchAssets(includeHidden: Bool, knownDetails: [AssetID: Date]) async throws -> [AssetSnapshot] {
         let options = PHFetchOptions()
         options.includeHiddenAssets = includeHidden
         options.includeAssetSourceTypes = [.typeUserLibrary, .typeiTunesSynced]
@@ -62,19 +60,17 @@ struct PhotoKitLibrary: PhotoLibraryReading, PhotoLibraryWriting {
         let result = PHAsset.fetchAssets(with: options)
 
         // Original file names and RAW detection need PHAssetResource, which costs a few
-        // milliseconds per asset. Only new or modified assets are scanned after the first
-        // run; the store keeps the earlier values (COALESCE on update).
-        let lastScan = UserDefaults.standard.object(forKey: Self.lastResourceScanKey) as? Date
-        let scanStart = Date()
+        // milliseconds per asset. They are read for assets the store does not have them for
+        // (new, imported with an old date, or a rebuilt database) and for changed ones; the
+        // store keeps the earlier values for the rest.
         var snapshots: [AssetSnapshot] = []
         snapshots.reserveCapacity(result.count)
         result.enumerateObjects { asset, _, _ in
-            let needsResources = lastScan.map { last in
-                (asset.creationDate ?? .distantFuture) > last || (asset.modificationDate ?? .distantFuture) > last
+            let needsResources = knownDetails[AssetID(asset.localIdentifier)].map { known in
+                !AssetSnapshot.sameModification(known, asset.modificationDate)
             } ?? true
             snapshots.append(Self.snapshot(asset, withResources: needsResources))
         }
-        UserDefaults.standard.set(scanStart, forKey: Self.lastResourceScanKey)
         return snapshots
     }
 

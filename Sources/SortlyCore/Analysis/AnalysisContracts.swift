@@ -15,7 +15,12 @@ public enum LibraryAccess: String, Sendable, Codable {
 public protocol PhotoLibraryReading: Sendable {
     func access() async -> LibraryAccess
     /// Snapshots of all readable assets. Hidden assets only when the user opted in.
-    func fetchAssets(includeHidden: Bool) async throws -> [AssetSnapshot]
+    ///
+    /// File details (original name, type, RAW flag) cost a few milliseconds per asset, so they
+    /// are read only for assets that are not in `knownDetails` or whose modification date
+    /// differs from the one given there. The others come with `uniformTypeIdentifier == nil`
+    /// and without the RAW flag; the store keeps their earlier values.
+    func fetchAssets(includeHidden: Bool, knownDetails: [AssetID: Date]) async throws -> [AssetSnapshot]
     func currentInventory() async throws -> CollectionInventory
 }
 
@@ -57,6 +62,12 @@ public struct ContentAnalysis: Hashable, Sendable, Codable {
     /// The preview contains text regions worth reading in full.
     public var containsText: Bool
     public var source: AnalysisImageSource
+    /// Runs in which the image could not be read (no local preview yet, still syncing).
+    /// Such a photo is tried again in later runs and does not count as analyzed. `nil` = read.
+    public var failedAttempts: Int?
+
+    /// Runs that may fail to read an image before it is given up and counted as analyzed.
+    public static let maxFailedAttempts = 3
 
     public init(
         labels: [LabelScore] = [],

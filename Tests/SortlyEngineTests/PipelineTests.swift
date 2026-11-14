@@ -79,7 +79,7 @@ struct PipelineTests {
         var reads = 0
         init(assets: [AssetSnapshot], later: CollectionInventory) { self.assets = assets; self.later = later }
         func access() async -> LibraryAccess { .full }
-        func fetchAssets(includeHidden: Bool) async throws -> [AssetSnapshot] { assets }
+        func fetchAssets(includeHidden: Bool, knownDetails: [AssetID: Date]) async throws -> [AssetSnapshot] { assets }
         func currentInventory() async throws -> CollectionInventory {
             reads += 1
             return reads == 1 ? CollectionInventory() : later
@@ -88,7 +88,7 @@ struct PipelineTests {
 
     @Test func albumsCreatedDuringTheRunAreMatched() async throws {
         let s = try setup()
-        let assets = try await s.reader.fetchAssets(includeHidden: false)
+        let assets = try await s.reader.fetchAssets(includeHidden: false, knownDetails: [:])
         let album = CollectionSnapshot(id: "rom", title: "Rom", assetIDs: Set(s.ids.rome))
         let reader = AlbumAppearsDuringRun(assets: assets, later: CollectionInventory([album]))
         var settings = OrganizationSettings()

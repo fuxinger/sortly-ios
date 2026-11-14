@@ -90,6 +90,8 @@ public actor AnalysisPipeline {
         static let frequentPlaces = "analysis.frequentPlaces"
         static let groups = "analysis.groups"
         static let tripCorrections = "user.tripCorrections"
+        /// Trip identities across runs (kept by "Analyse neu aufbauen", like other user data).
+        static let tripIdentities = "user.tripIdentities"
         static let groupingFeedback = "user.groupingFeedback"
         static let proposals = "analysis.proposals"
     }
@@ -103,6 +105,10 @@ public actor AnalysisPipeline {
     private let calendar: Calendar
     private let time: TimeSource
     private let batchSize: Int
+    private let now: @Sendable () -> Date
+    /// Bumped whenever the albums changed outside a run (a plan was applied): a run that
+    /// computed its matches before that matches again before it saves them.
+    private var albumGeneration = 0
     /// Online place lookups per normal run; the rest waits for the overnight refinement run.
     /// Keeps the first analysis from spending up to an hour on town names before photos are
     /// looked at (the geocoder allows about 40 requests a minute). `nil` = no limit.
@@ -121,8 +127,10 @@ public actor AnalysisPipeline {
         calendar: Calendar = .sortlyDefault,
         time: TimeSource = .live(),
         batchSize: Int = 50,
-        foregroundOnlineBudget: Int? = nil
+        foregroundOnlineBudget: Int? = nil,
+        now: @escaping @Sendable () -> Date = { Date() }
     ) {
+        self.now = now
         self.store = store
         self.reader = reader
         self.analyzer = analyzer
@@ -167,7 +175,8 @@ public actor AnalysisPipeline {
             report.pausedBecause = .accessRevoked
             return report
         }
-        let assets = try await reader.fetchAssets(includeHidden: settings.privacy.includeHiddenAssets)
+        let assets = try await reader.fetchAssets(includeHidden: settings.privacy.includeHiddenAssets,
+                                                  knownDetails: try await store.assetsWithFileDetails())
         report.newOrChanged = try await store.upsertAssets(assets).count
         report.removed = try await store.removeAssets(notIn: Set(assets.map(\.id)))
         let inventory = try await reader.currentInventory()
@@ -179,7 +188,16 @@ public actor AnalysisPipeline {
         // 2. Patterns (pure computation over metadata, seconds even for large libraries)
         let all = try await store.allAssets()
         let corrections = try await store.value(TripCorrections.self, forKey: Key.tripCorrections) ?? TripCorrections()
-        let trips = TripDetector(configuration: settings.trips.advanced, calendar: calendar).detect(in: all, corrections: corrections)
+        let detected = TripDetector(configuration: settings.trips.advanced, calendar: calendar).detect(in: all, corrections: corrections)
+        // Trips keep their identity when their photos change a little (an older photo
+        // imported, the first one deleted): decisions and deleted albums stay attached.
+        var known = try await store.value([TripIdentity].self, forKey: Key.tripIdentities) ?? []
+        if known.isEmpty {
+            // First run with identities: the trips of the last analysis are the starting point.
+            known = (try await store.value([Trip].self, forKey: Key.trips) ?? []).map(TripIdentity.init)
+        }
+        let trips = TripIdentity.carryOver(detected, from: known)
+        try await store.setValue(Self.mergedIdentities(known, trips, library: Set(all.map(\.id))), forKey: Key.tripIdentities)
         var frequent = FrequentPlaceDetector(configuration: settings.frequentPlaces.advanced, calendar: calendar).detect(in: all)
         for i in frequent.indices { frequent[i].userName = settings.frequentPlaces.names[frequent[i].id] }
         try await store.setValue(trips, forKey: Key.trips)
@@ -214,30 +232,55 @@ public actor AnalysisPipeline {
         }
         var contentDone = 0
         var cursor: AssetSnapshot?
+        // Photos that could not be read in this run: tried again in a later run, not now.
+        var deferred = Set<AssetID>()
         while true {
             if let reason = await shouldStop() { report.pausedBecause = reason; return report }
-            var batch = try await store.assetsNeedingAnalysis(version: Self.contentVersion, limit: batchSize, olderThan: cursor)
-            if batch.isEmpty, cursor != nil {
+            var raw = try await store.assetsNeedingAnalysis(version: Self.contentVersion, limit: batchSize + deferred.count, olderThan: cursor)
+            if raw.isEmpty, cursor != nil {
                 // Past the oldest dated photo: one plain pass picks up photos without a date.
                 cursor = nil
-                batch = try await store.assetsNeedingAnalysis(version: Self.contentVersion, limit: batchSize)
+                raw = try await store.assetsNeedingAnalysis(version: Self.contentVersion, limit: batchSize + deferred.count)
             }
+            let batch = raw.filter { !deferred.contains($0.id) }
             if batch.isEmpty { break }
-            if batch.last?.creationDate != nil { cursor = batch.last }
+            if let last = raw.last, last.creationDate != nil { cursor = last }
+            var finished: [AssetID] = []
+            var stopped: PauseReason?
             for asset in batch {
-                let result: ContentAnalysis
+                // Checked per photo: heat, low battery or Pause stop within one image.
+                if let reason = await shouldStop() { stopped = reason; break }
                 do {
-                    result = try await analyzer.analyzeContent(asset, request: peopleRequest)
+                    let result = try await analyzer.analyzeContent(asset, request: peopleRequest)
+                    try await store.saveResult(result, kind: "content", asset: asset.id, version: Self.contentVersion)
+                    finished.append(asset.id)
                 } catch {
-                    // Unreadable items are recorded as analyzed-without-content and never block the queue.
-                    result = ContentAnalysis()
+                    if error is CancellationError || Task.isCancelled {
+                        // Stopped, not unreadable: what is done stays done, the rest waits.
+                        try await store.markAnalyzed(finished, version: Self.contentVersion)
+                        throw CancellationError()
+                    }
+                    // Not readable right now (no local preview yet, still syncing): tried again
+                    // in later runs, and given up only after a few of them.
+                    let previous = try? await store.result(ContentAnalysis.self, kind: "content", asset: asset.id)
+                    if let previous, previous.failedAttempts == nil {
+                        // Read before and the image is unchanged (an edit drops the old result):
+                        // the earlier labels stay valid.
+                        finished.append(asset.id)
+                        continue
+                    }
+                    let earlier = previous?.failedAttempts ?? 0
+                    var failed = ContentAnalysis()
+                    failed.failedAttempts = earlier + 1
+                    try await store.saveResult(failed, kind: "content", asset: asset.id, version: Self.contentVersion)
+                    if earlier + 1 >= ContentAnalysis.maxFailedAttempts { finished.append(asset.id) } else { deferred.insert(asset.id) }
                 }
-                try await store.saveResult(result, kind: "content", asset: asset.id, version: Self.contentVersion)
             }
-            try await store.markAnalyzed(batch.map(\.id), version: Self.contentVersion)
-            contentDone += batch.count
-            report.contentAnalyzed += batch.count
+            try await store.markAnalyzed(finished, version: Self.contentVersion)
+            contentDone += finished.count
+            report.contentAnalyzed += finished.count
             onProgress(Progress(stage: .content, completed: contentDone, total: max(contentTotal, contentDone)))
+            if let stopped { report.pausedBecause = stopped; return report }
         }
         report.completedStages.append(.content)
 
@@ -305,25 +348,30 @@ public actor AnalysisPipeline {
         let contents = try await store.results(ContentAnalysis.self, kind: "content")
         let done = try await store.results(TextResult.self, kind: "text", minimumVersion: Self.textVersion)
         // iCloud rule: originals only with consent, on Wi-Fi unless cellular is allowed.
-        let networkAllowed: Bool
-        if settings.privacy.allowNetworkForAnalysis {
-            networkAllowed = settings.privacy.allowCellularDownloads ? true : await conditions.isOnWiFi()
-        } else {
-            networkAllowed = false
+        // Checked again before every photo: leaving Wi-Fi stops downloads at once.
+        let networkAllowedNow: () async -> Bool = { [settings, conditions] in
+            guard settings.privacy.allowNetworkForAnalysis else { return false }
+            return settings.privacy.allowCellularDownloads ? true : await conditions.isOnWiFi()
         }
+        let networkAllowed = await networkAllowedNow()
+        let started = now()
         let candidates = all.filter { asset in
             guard let content = contents[asset.id], content.needsTextRecognition(for: asset) else { return false }
             guard let previous = done[asset.id] else { return true }
-            return previous.waitingForOriginal && networkAllowed
+            return previous.shouldRetry(networkAllowed: networkAllowed, now: started)
         }
         var recognized = 0, waiting = 0
         let documents = DocumentAnalyzer()
         let screenshots = ScreenshotClassifier()
         for (index, asset) in candidates.enumerated() {
-            if index % batchSize == 0, let reason = await shouldStop() { return (recognized, waiting, reason) }
+            if let reason = await shouldStop() { return (recognized, waiting, reason) }
+            let previous = done[asset.id]
+            let allowNetwork = networkAllowed ? await networkAllowedNow() : false
+            // Needed the network and it is gone now: stays as it is for a later run.
+            if let previous, previous.waitingForOriginal || previous.text?.source == .localPreview, !allowNetwork { continue }
             var result = TextResult()
             do {
-                let text = try await analyzer.recognizeText(asset, allowNetwork: networkAllowed)
+                let text = try await analyzer.recognizeText(asset, allowNetwork: allowNetwork)
                 result.document = documents.analyze(text: text.text)
                 if asset.isScreenshotLike {
                     let labels = Set(contents[asset.id]?.labels.map(\.identifier) ?? [])
@@ -337,13 +385,36 @@ public actor AnalysisPipeline {
                 // only serve the classification above and are never kept.
                 stored.barcodePayloads = []
                 result.text = stored
-                if !stored.text.isEmpty { try await store.indexText(stored.text, for: asset.id) }
+                // The search index follows the new text; empty or withheld text removes the old one.
+                if stored.text.isEmpty {
+                    try await store.removeText(for: asset.id)
+                } else {
+                    try await store.indexText(stored.text, for: asset.id)
+                }
+                if text.source == .localPreview {
+                    // Only the small preview was readable: read again from the original later.
+                    result.retries = (previous?.retries ?? 0) + 1
+                    result.lastAttempt = now()
+                }
                 recognized += 1
             } catch AnalysisError.originalNotAvailable {
-                result.waitingForOriginal = true
-                waiting += 1
+                result = previous ?? TextResult()
+                if allowNetwork {
+                    // Even the download failed: a few more tries, spaced out, then it stays.
+                    result.waitingForOriginal = false
+                    result.retries = (previous?.retries ?? 0) + 1
+                    result.lastAttempt = now()
+                } else {
+                    result.waitingForOriginal = true
+                    waiting += 1
+                }
             } catch {
-                // Unreadable: stored as empty so it is not retried endlessly.
+                if error is CancellationError || Task.isCancelled { throw CancellationError() }
+                // Unreadable now: what was read before stays; a few more tries in later runs.
+                result = previous ?? TextResult()
+                result.waitingForOriginal = false
+                result.retries = (previous?.retries ?? 0) + 1
+                result.lastAttempt = now()
             }
             try await store.saveResult(result, kind: "text", asset: asset.id, version: Self.textVersion)
             if index % 20 == 19 || index == candidates.count - 1 {
@@ -383,6 +454,7 @@ public actor AnalysisPipeline {
         // The albums are read again: a plan applied while this run was busy (minutes or hours
         // on a large library) created albums the matching must see, or it would suggest them
         // a second time.
+        let generation = albumGeneration
         var inventory = inventory
         if let fresh = try? await reader.currentInventory(), fresh != inventory {
             inventory = fresh
@@ -399,8 +471,14 @@ public actor AnalysisPipeline {
             groups: groups
         )
         let proposals = ProposalEngine(settings: settings, calendar: calendar).proposals(for: analysis, overrides: overrides)
-        let matches = AlbumMatcher().match(proposals, against: inventory, overrides: overrides,
+        var matches = AlbumMatcher().match(proposals, against: inventory, overrides: overrides,
                                            assignments: Self.assignments(try await store.managedAlbums()))
+        if generation != albumGeneration {
+            // A plan was applied while this ran: match against the albums as they are now, or
+            // the suggestions would offer albums that were just created.
+            matches = AlbumMatcher().match(proposals, against: try await store.loadInventory(), overrides: OverrideSet(try await store.overrides()),
+                                           assignments: Self.assignments(try await store.managedAlbums()))
+        }
         let snapshot = ProposalSnapshot(generatedAt: Date(), scope: scope, proposals: proposals, matches: matches)
         try await store.setValue(snapshot, forKey: Key.proposals)
         return snapshot
@@ -430,6 +508,16 @@ public actor AnalysisPipeline {
         )
     }
 
+    /// The remembered identities, updated with this run's trips. Identities of trips that are
+    /// not detected right now stay while any of their photos is still in the library (a trip
+    /// can come back when its photos sync again or a correction is undone).
+    static func mergedIdentities(_ known: [TripIdentity], _ trips: [Trip], library: Set<AssetID>) -> [TripIdentity] {
+        let current = Set(trips.map(\.id))
+        return trips.map(TripIdentity.init) + known.filter { identity in
+            !current.contains(identity.id) && identity.members.contains(where: library.contains)
+        }
+    }
+
     /// Suggestion → the album it was applied to, from the managed-album records.
     static func assignments(_ states: [ManagedAlbumState]) -> [SortlyID: CollectionID] {
         Dictionary(states.flatMap { state in state.allSourceIDs.map { ($0, state.albumID) } }, uniquingKeysWith: { first, _ in first })
@@ -443,6 +531,7 @@ public actor AnalysisPipeline {
     /// albums were created or the user said an album does not fit. The suggestions then show
     /// the right state at once instead of after the next analysis.
     public func rematch() async throws -> ProposalSnapshot? {
+        albumGeneration += 1
         guard var snapshot = try await latestProposals() else { return nil }
         let inventory = try await store.loadInventory()
         let overrides = OverrideSet(try await store.overrides())

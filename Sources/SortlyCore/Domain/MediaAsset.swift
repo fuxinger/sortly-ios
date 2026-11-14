@@ -108,6 +108,13 @@ public struct AssetSnapshot: Hashable, Sendable, Codable, Identifiable {
         self.uniformTypeIdentifier = uniformTypeIdentifier
     }
 
+    /// Whether a stored modification date (`.distantPast` for none) is the asset's current
+    /// one. Dates pass through the database as seconds since 1970, which can move the last
+    /// bit, so they count as equal within a millisecond.
+    public static func sameModification(_ stored: Date, _ current: Date?) -> Bool {
+        abs(stored.timeIntervalSince1970 - (current ?? .distantPast).timeIntervalSince1970) < 0.001
+    }
+
     /// A location that is safe to use for geographic decisions.
     public var usableLocation: GeoCoordinate? {
         guard let location, location.isPlausible else { return nil }

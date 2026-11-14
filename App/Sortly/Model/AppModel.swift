@@ -411,7 +411,8 @@ final class AppModel {
             historyHasMore = plans.count > historyLimit
             history = plans.prefix(historyLimit).filter { $0.reverts == nil }
             undonePlans = try await store.undoneTargets()
-            let analyzed = Set(try await store.results(ContentAnalysis.self, kind: "content").keys)
+            // Photos that could not be read yet (failed attempts) do not count as looked at.
+            let analyzed = Set(try await store.results(ContentAnalysis.self, kind: "content").filter { $0.value.failedAttempts == nil }.keys)
             let stored = try await store.overrides()
             let overrides = OverrideSet(stored)
             var removed: [SortlyID: Set<AssetID>] = [:]
