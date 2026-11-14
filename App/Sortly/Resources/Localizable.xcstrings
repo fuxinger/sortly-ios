@@ -751,39 +751,79 @@
         }
       }
     },
-    "%lld Schritte konnten nicht ausgeführt werden. Sie werden beim nächsten Durchgang erneut versucht." : {
+    "%lld Schritte konnten nicht ausgeführt werden. Was Albumist nicht zurücknehmen konnte, bleibt, wie es ist." : {
       "localizations" : {
-        "en" : {
-          "variations" : {
-            "plural" : {
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "%lld step could not be completed. It will be retried next time."
-                }
-              },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "%lld steps could not be completed. They will be retried next time."
-                }
-              }
-            }
-          }
-        },
         "de" : {
           "variations" : {
             "plural" : {
               "one" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "%lld Schritt konnte nicht ausgeführt werden. Er wird beim nächsten Durchgang erneut versucht."
+                  "value" : "%lld Schritt konnte nicht ausgeführt werden. Was Albumist nicht zurücknehmen konnte, bleibt, wie es ist."
                 }
               },
               "other" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "%lld Schritte konnten nicht ausgeführt werden. Sie werden beim nächsten Durchgang erneut versucht."
+                  "value" : "%lld Schritte konnten nicht ausgeführt werden. Was Albumist nicht zurücknehmen konnte, bleibt, wie es ist."
+                }
+              }
+            }
+          }
+        },
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld step could not be completed. Whatever Albumist could not take back stays as it is."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld steps could not be completed. Whatever Albumist could not take back stays as it is."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld Schritte konnten nicht ausgeführt werden. Die fehlenden Fotos schlägt Albumist bei der nächsten Analyse wieder vor." : {
+      "localizations" : {
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Schritt konnte nicht ausgeführt werden. Die fehlenden Fotos schlägt Albumist bei der nächsten Analyse wieder vor."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Schritte konnten nicht ausgeführt werden. Die fehlenden Fotos schlägt Albumist bei der nächsten Analyse wieder vor."
+                }
+              }
+            }
+          }
+        },
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld step could not be completed. Albumist will suggest the missing photos again after the next analysis."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld steps could not be completed. Albumist will suggest the missing photos again after the next analysis."
                 }
               }
             }
@@ -5699,6 +5739,66 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Your albums aren't visible while you share only selected photos with Albumist. That's how iOS handles it."
+          }
+        }
+      }
+    },
+    "%lld Fotos waren nicht mehr in deiner Mediathek und wurden nicht einsortiert." : {
+      "localizations" : {
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Foto war nicht mehr in deiner Mediathek und wurde nicht einsortiert."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Fotos waren nicht mehr in deiner Mediathek und wurden nicht einsortiert."
+                }
+              }
+            }
+          }
+        },
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld photo was no longer in your library and was not sorted."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld photos were no longer in your library and were not sorted."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Die Gratis-Alben reichen für diese Änderungen nicht. Schalte Albumist frei, um weiterzumachen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your free albums are not enough for these changes. Unlock Albumist to continue."
+          }
+        }
+      }
+    },
+    "Ältere anzeigen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show older"
           }
         }
       }

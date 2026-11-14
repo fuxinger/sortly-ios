@@ -101,6 +101,9 @@ struct SettingsView: View {
                 ForEach(model.history) { plan in
                     HistoryRow(plan: plan)
                 }
+                if model.historyHasMore {
+                    Button("Ältere anzeigen") { Task { await model.loadMoreHistory() } }
+                }
             }
 
             Section {
@@ -184,7 +187,7 @@ struct HistoryRow: View {
     @State private var confirmUndo = false
 
     var body: some View {
-        let summary = plan.summary
+        let summary = plan.appliedSummary
         HStack {
             VStack(alignment: .leading, spacing: 2) {
                 Text((plan.confirmedAt ?? plan.createdAt).formatted(date: .abbreviated, time: .shortened))

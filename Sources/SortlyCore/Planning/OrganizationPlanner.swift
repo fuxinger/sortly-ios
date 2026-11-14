@@ -14,7 +14,8 @@ public enum ProposalDecision: Hashable, Sendable, Codable {
     case moveExisting(CollectionID, folderPath: [String], extend: Bool)
     /// Merge several albums into one target. `removeSourceAlbums` deletes only the old
     /// album containers after all their media were added to the target.
-    case merge(target: CollectionID?, sources: [CollectionID], title: String, folderPath: [String]?, removeSourceAlbums: Bool)
+    /// `title` nil keeps an existing target's name exactly as the user wrote it.
+    case merge(target: CollectionID?, sources: [CollectionID], title: String?, folderPath: [String]?, removeSourceAlbums: Bool)
 }
 
 /// A proposal together with the user's selection.
@@ -153,11 +154,15 @@ public struct OrganizationPlanner: Sendable {
                 if let target, requireEditable(target), let album = inventory[target] {
                     ref = .existing(target)
                     targetMembers = album.assetIDs
-                    let clean = AlbumTitle.sanitize(title)
-                    if clean != album.title { builder.append(.renameCollection(target, from: album.title, to: clean), source: sourceID) }
+                    // Renamed only when a new name was asked for; extending is no reason to
+                    // touch the name the user gave the album.
+                    if let title {
+                        let clean = AlbumTitle.sanitize(title)
+                        if clean != album.title { builder.append(.renameCollection(target, from: album.title, to: clean), source: sourceID) }
+                    }
                 } else {
                     let parent = builder.folder(for: path ?? item.proposal.folderPath, source: sourceID)
-                    ref = .planned(builder.createAlbum(title: AlbumTitle.sanitize(title), parent: parent, source: sourceID))
+                    ref = .planned(builder.createAlbum(title: AlbumTitle.sanitize(title ?? item.proposal.title), parent: parent, source: sourceID))
                     targetMembers = []
                 }
                 builder.add(union.subtracting(targetMembers).sorted(), to: ref, source: sourceID)

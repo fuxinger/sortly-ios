@@ -408,8 +408,11 @@ struct ProposalDetailView: View {
             directPlan = plan
             showDirect = true
         } else {
+            // Nothing to change (album already complete or kept as it is): the preview's pick
+            // goes back at once.
+            if let selection = previewSelection { model.endPreview(selection) }
             previewSelection = nil
-            dismiss() // nothing to change (album already complete or kept as it is)
+            dismiss()
         }
     }
 

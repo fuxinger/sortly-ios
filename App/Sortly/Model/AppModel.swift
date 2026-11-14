@@ -35,6 +35,8 @@ final class AppModel {
 
     struct ExecutionState: Equatable {
         var isRunning = false
+        /// The plan this state belongs to: progress of an earlier run never lands on a later one.
+        var planID: SortlyID?
         var completedSteps = 0
         var totalSteps = 0
         var finished: ChangePlan?
@@ -152,8 +154,12 @@ final class AppModel {
     /// Executed plans, newest first. Undo runs are not listed on their own; they mark the
     /// plan they took back (see `undonePlans`).
     var history: [ChangePlan] = []
-    /// Plans whose changes were taken back by a completed undo.
+    /// Plans whose changes were taken back by a completed undo (over the whole journal).
     var undonePlans: Set<SortlyID> = []
+    /// How many finished plans the history shows; "Ältere anzeigen" loads more.
+    var historyLimit = 50
+    /// More finished plans exist than the history shows.
+    var historyHasMore = false
     /// Albums Albumist created or extended, with exactly the media it added.
     var managedAlbums: [ManagedAlbumState] = []
     var plan: ChangePlan?
@@ -175,12 +181,20 @@ final class AppModel {
     private(set) var worldMap: OfflineWorldMap?
     private var pipeline: AnalysisPipeline?
     private var analysisTask: Task<Void, Never>?
+    /// One plan at a time (apply, resume, undo, take back): claimed before the first await of
+    /// every entry point, released when it ends.
+    @ObservationIgnored private var executionClaimed = false
+    /// Decisions that exist only for an open preview: kept in memory, never written to disk.
+    /// Value: what was stored before the preview (nil = undecided).
+    @ObservationIgnored private var previewOnly: [SortlyID: ProposalDecision?] = [:]
 
     private enum Key {
         static let settings = "user.settings"
         static let decisions = "user.decisions"
         static let titles = "user.titles"
         static let onboardingDone = "onboarding.done"
+        /// Plans that started and whose results are not stored yet (finished at the next launch).
+        static let pendingFinalization = "execution.pendingFinalization"
     }
 
     var onboardingDone: Bool {
@@ -221,6 +235,8 @@ final class AppModel {
                 foregroundOnlineBudget: 60
             )
             await refreshDerived()
+            // A plan that finished right before the app was closed stores its results now.
+            await finishPendingFinalizations()
             // A plan that stopped half way (app closed during "Jetzt umsetzen") is offered
             // on the overview: continue or take back.
             interruptedPlan = try? await store.unfinishedPlans().last
@@ -235,15 +251,33 @@ final class AppModel {
     func rebuildAfterFailure() async {
         guard case .failed = phase else { return }
         if let url = try? Self.databaseURL() {
-            let fm = FileManager.default
-            let damaged = url.deletingLastPathComponent().appendingPathComponent("sortly.damaged.sqlite")
-            try? fm.removeItem(at: damaged)
-            try? fm.moveItem(at: url, to: damaged)
-            for suffix in ["-wal", "-shm"] { try? fm.removeItem(atPath: url.path + suffix) }
+            Self.quarantineDatabase(at: url)
         }
         bootstrapTask = nil
         phase = .loading
         await bootstrap()
+    }
+
+    /// Moves the database together with its write-ahead log and shared memory file into a
+    /// dated quarantine folder (the log can hold the last saved changes, so it is never just
+    /// deleted). The two newest quarantines are kept for support.
+    private static func quarantineDatabase(at url: URL) {
+        let fm = FileManager.default
+        let folder = url.deletingLastPathComponent().appendingPathComponent("Quarantine", isDirectory: true)
+        let stamp = ISO8601DateFormatter().string(from: Date()).replacingOccurrences(of: ":", with: "-")
+        let target = folder.appendingPathComponent(stamp, isDirectory: true)
+        do {
+            try fm.createDirectory(at: target, withIntermediateDirectories: true)
+            for suffix in ["", "-wal", "-shm"] where fm.fileExists(atPath: url.path + suffix) {
+                try fm.moveItem(atPath: url.path + suffix, toPath: target.appendingPathComponent(url.lastPathComponent + suffix).path)
+            }
+        } catch {
+            // Could not move: the start fails again and shows the error instead of losing data.
+            return
+        }
+        let old = ((try? fm.contentsOfDirectory(at: folder, includingPropertiesForKeys: nil)) ?? [])
+            .sorted { $0.lastPathComponent > $1.lastPathComponent }
+        for stale in old.dropFirst(2) { try? fm.removeItem(at: stale) }
     }
 
     static func databaseURL() throws -> URL {
@@ -334,7 +368,10 @@ final class AppModel {
             analysis.isRunning = false
             analysis.stage = nil
             await refreshDerived()
-            ContinuedAnalysis.notifyFinished(openSuggestions: openProposals.count)
+            // "Analyse fertig" only when it really finished (not paused, stopped or failed).
+            if analysis.lastReport?.isComplete == true, !Task.isCancelled {
+                ContinuedAnalysis.notifyFinished(openSuggestions: openProposals.count)
+            }
             BackgroundWork.scheduleRefinement()
         }
     }
@@ -370,9 +407,10 @@ final class AppModel {
             // Albumist's own albums overlap on purpose (a country holds its trips).
             let own = Set(managedAlbums.map(\.albumID))
             mergeSuggestions = await Task.detached(priority: .utility) { AlbumOverlapAnalyzer().suggestions(in: inventory, excluding: own) }.value
-            let plans = try await store.planHistory()
-            history = plans.filter { $0.reverts == nil }
-            undonePlans = Set(plans.filter { $0.status == .completed }.compactMap(\.reverts))
+            let plans = try await store.planHistory(limit: historyLimit + 1)
+            historyHasMore = plans.count > historyLimit
+            history = plans.prefix(historyLimit).filter { $0.reverts == nil }
+            undonePlans = try await store.undoneTargets()
             let analyzed = Set(try await store.results(ContentAnalysis.self, kind: "content").keys)
             let stored = try await store.overrides()
             let overrides = OverrideSet(stored)
@@ -458,28 +496,28 @@ final class AppModel {
     /// (Fuchs, 14.11.: "Ich hatte aber noch nichts ausgewählt").
     func selectForPreview(_ items: [(AlbumProposal, ProposalDecision)]) -> PreviewSelection {
         let entries = items.map { (proposal: $0.0, previous: decisions[$0.0.id], chosen: $0.1) }
-        for e in entries { setDecision(e.chosen, for: e.proposal) }
+        // In memory only: if the app is closed during the preview, nothing stays selected.
+        for e in entries {
+            if previewOnly[e.proposal.id] == nil { previewOnly[e.proposal.id] = .some(e.previous) }
+            decisions[e.proposal.id] = e.chosen
+        }
         return PreviewSelection(entries: entries)
     }
 
     /// Back from a preview: decisions that are still the preview's own go back to what they
     /// were. Applied suggestions were already cleared by the execution and stay as they are.
     func endPreview(_ selection: PreviewSelection) {
-        var cleared = false
-        for e in selection.entries where decisions[e.proposal.id] == e.chosen {
-            if let previous = e.previous {
-                setDecision(previous, for: e.proposal)
-            } else {
-                decisions[e.proposal.id] = nil
-                cleared = true
-            }
+        for e in selection.entries {
+            // Chosen on purpose meanwhile (or already applied and cleared): stays as it is.
+            guard previewOnly.removeValue(forKey: e.proposal.id) != nil, decisions[e.proposal.id] == e.chosen else { continue }
+            decisions[e.proposal.id] = e.previous
         }
-        if cleared { persistDecisions() }
     }
 
     /// "Auswahl aufheben" on the preview: every selected suggestion goes back to the open list.
     func clearSelection() {
         for (id, decision) in decisions where decision.isAccepted { decisions[id] = nil }
+        previewOnly.removeAll()
         persistDecisions()
     }
 
@@ -499,6 +537,7 @@ final class AppModel {
     func setDecision(_ decision: ProposalDecision, for proposal: AlbumProposal) {
         let wasRejected = decisions[proposal.id] == .reject
         decisions[proposal.id] = decision
+        previewOnly[proposal.id] = nil // chosen on purpose now
         persistDecisions()
         if decision == .reject {
             let override = UserOverride(scope: .source(proposal.id), decision: .rejectProposal)
@@ -577,15 +616,24 @@ final class AppModel {
     }
 
     private func persistDecisions() {
-        let decisions = decisions
+        let decisions = storedDecisions(decisions)
         Task { try? await store?.setValue(decisions, forKey: Key.decisions) }
         SpotlightIndex.scheduleUpdate(self)
+    }
+
+    /// What may be written to disk: preview-only selections are replaced by what was there before.
+    private func storedDecisions(_ current: [SortlyID: ProposalDecision]) -> [SortlyID: ProposalDecision] {
+        var result = current
+        for (id, previous) in previewOnly { result[id] = previous }
+        return result
     }
 
     // MARK: Plan and execution
 
     func buildPlan() async {
         guard let store else { return }
+        // The user's latest changes in Photos count before anything is planned.
+        guard await reconcileManagedAlbums() else { return }
         do {
             let current = try await library.currentInventory()
             let overrides = try await planningOverrides(store)
@@ -606,6 +654,7 @@ final class AppModel {
     /// (still through the normal preview, with undo).
     func singlePlan(for proposal: AlbumProposal) async -> ChangePlan? {
         guard let store else { return nil }
+        guard await reconcileManagedAlbums() else { return nil }
         do {
             let current = try await library.currentInventory()
             let overrides = try await planningOverrides(store)
@@ -622,31 +671,56 @@ final class AppModel {
         }
     }
 
+    /// Applies a reviewed plan. Only one plan runs at a time.
     func execute(_ plan: ChangePlan) async {
+        guard claimExecution() else { return }
+        defer { releaseExecution() }
+        await run(plan)
+    }
+
+    private func claimExecution() -> Bool {
+        guard !executionClaimed, !execution.isRunning else { return false }
+        executionClaimed = true
+        return true
+    }
+
+    private func releaseExecution() { executionClaimed = false }
+
+    /// Runs a plan; the caller holds the execution claim. `resume`: an interrupted plan that
+    /// was confirmed before (its free albums were checked then).
+    private func run(_ plan: ChangePlan, resume: Bool = false) async {
         guard let store else { return }
+        // The free albums are checked here too, not only on the review screen.
+        let wanted = plan.summary.newAlbums + plan.summary.extendedAlbums
+        if plan.reverts == nil, !resume, !Purchases.shared.allows(albums: wanted) {
+            execution = ExecutionState(planID: plan.id, failure: String(localized: "Die Gratis-Alben reichen für diese Änderungen nicht. Schalte Albumist frei, um weiterzumachen."))
+            return
+        }
         var confirmed = plan
-        confirmed.status = .confirmed
-        confirmed.confirmedAt = Date()
-        execution = ExecutionState(isRunning: true, completedSteps: 0, totalSteps: plan.steps.count)
+        if confirmed.status == .draft { confirmed.status = .confirmed }
+        if confirmed.confirmedAt == nil { confirmed.confirmedAt = Date() }
+        let planID = confirmed.id
+        execution = ExecutionState(isRunning: true, planID: planID, completedSteps: 0, totalSteps: plan.steps.count)
         let executor = ChangeExecutor(library: library, store: store)
         do {
+            // Remembered before anything runs: if the app is closed after the plan finished
+            // but before its results were stored, the next launch stores them.
+            try await setPendingFinalization(adding: planID)
             let result = try await executor.execute(confirmed) { event in
                 if case .stepFinished(let index, let state) = event {
                     let succeeded: Bool = if case .succeeded = state { true } else { false }
                     Task { @MainActor in
-                        if !succeeded { AppModel.shared.execution.unsuccessfulSteps.insert(index) }
-                        AppModel.shared.execution.completedSteps = index + 1
+                        let model = AppModel.shared
+                        guard model.execution.planID == planID else { return }
+                        if !succeeded { model.execution.unsuccessfulSteps.insert(index) }
+                        model.execution.completedSteps = index + 1
                     }
                 }
             }
             execution.finished = result
-            await recordManagedAlbums(after: result)
-            let used = result.summary
-            Purchases.shared.recordUsage(albums: used.newAlbums + used.extendedAlbums)
-            // Applied proposals leave the open list; other accepted ones stay accepted.
-            let applied = Set(result.steps.compactMap(\.sourceID))
-            for id in applied where decisions[id]?.isAccepted == true { decisions[id] = nil }
-            persistDecisions()
+            if result.status == .completed || result.status == .completedWithErrors {
+                await finalize(result)
+            }
         } catch {
             execution.failure = error.localizedDescription
         }
@@ -655,16 +729,86 @@ final class AppModel {
         startAnalysis()
     }
 
+    /// Everything that follows a finished plan, stored in one transaction: Albumist's albums,
+    /// applied suggestions leaving the open list, and the plan marked as finalized. The free
+    /// albums are counted once per plan, from what really changed.
+    private func finalize(_ result: ChangePlan) async {
+        guard let store else { return }
+        do {
+            let after = try await library.currentInventory()
+            try await store.saveInventory(after)
+            inventory = after
+            let states = ManagedAlbumTracker().record(result, into: try await store.managedAlbums(), inventory: after)
+            var newDecisions = decisions
+            if result.reverts == nil {
+                // Applied proposals leave the open list; other accepted ones stay accepted.
+                let applied = Set(result.steps.compactMap(\.sourceID))
+                for id in applied where newDecisions[id]?.isAccepted == true {
+                    newDecisions[id] = nil
+                    previewOnly[id] = nil
+                }
+                // Counted before the store write: counting twice is impossible (per plan id),
+                // and a crash in between is completed at the next launch.
+                let applied2 = result.appliedSummary
+                Purchases.shared.recordUsage(plan: result.id, albums: applied2.newAlbums + applied2.extendedAlbums)
+            }
+            var done = result
+            done.finalizedAt = Date()
+            let pending = (try await store.value([SortlyID].self, forKey: Key.pendingFinalization) ?? []).filter { $0 != result.id }
+            try await store.finalize(done, managedAlbums: states, values: [
+                Key.decisions: storedDecisions(newDecisions),
+                Key.pendingFinalization: pending,
+            ])
+            decisions = newDecisions
+            managedAlbums = states
+            SpotlightIndex.scheduleUpdate(self)
+            // Suggestions see the new albums at once (e.g. "Album vollständig").
+            if let rematched = try await pipeline?.rematch() { snapshot = rematched }
+        } catch {
+            message = error.localizedDescription
+        }
+    }
+
+    private func setPendingFinalization(adding id: SortlyID? = nil, removing gone: Set<SortlyID> = []) async throws {
+        guard let store else { return }
+        var pending = try await store.value([SortlyID].self, forKey: Key.pendingFinalization) ?? []
+        if let id, !pending.contains(id) { pending.append(id) }
+        pending.removeAll { gone.contains($0) }
+        try await store.setValue(pending, forKey: Key.pendingFinalization)
+    }
+
+    /// At launch: plans that finished but whose results were not stored yet are finalized now;
+    /// plans that never started or were dropped leave the list. An interrupted plan stays
+    /// (it is offered to continue or take back).
+    private func finishPendingFinalizations() async {
+        guard let store, let pending = try? await store.value([SortlyID].self, forKey: Key.pendingFinalization), !pending.isEmpty else { return }
+        var drop = Set<SortlyID>()
+        for id in pending {
+            guard let plan = try? await store.plan(id) else { drop.insert(id); continue }
+            switch plan.status {
+            case .completed, .completedWithErrors:
+                if plan.finalizedAt == nil { await finalize(plan) } else { drop.insert(id) }
+            case .running, .confirmed:
+                continue
+            case .draft, .cancelled:
+                drop.insert(id)
+            }
+        }
+        if !drop.isEmpty { try? await setPendingFinalization(removing: drop) }
+    }
+
     /// Merge plan for overlapping albums: the largest album receives the missing media of
     /// the others. The other albums stay unless the user removes them later (prompt §3).
+    /// The target keeps its name exactly as it is.
     func mergePlan(_ suggestion: AlbumOverlapAnalyzer.MergeSuggestion) async -> ChangePlan? {
         guard let store else { return nil }
+        guard await reconcileManagedAlbums() else { return nil }
         do {
             let current = try await library.currentInventory()
             let albums = suggestion.albumIDs.compactMap { current[$0] }
             guard let target = albums.max(by: { $0.assetIDs.count < $1.assetIDs.count }) else { return nil }
             let proposal = AlbumProposal(id: SortlyID(), kind: .rule, title: target.title, assetIDs: [], reliability: .certain)
-            let decision = ProposalDecision.merge(target: target.id, sources: albums.map(\.id), title: target.title, folderPath: nil, removeSourceAlbums: false)
+            let decision = ProposalDecision.merge(target: target.id, sources: albums.map(\.id), title: nil, folderPath: nil, removeSourceAlbums: false)
             let overrides = OverrideSet(try await store.overrides())
             return OrganizationPlanner(rootFolderTitle: settings.rootFolderTitle)
                 .makePlan(from: [ConfirmedProposal(proposal: proposal, decision: decision)], inventory: current, overrides: overrides)
@@ -678,6 +822,7 @@ final class AppModel {
     /// otherwise a new album is created (in the Albumist folder). Goes through the normal review.
     func manualPlan(assets: [AssetID], target: CollectionID?, newTitle: String?) async -> ChangePlan? {
         guard let store, !assets.isEmpty else { return nil }
+        guard await reconcileManagedAlbums() else { return nil }
         do {
             let current = try await library.currentInventory()
             let title = newTitle ?? target.flatMap { current[$0]?.title } ?? ""
@@ -695,47 +840,52 @@ final class AppModel {
 
     // MARK: Albums created by Albumist
 
-    /// Remembers which albums the plan created or extended (and which media it added).
-    private func recordManagedAlbums(after result: ChangePlan) async {
-        guard let store else { return }
-        do {
-            let after = try await library.currentInventory()
-            // New albums show up under "Alben" right away, not only after the next analysis.
-            try await store.saveInventory(after)
-            inventory = after
-            let states = ManagedAlbumTracker().record(result, into: try await store.managedAlbums(), inventory: after)
-            try await store.saveManagedAlbums(states)
-            managedAlbums = states
-            // Suggestions see the new albums at once (e.g. "Album vollständig").
-            if let rematched = try await pipeline?.rematch() { snapshot = rematched }
-        } catch {
-            message = error.localizedDescription
-        }
-    }
-
     /// Detects changes the user made in the Photos app (renamed, deleted, photos removed)
-    /// and turns them into overrides, so Albumist never undoes a manual decision.
-    private func reconcileManagedAlbums() async {
-        guard let store, let stored = try? await store.managedAlbums() else { return }
+    /// and turns them into overrides, so Albumist never undoes a manual decision. Returns
+    /// false only if what it found could not be stored; planning then waits.
+    @discardableResult
+    private func reconcileManagedAlbums() async -> Bool {
+        guard let store, let stored = try? await store.managedAlbums() else { return true }
         // Only with full access: a limited library would look like deleted albums and photos.
         guard !stored.isEmpty, !execution.isRunning, await library.access() == .full,
-              let current = try? await library.currentInventory(), !current.albums.isEmpty else {
+              let current = try? await library.currentInventory() else {
             managedAlbums = stored
-            return
+            return true
         }
         let result = ManagedAlbumTracker().reconcile(stored, with: current)
+        // An empty album list is a valid answer (the user deleted the last album). Only when
+        // every remembered album seems gone at once, a second read has to confirm it.
+        if result.updatedStates.isEmpty {
+            try? await Task.sleep(for: .milliseconds(300))
+            guard let again = try? await library.currentInventory(),
+                  stored.allSatisfy({ again[$0.albumID] == nil }) else {
+                managedAlbums = stored
+                return true
+            }
+        }
         if !result.changes.isEmpty {
-            for override in result.newOverrides { try? await store.addOverride(override) }
-            try? await store.saveManagedAlbums(result.updatedStates)
+            do {
+                // Overrides and the new last-known state in one transaction: a manual change
+                // is never marked as seen without its override.
+                try await store.applyReconciliation(overrides: result.newOverrides, managedAlbums: result.updatedStates)
+            } catch {
+                managedAlbums = stored
+                message = error.localizedDescription
+                return false
+            }
         }
         managedAlbums = result.updatedStates
+        return true
     }
 
     /// Plan that takes Albumist's additions back out of one album (shown in the normal review).
     func removalPlan(for state: ManagedAlbumState) async -> ChangePlan? {
+        guard await reconcileManagedAlbums() else { return nil }
+        // The state may have changed with the reconciliation (photos the user took out).
+        guard let fresh = managedAlbums.first(where: { $0.albumID == state.albumID }) else { return nil }
         do {
             let current = try await library.currentInventory()
-            let plan = ManagedAlbumTracker().removalPlan(for: state, current: current)
+            let plan = ManagedAlbumTracker().removalPlan(for: fresh, current: current)
             return plan.steps.isEmpty ? nil : plan
         } catch {
             message = error.localizedDescription
@@ -750,23 +900,36 @@ final class AppModel {
     }
 
     /// Finishes an interrupted plan. Steps that already ran are skipped; a step that was
-    /// running is checked against the library first, so nothing is created twice.
+    /// running is checked against the library first, so nothing is created twice. Photos the
+    /// user has taken out of an album since then are not added anymore.
     func resumeInterruptedPlan() async {
-        guard let interrupted = interruptedPlan, !execution.isRunning else { return }
+        guard let store, let interrupted = interruptedPlan, claimExecution() else { return }
+        defer { releaseExecution() }
+        guard await reconcileManagedAlbums() else { return }
         execution = ExecutionState()
-        await execute(interrupted)
+        let overrides = (try? await store.overrides()).map { OverrideSet($0) } ?? OverrideSet()
+        await run(interrupted.respecting(overrides), resume: true)
         if execution.failure == nil { interruptedPlan = nil }
     }
 
-    /// Takes back what an interrupted plan already did, and drops the rest.
+    /// Takes back what an interrupted plan already did, and drops the rest. Steps the
+    /// interruption left open are first checked against the library (an album created or
+    /// photos added right before the app was closed are taken back too).
     func undoInterruptedPlan() async {
-        guard let store, var interrupted = interruptedPlan, !execution.isRunning else { return }
+        guard let store, let interrupted = interruptedPlan, claimExecution() else { return }
+        defer { releaseExecution() }
         do {
-            interrupted.status = .cancelled
-            try await store.save(interrupted)
+            let settled = try await ChangeExecutor(library: library, store: store).reconcileInterrupted(interrupted)
             let current = try await library.currentInventory()
-            let undoPlan = UndoPlanner().undoPlan(for: interrupted, current: current)
-            if !undoPlan.steps.isEmpty { await execute(undoPlan) }
+            var undoPlan = UndoPlanner().undoPlan(for: settled, current: current)
+            undoPlan.status = .confirmed
+            undoPlan.confirmedAt = Date()
+            var cancelled = settled
+            cancelled.status = .cancelled
+            // Both in one transaction: the undo is journaled before the plan stops being offered.
+            try await store.save([cancelled] + (undoPlan.steps.isEmpty ? [] : [undoPlan]))
+            try? await setPendingFinalization(removing: [interrupted.id])
+            if !undoPlan.steps.isEmpty { await run(undoPlan) }
             interruptedPlan = nil
             await refreshDerived()
         } catch {
@@ -777,20 +940,39 @@ final class AppModel {
     func undo(_ executed: ChangePlan) async {
         // Taking back the same plan twice would find nothing to do (or remove what the user
         // added in the meantime), so a plan is undone once.
-        guard !undonePlans.contains(executed.id), executed.reverts == nil else { return }
+        guard let store, !undonePlans.contains(executed.id), executed.reverts == nil, claimExecution() else { return }
+        defer { releaseExecution() }
+        // What the user changed by hand since counts first: a photo they took out and put back
+        // is theirs now and stays.
+        guard await reconcileManagedAlbums() else { return }
         do {
             let current = try await library.currentInventory()
-            let undoPlan = UndoPlanner().undoPlan(for: executed, current: current)
-            await execute(undoPlan)
+            var owned: [CollectionID: Set<AssetID>] = [:]
+            for state in managedAlbums { owned[state.albumID, default: []].formUnion(state.addedBySortly) }
+            let undoPlan = UndoPlanner().undoPlan(for: executed, current: current, owned: owned)
+            await run(undoPlan)
             if let result = execution.finished, result.reverts == executed.id, result.status == .completed {
                 undonePlans.insert(executed.id)
                 // Albums that are gone again do not count against the free albums.
-                let summary = executed.summary
-                Purchases.shared.returnUsage(albums: summary.newAlbums + summary.extendedAlbums)
+                let summary = executed.appliedSummary
+                Purchases.shared.returnUsage(plan: executed.id, albums: summary.newAlbums + summary.extendedAlbums)
+                // A removal that is taken back lets its suggestions come back as well.
+                let sources = executed.removalSources
+                if !sources.isEmpty {
+                    for o in try await store.overrides() where o.decision == .rejectProposal {
+                        if case .source(let s) = o.scope, sources.contains(s) { try await store.removeOverride(o.id) }
+                    }
+                }
             }
         } catch {
             message = error.localizedDescription
         }
+    }
+
+    /// "Ältere anzeigen" in the history.
+    func loadMoreHistory() async {
+        historyLimit += 50
+        await refreshDerived()
     }
 
     // MARK: Library and search
@@ -851,8 +1033,27 @@ final class AppModel {
 
     // MARK: Reset
 
+    /// "Analyse neu aufbauen": a running analysis stops first and is waited for, so it cannot
+    /// write old results into the fresh tables; Spotlight forgets the old results too.
     func resetAnalysis() async {
-        try? await store?.resetAnalysis(includingDecisions: false)
+        if analysis.isRunning {
+            await pipeline?.pause()
+            analysisTask?.cancel()
+            await analysisTask?.value
+            // A background refinement has no task to wait for: give it until its next check.
+            var waited = 0
+            while analysis.isRunning && waited < 150 {
+                try? await Task.sleep(for: .milliseconds(100))
+                waited += 1
+            }
+        }
+        do {
+            try await store?.resetAnalysis(includingDecisions: false)
+        } catch {
+            message = error.localizedDescription
+        }
+        snapshot = nil
+        SpotlightIndex.clear()
         await refreshDerived()
     }
 }

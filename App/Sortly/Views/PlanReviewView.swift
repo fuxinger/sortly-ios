@@ -228,8 +228,9 @@ struct ResultCard: View {
     private static let reviewKey = "review.askedAfterFirstAlbums"
 
     var body: some View {
-        let summary = plan.summary
-        let failed = plan.steps.filter { if case .failed = $0.state { true } else { false } }.count
+        // What really happened (photos that were no longer there are not counted).
+        let summary = plan.appliedSummary
+        let failed = summary.failedSteps
         let isUndo = plan.reverts != nil
         Card {
             VStack(spacing: Theme.Spacing.s) {
@@ -251,7 +252,18 @@ struct ResultCard: View {
                 .font(.subheadline)
                 .multilineTextAlignment(.center)
                 if failed > 0 {
-                    Text("\(failed) Schritte konnten nicht ausgeführt werden. Sie werden beim nächsten Durchgang erneut versucht.")
+                    Group {
+                        if isUndo {
+                            Text("\(failed) Schritte konnten nicht ausgeführt werden. Was Albumist nicht zurücknehmen konnte, bleibt, wie es ist.")
+                        } else {
+                            Text("\(failed) Schritte konnten nicht ausgeführt werden. Die fehlenden Fotos schlägt Albumist bei der nächsten Analyse wieder vor.")
+                        }
+                    }
+                    .font(.footnote).foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                }
+                if summary.unavailableAssets > 0 && !isUndo {
+                    Text("\(summary.unavailableAssets) Fotos waren nicht mehr in deiner Mediathek und wurden nicht einsortiert.")
                         .font(.footnote).foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
                 }
@@ -274,7 +286,7 @@ struct ResultCard: View {
         .onAppear { appeared = true }
         .task {
             // Ask for a rating once, at the moment the first albums are done (never after errors).
-            let summary = plan.summary
+            let summary = plan.appliedSummary
             guard !UITestSupport.isRunning, summary.newAlbums + summary.extendedAlbums > 0,
                   !plan.steps.contains(where: { if case .failed = $0.state { true } else { false } }),
                   !UserDefaults.standard.bool(forKey: Self.reviewKey) else { return }

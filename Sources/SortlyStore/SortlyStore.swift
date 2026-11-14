@@ -389,6 +389,11 @@ public actor SortlyStore: ChangePlanStoring {
         try db.durably { try insertPlan(plan) }
     }
 
+    /// Several plans in one transaction (an interrupted plan and the undo that replaces it).
+    public func save(_ plans: [ChangePlan]) throws {
+        try db.durably { try db.transaction { for plan in plans { try insertPlan(plan) } } }
+    }
+
     private func insertPlan(_ plan: ChangePlan) throws {
         try db.execute("INSERT OR REPLACE INTO plans (id, status, created_at, payload) VALUES (?, ?, ?, ?)", [
             .text(plan.id.rawValue), .text(plan.status.rawValue), Self.date(plan.createdAt), try json(plan),

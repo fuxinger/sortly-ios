@@ -1,6 +1,7 @@
 import Foundation
 import Observation
 import StoreKit
+import SortlyCore
 
 /// One-time unlock (decision 2026-11-13): free download, the first albums are free, then
 /// a single non-consumable purchase unlocks everything. No subscription, no tracking.
@@ -13,14 +14,21 @@ final class Purchases {
     static let freeAlbumLimit = 10
     static let unlockProductID = "app.albumist.ios.unlock"
     private static let usedKey = "purchases.albumsUsed"
+    private static let byPlanKey = "purchases.albumsByPlan"
 
     private(set) var isUnlocked = false
     private(set) var product: Product?
     private(set) var isPurchasing = false
     var lastError: String?
 
+    /// Albums created or extended before counting per plan (older versions).
+    private var legacyUsed: Int = UserDefaults.standard.integer(forKey: Purchases.usedKey)
+    /// Plan id → albums that plan created or extended. Counting per plan makes recording
+    /// idempotent: a plan finalized again after a crash is not counted twice.
+    private var byPlan: [String: Int] = UserDefaults.standard.dictionary(forKey: Purchases.byPlanKey) as? [String: Int] ?? [:]
+
     /// Albums created or extended so far. A completed undo gives its albums back.
-    private(set) var albumsUsed: Int = UserDefaults.standard.integer(forKey: Purchases.usedKey)
+    var albumsUsed: Int { legacyUsed + byPlan.values.reduce(0, +) }
 
     private var updates: Task<Void, Never>?
 
@@ -32,17 +40,21 @@ final class Purchases {
     /// Debug builds only: the end-to-end UI test runs without the purchase sheet.
     static var unlockedForUITests: Bool { UITestSupport.isRunning }
 
-    func recordUsage(albums: Int) {
-        guard albums > 0 else { return }
-        albumsUsed += albums
-        UserDefaults.standard.set(albumsUsed, forKey: Self.usedKey)
+    func recordUsage(plan: SortlyID, albums: Int) {
+        guard albums > 0, byPlan[plan.rawValue] == nil else { return }
+        byPlan[plan.rawValue] = albums
+        UserDefaults.standard.set(byPlan, forKey: Self.byPlanKey)
     }
 
-    /// After an undo the albums are gone again, so they do not count as used.
-    func returnUsage(albums: Int) {
-        guard albums > 0 else { return }
-        albumsUsed = max(0, albumsUsed - albums)
-        UserDefaults.standard.set(albumsUsed, forKey: Self.usedKey)
+    /// After an undo the albums are gone again, so they do not count as used. Plans counted by
+    /// an older version give back `albums` from the old total.
+    func returnUsage(plan: SortlyID, albums: Int) {
+        if byPlan.removeValue(forKey: plan.rawValue) != nil {
+            UserDefaults.standard.set(byPlan, forKey: Self.byPlanKey)
+        } else if albums > 0 {
+            legacyUsed = max(0, legacyUsed - albums)
+            UserDefaults.standard.set(legacyUsed, forKey: Self.usedKey)
+        }
     }
 
     func start() {

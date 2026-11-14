@@ -144,6 +144,15 @@ enum SpotlightIndex {
         }
     }
 
+    /// After "Analyse neu aufbauen": Spotlight and Siri forget the old results at once.
+    static func clear() {
+        pending?.cancel()
+        pending = Task {
+            await replace(suggestions: [], countries: [])
+            SortlyShortcuts.updateAppShortcutParameters()
+        }
+    }
+
     private nonisolated static func replace(suggestions: [SuggestionEntity], countries: [CountryEntity]) async {
         let index = CSSearchableIndex.default()
         try? await index.deleteAppEntities(ofType: SuggestionEntity.self)

@@ -433,3 +433,21 @@ struct AuditPlanHelperTests {
         #expect(plan.appliedAssets == ["y"])
     }
 }
+
+@Suite("Audit 14.11.2026: planner")
+struct AuditPlannerTests {
+    /// Audit 1.10: merging into an existing album keeps the user's title exactly, even one the
+    /// cleanup would change.
+    @Test func mergePreservesExistingUserTitleExactly() {
+        let inventory = CollectionInventory([
+            CollectionSnapshot(id: "a", title: "— Sommerurlaub —", assetIDs: ["1"]),
+            CollectionSnapshot(id: "b", title: "Sommer", assetIDs: ["2"]),
+        ])
+        let proposal = AlbumProposal(id: SortlyID("m"), kind: .rule, title: "— Sommerurlaub —", assetIDs: [], reliability: .certain)
+        let plan = OrganizationPlanner().makePlan(
+            from: [ConfirmedProposal(proposal: proposal, decision: .merge(target: "a", sources: ["a", "b"], title: nil, folderPath: nil, removeSourceAlbums: false))],
+            inventory: inventory)
+        #expect(!plan.steps.contains { if case .renameCollection = $0.operation { true } else { false } })
+        #expect(plan.steps.contains { $0.operation == .addAssets(album: .existing("a"), assets: ["2"]) })
+    }
+}
