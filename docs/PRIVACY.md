@@ -12,6 +12,9 @@ nach einem Neustart unlesbar, bis das iPhone einmal entsperrt wurde; stärker ge
 die Analyse auch nachts bei gesperrtem Gerät läuft).
 Es werden **keine Bildkopien** gespeichert. Wenige Einstellungen liegen in `UserDefaults`
 (Onboarding erledigt, Zahl der Gratis-Alben, Zeitpunkt des letzten Scans).
+Für Spotlight und Siri legt SORTLY im lokalen Spotlight-Index des iPhones nur Ländernamen mit
+Fotoanzahl und die Titel offener Vorschläge ab (kein erkannter Text, keine Bilder, keine
+Koordinaten). Der Index wird nach jeder Analyse ersetzt und ist nach „Analyse zurücksetzen“ leer.
 
 ### Datensparsamkeit beim erkannten Text
 Die Analyse liest den vollen Text, gespeichert wird nur eine verkleinerte Fassung
