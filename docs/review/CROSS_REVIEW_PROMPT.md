@@ -13,8 +13,8 @@ Ergebnisse versteht. Code-Beispiele für Korrekturen dürfen auf Englisch sein.
 
 ## Die App
 
-**Albumist** (Arbeitsname) sortiert die Fotos-Mediathek eines iPhones in Alben, vollständig auf
-dem Gerät. Sie erkennt Reisen, Länder und Orte, Screenshots, Dokumente und Messenger-Bilder,
+**Albumist** sortiert die Fotos-Mediathek eines iPhones in Alben, vollständig auf dem Gerät
+(im Code heißen Ordner und Module noch nach dem alten Arbeitsnamen „Sortly“). Sie erkennt Reisen, Länder und Orte, Screenshots, Dokumente und Messenger-Bilder,
 schlägt dafür Alben vor, vergleicht mit vorhandenen Alben und legt Alben erst nach Vorschau
 und Bestätigung an. Dazu gibt es einen Reise-Atlas (Weltkarte mit besuchten Ländern),
 Suche, Siri/Kurzbefehle und Spotlight.
