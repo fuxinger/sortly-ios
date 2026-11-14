@@ -117,7 +117,12 @@ public actor InMemoryPhotoLibrary: PhotoLibraryWriting {
         try countWrite()
         guard let c = inventory[id] else { return }
         if let parent = c.parentID, var p = inventory[parent] { p.childIDs.removeAll { $0 == id }; inventory.upsert(p) }
-        inventory.remove(id)
+        // Like Photos: deleting a folder deletes the albums and folders inside it as well.
+        var doomed = [id]
+        while let next = doomed.popLast() {
+            doomed.append(contentsOf: inventory.collections.values.filter { $0.parentID == next }.map(\.id))
+            inventory.remove(next)
+        }
         try finishWrite()
         // Media are untouched – exactly like PhotoKit.
     }

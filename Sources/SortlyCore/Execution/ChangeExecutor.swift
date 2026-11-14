@@ -212,6 +212,10 @@ public actor ChangeExecutor {
 
         case .deleteCollection(let id, _):
             let inventory = try await library.currentInventory()
+            // Never delete a folder that is not empty: Photos would delete its contents too.
+            if inventory.collections.values.contains(where: { $0.parentID == id }) {
+                return .failed(reason: "folder is not empty")
+            }
             if inventory[id] != nil { try await library.deleteCollection(id) }
             guard (try await library.currentInventory())[id] == nil else { return .failed(reason: "deletion could not be verified") }
             return .succeeded(createdID: nil, verifiedAt: now)
@@ -317,12 +321,18 @@ public struct UndoPlanner: Sendable {
             let removable = album.assetIDs.intersection(ours).sorted()
             if !removable.isEmpty { append(.removeAssets(album: albumID, assets: removable)) }
         }
-        // 4. Folders we created, deepest first, if they end up empty.
-        let deletedAlbums = Set(steps.compactMap { if case .deleteCollection(let id, _) = $0.operation { return id }; return nil })
+        // 4. Folders we created, deepest first, only if nothing else is left inside. Deleting a
+        //    folder in Photos also deletes everything in it, so a folder that still holds any
+        //    album or folder (the user's own, or one from a later plan) is always kept, and
+        //    so are all folders above it.
+        var goingAway = Set(steps.compactMap { if case .deleteCollection(let id, _) = $0.operation { return id }; return nil })
         for folderID in createdFolders.reversed() {
             guard let folder = current[folderID] else { continue }
-            let remainingChildren = current.collections.values.filter { $0.parentID == folderID && !deletedAlbums.contains($0.id) && !createdFolders.contains($0.id) }
-            if remainingChildren.isEmpty { append(.deleteCollection(folderID, title: folder.title)) }
+            let keepsSomething = current.collections.values.contains { $0.parentID == folderID && !goingAway.contains($0.id) }
+            if !keepsSomething {
+                append(.deleteCollection(folderID, title: folder.title))
+                goingAway.insert(folderID)
+            }
         }
 
         return ChangePlan(

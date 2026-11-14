@@ -228,6 +228,48 @@ struct PlanningExecutionTests {
         #expect(await library.assets == allAssets)
     }
 
+    /// Undo of an older plan must never delete a folder that still holds other albums: in
+    /// Photos, deleting a folder deletes everything inside it (review finding, 14.11.2026).
+    @Test func undoKeepsFoldersThatStillHoldOtherAlbums() async throws {
+        let library = InMemoryPhotoLibrary(assets: allAssets)
+        let first = [ConfirmedProposal(proposal: proposal("i", .trip, "Italien 2024", ["Reisen"], ids("a", 0..<10)), decision: .createNew(title: nil, folderPath: nil))]
+        let plan1 = confirmed(planner.makePlan(from: first, inventory: try await library.currentInventory()))
+        let executed1 = try await ChangeExecutor(library: library, store: InMemoryPlanStore()).execute(plan1)
+        // A later plan puts another trip into the same "Reisen" folder …
+        let second = [ConfirmedProposal(proposal: proposal("f", .trip, "Frankreich 2025", ["Reisen"], ids("a", 20..<30)), decision: .createNew(title: nil, folderPath: nil))]
+        let plan2 = confirmed(planner.makePlan(from: second, inventory: try await library.currentInventory()))
+        _ = try await ChangeExecutor(library: library, store: InMemoryPlanStore()).execute(plan2)
+        // … and the user moves an own album into it.
+        let reisen = try #require(try await library.currentInventory().collections.values.first { $0.title == "Reisen" }?.id)
+        await library.userEdit { inv in
+            inv.upsert(CollectionSnapshot(id: "familie", title: "Familie", parentID: reisen, assetIDs: ids("a", 50..<55)))
+        }
+
+        let undo = confirmed(UndoPlanner().undoPlan(for: executed1, current: try await library.currentInventory()))
+        let undone = try await ChangeExecutor(library: library, store: InMemoryPlanStore()).execute(undo)
+        #expect(undone.status == .completed)
+        let inv = try await library.currentInventory()
+        #expect(inv.albums.first { $0.title == "Italien 2024" } == nil)
+        #expect(inv["familie"]?.assetIDs == ids("a", 50..<55))
+        #expect(inv.albums.contains { $0.title == "Frankreich 2025" })
+        #expect(inv[reisen] != nil)
+        #expect(inv.collections.values.contains { $0.title == "Albumist" && $0.kind == .folder })
+    }
+
+    @Test func executorRefusesToDeleteAFolderThatIsNotEmpty() async throws {
+        let folder = CollectionSnapshot(id: "f", title: "Ordner", kind: .folder)
+        let inside = CollectionSnapshot(id: "x", title: "Eigenes Album", parentID: "f", assetIDs: ids("a", 0..<3))
+        let library = InMemoryPhotoLibrary(assets: allAssets, collections: [folder, inside])
+        var plan = ChangePlan(id: SortlyID("del"), createdAt: Date(), confirmedAt: Date(), status: .confirmed, baseline: [:],
+                              baselineCollectionIDs: ["f", "x"],
+                              steps: [PlanStep(id: "d", operation: .deleteCollection("f", title: "Ordner"), sourceID: nil)],
+                              conflicts: [], notes: [], resolvedKeys: [:])
+        plan.status = .confirmed
+        let result = try await ChangeExecutor(library: library, store: InMemoryPlanStore()).execute(plan)
+        #expect(result.status != PlanStatus.completed)
+        #expect(try await library.currentInventory()["x"] != nil)
+    }
+
     @Test func managedAlbumsAreRecordedAndCanBeRemovedAgain() async throws {
         let existing = CollectionSnapshot(id: "sommer", title: "Sommerurlaub", assetIDs: ids("a", 0..<5))
         let library = InMemoryPhotoLibrary(assets: allAssets, collections: [existing])
