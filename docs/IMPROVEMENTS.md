@@ -54,7 +54,7 @@ Quellen: **E1** Expertenrunde 14.11.2026 (Tempo, Oberfläche, Technik, Produkt) 
 | 🔜 | Ein Fortschrittsbalken über alle Schritte statt Neustart bei jeder Stufe. | S | E1 Oberfläche |
 | ✅ | Zoom-Übergang vom Vorschaubild ins Foto. | S | E1 Oberfläche, U |
 | 💡 | Kontextmenüs und Wischaktionen. | M | E1 Oberfläche |
-| 💡 | Suche: Treffer antippbar, für VoiceOver lesbar, „Als Album anlegen“. | S | E1 Oberfläche |
+| ✅ | Suche: Treffer antippbar (mit Zoom), für VoiceOver lesbar, „Als Album anlegen“. | S | E1 Oberfläche |
 | 💡 | „Analyse aktuell“ nur anzeigen, wenn es stimmt; neue Fotos beim Öffnen erkennen. | M | E1 Oberfläche |
 | 💡 | Einheitliche Wörter: „Auswählen“ und „Alben anlegen“, überall „sortiert“. | S | E1 Oberfläche |
 | 💡 | iPad: Inhalte nicht über die ganze Breite ziehen, Liste und Detail nebeneinander. | M | E1 Oberfläche |

@@ -5302,6 +5302,16 @@
           }
         }
       }
+    },
+    "Als Album anlegen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save as Album"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

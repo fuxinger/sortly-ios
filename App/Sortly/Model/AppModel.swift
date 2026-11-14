@@ -48,7 +48,7 @@ final class AppModel {
     var snapshot: ProposalSnapshot?
     var decisions: [SortlyID: ProposalDecision] = [:]
     var userTitles: [SortlyID: String] = [:]
-    var facts: [AssetFacts] = [] { didSet { bucketCache = [:]; atlasCache = [:]; atlasYearsCache = nil; countryCache = [:]; datesCache = nil } }
+    var facts: [AssetFacts] = [] { didSet { bucketCache = [:]; atlasCache = [:]; atlasYearsCache = nil; countryCache = [:]; datesCache = nil; factsIndex = nil } }
     var states: [AssetID: AssetOrganizationState] = [:] { didSet { bucketCache = [:] } }
     /// Filtered and sorted library buckets; rebuilt only when facts or states change, not on
     /// every redraw of the library (a selection tap redraws it).
@@ -77,6 +77,16 @@ final class AppModel {
 
     @ObservationIgnored private var countryCache: [String: CountryPhotos] = [:]
     @ObservationIgnored private var datesCache: [AssetID: Date]?
+    @ObservationIgnored private var factsIndex: [AssetID: AssetFacts]?
+
+    /// Facts by photo id (search hits, photo view).
+    var factsByID: [AssetID: AssetFacts] {
+        access(keyPath: \.facts)
+        if let factsIndex { return factsIndex }
+        let index = Dictionary(facts.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+        factsIndex = index
+        return index
+    }
 
     /// Capture date of every photo, for time-ordered previews.
     var creationDates: [AssetID: Date] {

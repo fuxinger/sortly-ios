@@ -9,6 +9,9 @@ struct SearchView: View {
     @State private var tokens: [SearchToken] = []
     @State private var results: [AssetID] = []
     @State private var searching = false
+    @State private var detail: AssetFacts?
+    @State private var addingToAlbum: [AssetID]?
+    @Namespace private var zoom
 
     private let examples: [String] = ["Strand 2024", "Italien", "Rechnungen", "Videos", "Nicht sortiert", "Screenshots Bestellung"]
 
@@ -46,10 +49,27 @@ struct SearchView: View {
                     } else if results.isEmpty {
                         ContentUnavailableView.search(text: query)
                     } else {
-                        Text("\(results.count.formatted()) Treffer").font(.footnote).foregroundStyle(.secondary).monospacedDigit()
+                        HStack {
+                            Text("\(results.count.formatted()) Treffer").font(.footnote).foregroundStyle(.secondary).monospacedDigit()
+                            Spacer()
+                            // The search becomes an album in Photos (through the normal preview).
+                            Button("Als Album anlegen") { addingToAlbum = Array(results.prefix(2000)) }
+                                .font(.footnote.weight(.semibold))
+                        }
                         LazyVGrid(columns: [GridItem(.adaptive(minimum: 96), spacing: 3)], spacing: 3) {
                             ForEach(results.prefix(2000), id: \.self) { id in
-                                AssetThumbnail(id: id, side: 110).aspectRatio(1, contentMode: .fill)
+                                let hit = model.factsByID[id]
+                                Button {
+                                    detail = hit
+                                } label: {
+                                    AssetThumbnail(id: id, side: 110)
+                                        .aspectRatio(1, contentMode: .fill)
+                                        .matchedTransitionSource(id: id, in: zoom)
+                                        .contentShape(Rectangle())
+                                }
+                                .buttonStyle(.plain)
+                                .disabled(hit == nil)
+                                .accessibilityLabel(Text(hit?.asset.creationDate?.formatted(date: .abbreviated, time: .shortened) ?? String(localized: "Foto")))
                             }
                         }
                         .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.tile, style: .continuous))
@@ -60,6 +80,13 @@ struct SearchView: View {
         }
         .background(Theme.background)
         .navigationTitle("Suche")
+        .sheet(item: $detail) { facts in
+            AssetDetailView(facts: facts) { addingToAlbum = [facts.id] }
+                .navigationTransition(.zoom(sourceID: facts.id, in: zoom))
+        }
+        .sheet(isPresented: Binding(get: { addingToAlbum != nil }, set: { if !$0 { addingToAlbum = nil } })) {
+            AddToAlbumSheet(assets: addingToAlbum ?? []) {}
+        }
         .searchable(text: $query, prompt: SmartAssistant.isAvailable ? Text("z. B. Grillen bei Oma letzten Sommer") : Text("z. B. Hunde Italien 2023"))
         .task(id: query) {
             let text = query
