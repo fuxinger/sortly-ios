@@ -3536,6 +3536,56 @@
           }
         }
       }
+    },
+    "Alle Jahre" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All Years"
+          }
+        }
+      }
+    },
+    "Neu" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New"
+          }
+        }
+      }
+    },
+    "%lld zum ersten Mal besucht" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld visited for the first time"
+          }
+        }
+      }
+    },
+    "Mein Reisejahr %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "My Travel Year %@"
+          }
+        }
+      }
+    },
+    "davon %lld zum ersten Mal · %lld von 7 Kontinenten" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld of them for the first time · %2$lld of 7 continents"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

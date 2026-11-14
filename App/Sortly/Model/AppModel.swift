@@ -41,13 +41,34 @@ final class AppModel {
 
     var phase: Phase = .loading
     var access: LibraryAccess = .notDetermined
-    var settings = OrganizationSettings()
+    var settings = OrganizationSettings() { didSet { bucketCache = [:] } }
     var analysis = AnalysisState()
     var snapshot: ProposalSnapshot?
     var decisions: [SortlyID: ProposalDecision] = [:]
     var userTitles: [SortlyID: String] = [:]
-    var facts: [AssetFacts] = []
-    var states: [AssetID: AssetOrganizationState] = [:]
+    var facts: [AssetFacts] = [] { didSet { bucketCache = [:]; atlasCache = [:]; atlasYearsCache = nil } }
+    var states: [AssetID: AssetOrganizationState] = [:] { didSet { bucketCache = [:] } }
+    /// Filtered and sorted library buckets; rebuilt only when facts or states change, not on
+    /// every redraw of the library (a selection tap redraws it).
+    @ObservationIgnored private var bucketCache: [InboxBucket: [AssetFacts]] = [:]
+    /// The atlas is shown on the overview, which redraws often during an analysis.
+    @ObservationIgnored private var atlasCache: [Int: TravelAtlas] = [:]
+    @ObservationIgnored private var atlasYearsCache: [Int]?
+
+    /// Travel atlas for all years (`nil`) or one calendar year; computed once per facts change.
+    func travelAtlas(year: Int? = nil) -> TravelAtlas {
+        if let cached = atlasCache[year ?? 0] { return cached }
+        let atlas = TravelAtlas.compute(facts: facts, year: year)
+        atlasCache[year ?? 0] = atlas
+        return atlas
+    }
+
+    var atlasYears: [Int] {
+        if let cached = atlasYearsCache { return cached }
+        let years = TravelAtlas.years(facts: facts)
+        atlasYearsCache = years
+        return years
+    }
     var progress = OrganizationStatusResolver.Progress()
     var inventory = CollectionInventory()
     var mergeSuggestions: [AlbumOverlapAnalyzer.MergeSuggestion] = []
@@ -417,12 +438,15 @@ final class AppModel {
     // MARK: Library and search
 
     func bucketMembers(_ bucket: InboxBucket) -> [AssetFacts] {
+        if let cached = bucketCache[bucket] { return cached }
         let resolver = resolver
-        return facts.filter { f in
+        let members = facts.filter { f in
             guard let state = states[f.id] else { return bucket == .all }
             return resolver.buckets(state).contains(bucket)
         }
         .sorted { ($0.asset.creationDate ?? .distantPast) > ($1.asset.creationDate ?? .distantPast) }
+        bucketCache[bucket] = members
+        return members
     }
 
     func ignore(_ assets: [AssetID]) {

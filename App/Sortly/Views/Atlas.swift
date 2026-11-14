@@ -93,16 +93,19 @@ struct AtlasView: View {
     @State private var storyScope: PhotoStory.Scope = .trips
     @State private var writing = false
     @State private var sharing = false
+    /// nil = all years.
+    @State private var year: Int?
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    private var atlas: TravelAtlas { TravelAtlas.compute(facts: model.facts) }
+    private var atlas: TravelAtlas { model.travelAtlas(year: year) }
 
     var body: some View {
         let atlas = atlas
         let order = atlas.countriesByFirstVisit
         ScrollView {
             VStack(alignment: .leading, spacing: Theme.Spacing.l) {
-                AtlasContent(atlas: atlas, outlines: outlines, revealed: revealed)
+                if model.atlasYears.count > 1 { yearPicker }
+                AtlasContent(atlas: atlas, outlines: outlines, revealed: min(revealed, order.count))
                 if SmartAssistant.isAvailable && !model.facts.isEmpty {
                     storySection(atlas)
                 }
@@ -118,6 +121,10 @@ struct AtlasView: View {
                     .accessibilityLabel("Reise-Atlas teilen")
                     .disabled(order.isEmpty)
             }
+        }
+        .onChange(of: year) {
+            // Switching the year shows the result at once (no fill animation).
+            revealed = atlas.countriesByFirstVisit.count
         }
         .sheet(isPresented: $sharing) {
             ShareCardSheet(atlas: atlas, sortedPhotos: model.progress.fully, map: model.worldMap)
@@ -137,6 +144,34 @@ struct AtlasView: View {
 }
 
 extension AtlasView {
+    /// "Alle Jahre" plus every year with travel photos, for a yearly review ("Mein Reisejahr").
+    var yearPicker: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: Theme.Spacing.s) {
+                yearChip(nil)
+                ForEach(model.atlasYears, id: \.self) { yearChip($0) }
+            }
+        }
+        .scrollClipDisabled()
+    }
+
+    private func yearChip(_ value: Int?) -> some View {
+        let selected = value == year
+        return Button {
+            withAnimation(.snappy) { year = value }
+        } label: {
+            Group {
+                if let value { Text(verbatim: String(value)) } else { Text("Alle Jahre") }
+            }
+            .font(.subheadline.weight(.semibold))
+            .padding(.horizontal, 14).padding(.vertical, 8)
+            .background(selected ? Theme.accent : Theme.card, in: Capsule())
+            .foregroundStyle(selected ? Color.white : Color.primary)
+        }
+        .buttonStyle(.plain)
+        .accessibilityAddTraits(selected ? .isSelected : [])
+    }
+
     @ViewBuilder
     func storySection(_ atlas: TravelAtlas) -> some View {
         let years = PhotoStory.availableYears(model.facts)
@@ -214,6 +249,15 @@ struct AtlasContent: View {
                     }
                     Text("\(Int(atlas.worldShare * 100)) % der Welt · \(atlas.continents.count) von 7 Kontinenten")
                         .font(.subheadline).foregroundStyle(.secondary)
+                    if atlas.year != nil && !atlas.newCountryCodes.isEmpty {
+                        Label {
+                            Text("\(atlas.newCountryCodes.count) zum ersten Mal besucht")
+                        } icon: {
+                            Image(systemName: "sparkles")
+                        }
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(Theme.accent)
+                    }
                 }
                 .accessibilityElement(children: .combine)
             }
@@ -221,7 +265,7 @@ struct AtlasContent: View {
             LazyVGrid(columns: [GridItem(.flexible(), spacing: Theme.Spacing.m), GridItem(.flexible())], spacing: Theme.Spacing.m) {
                 tile("building.2.fill", atlas.cityCount.formatted(), "Städte")
                 tile("airplane", atlas.tripCount.formatted(), "Reisen")
-                if let year = atlas.sinceYear { tile("calendar", String(year), "unterwegs seit") }
+                if atlas.year == nil, let year = atlas.sinceYear { tile("calendar", String(year), "unterwegs seit") }
                 if let days = atlas.longestTripDays { tile("clock.fill", "\(days)", days == 1 ? "Tag längste Reise" : "Tage längste Reise") }
             }
 
@@ -239,7 +283,12 @@ struct AtlasContent: View {
                             Text(TravelAtlas.flag(code)).font(.title2)
                             Text(AtlasStyle.countryName(code))
                             Spacer()
-                            if let date = atlas.firstVisits[code] {
+                            if atlas.newCountryCodes.contains(code) {
+                                Text("Neu").font(.caption.weight(.semibold))
+                                    .padding(.horizontal, 8).padding(.vertical, 3)
+                                    .background(Theme.accent.opacity(0.15), in: Capsule())
+                                    .foregroundStyle(Theme.accent)
+                            } else if let date = atlas.firstVisits[code] {
                                 Text(String(Calendar.current.component(.year, from: date)))
                                     .monospacedDigit().foregroundStyle(.secondary)
                             }
@@ -275,7 +324,7 @@ struct AtlasTeaser: View {
     @State private var outlines: [AtlasOutlines.Country] = []
 
     var body: some View {
-        let atlas = TravelAtlas.compute(facts: model.facts)
+        let atlas = model.travelAtlas()
         if !atlas.countryCodes.isEmpty {
             NavigationLink {
                 AtlasView()
@@ -327,9 +376,15 @@ struct ShareCard: View {
                 .frame(width: 720, height: 460)
             }
             VStack(alignment: .leading, spacing: 20) {
-                Text("Mein Reise-Atlas")
-                    .font(.system(size: 26, weight: .semibold))
-                    .foregroundStyle(AtlasStyle.visited)
+                Group {
+                    if let year = atlas.year {
+                        Text("Mein Reisejahr \(String(year))")
+                    } else {
+                        Text("Mein Reise-Atlas")
+                    }
+                }
+                .font(.system(size: 26, weight: .semibold))
+                .foregroundStyle(AtlasStyle.visited)
                 if order.isEmpty {
                     Text(sortedPhotos.formatted()).font(.system(size: 120, weight: .bold)).monospacedDigit()
                     Text("Fotos sortiert").font(.system(size: 38, weight: .semibold))
@@ -340,8 +395,13 @@ struct ShareCard: View {
                                 .minimumScaleFactor(0.5).lineLimit(1)
                             Text(order.count == 1 ? "Land" : "Länder").font(.system(size: 42, weight: .semibold))
                         }
-                        Text("\(Int(atlas.worldShare * 100)) % der Welt · \(atlas.continents.count) von 7 Kontinenten")
-                            .font(.system(size: 24, weight: .medium)).foregroundStyle(.secondary)
+                        if atlas.year != nil && !atlas.newCountryCodes.isEmpty {
+                            Text("davon \(atlas.newCountryCodes.count) zum ersten Mal · \(atlas.continents.count) von 7 Kontinenten")
+                                .font(.system(size: 24, weight: .medium)).foregroundStyle(.secondary)
+                        } else {
+                            Text("\(Int(atlas.worldShare * 100)) % der Welt · \(atlas.continents.count) von 7 Kontinenten")
+                                .font(.system(size: 24, weight: .medium)).foregroundStyle(.secondary)
+                        }
                     }
                     AtlasMap(outlines: outlines, highlighted: atlas.countryCodes)
                         .padding(.vertical, cover == nil ? 24 : 4)

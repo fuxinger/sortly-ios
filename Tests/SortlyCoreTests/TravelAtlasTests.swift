@@ -59,6 +59,27 @@ struct TravelAtlasTests {
         let cover = TravelAtlas.compute(facts: facts).favoriteTripCover
         #expect(cover != AssetID("a10") && cover != AssetID("a11") && cover != nil)
     }
+    @Test func yearAtlasShowsOnlyThatYearAndNewCountries() {
+        var utc = Calendar(identifier: .gregorian)
+        utc.timeZone = TimeZone(identifier: "UTC")!
+        func at(_ n: Int, _ country: String, _ year: Int) -> AssetFacts {
+            var f = fact(n, country: country, city: nil, day: 1, trip: nil)
+            f.asset.creationDate = utc.date(from: DateComponents(year: year, month: 5, day: 1, hour: 12))
+            return f
+        }
+        var facts: [AssetFacts] = []
+        for i in 0..<3 { facts.append(at(i, "IT", 2023)) }
+        for i in 3..<6 { facts.append(at(i, "IT", 2024)) }
+        for i in 6..<9 { facts.append(at(i, "ES", 2024)) }
+        facts.append(at(9, "PT", 2022)) // below the minimum
+        #expect(TravelAtlas.years(facts: facts, calendar: utc) == [2024, 2023])
+        let y2024 = TravelAtlas.compute(facts: facts, year: 2024, calendar: utc)
+        #expect(y2024.year == 2024)
+        #expect(y2024.countryCodes == ["IT", "ES"])
+        #expect(y2024.newCountryCodes == ["ES"])
+        let all = TravelAtlas.compute(facts: facts, year: nil, calendar: utc)
+        #expect(all.year == nil && all.countryCodes == ["IT", "ES"] && all.newCountryCodes.isEmpty)
+    }
 }
 
 @Suite("Photo story facts")
@@ -88,4 +109,5 @@ struct PhotoStoryTests {
         #expect(PhotoStory.facts(.year(2001), facts: facts, calendar: utc).isEmpty)
         #expect(!PhotoStory.facts(.all, facts: facts, calendar: utc).isEmpty)
     }
+
 }

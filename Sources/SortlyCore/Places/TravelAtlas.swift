@@ -25,6 +25,10 @@ public struct TravelAtlas: Hashable, Sendable {
     public var firstVisits: [String: Date] = [:]
     /// All trips, oldest first (main town or country of each trip).
     public var trips: [TripSummary] = []
+    /// Set when the atlas covers one calendar year only ("Mein Reisejahr 2025").
+    public var year: Int?
+    /// In a year atlas: countries visited for the very first time in that year.
+    public var newCountryCodes: Set<String> = []
 
     public var continents: Set<Continent> { Set(countryCodes.compactMap(Continent.forCountryCode)) }
     /// Share of the 195 UN-recognized states (rounded down to whole percent in the UI).
@@ -111,5 +115,28 @@ public struct TravelAtlas: Hashable, Sendable {
                 .id
         }
         return atlas
+    }
+
+    /// Atlas for one calendar year, with the countries that were new in that year.
+    public static func compute(facts: [AssetFacts], year: Int?, minimumPhotosPerCountry: Int = 3, calendar: Calendar = .current) -> TravelAtlas {
+        guard let year else { return compute(facts: facts, minimumPhotosPerCountry: minimumPhotosPerCountry, calendar: calendar) }
+        let inYear = facts.filter { f in f.asset.creationDate.map { calendar.component(.year, from: $0) == year } ?? false }
+        var atlas = compute(facts: inYear, minimumPhotosPerCountry: minimumPhotosPerCountry, calendar: calendar)
+        atlas.year = year
+        let allTime = compute(facts: facts, minimumPhotosPerCountry: minimumPhotosPerCountry, calendar: calendar)
+        atlas.newCountryCodes = atlas.countryCodes.filter { code in
+            allTime.firstVisits[code].map { calendar.component(.year, from: $0) == year } ?? false
+        }
+        return atlas
+    }
+
+    /// Years with photos from at least one country, newest first (for the year picker).
+    public static func years(facts: [AssetFacts], minimumPhotosPerCountry: Int = 3, calendar: Calendar = .current) -> [Int] {
+        var counts: [Int: [String: Int]] = [:]
+        for f in facts {
+            guard let code = f.place?.isoCountryCode, let date = f.asset.creationDate else { continue }
+            counts[calendar.component(.year, from: date), default: [:]][code, default: 0] += 1
+        }
+        return counts.filter { $0.value.values.contains { $0 >= minimumPhotosPerCountry } }.keys.sorted(by: >)
     }
 }
