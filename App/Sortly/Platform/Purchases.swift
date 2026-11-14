@@ -19,7 +19,7 @@ final class Purchases {
     private(set) var isPurchasing = false
     var lastError: String?
 
-    /// Albums created or extended so far (never decreases, also not by undo).
+    /// Albums created or extended so far. A completed undo gives its albums back.
     private(set) var albumsUsed: Int = UserDefaults.standard.integer(forKey: Purchases.usedKey)
 
     private var updates: Task<Void, Never>?
@@ -35,6 +35,13 @@ final class Purchases {
     func recordUsage(albums: Int) {
         guard albums > 0 else { return }
         albumsUsed += albums
+        UserDefaults.standard.set(albumsUsed, forKey: Self.usedKey)
+    }
+
+    /// After an undo the albums are gone again, so they do not count as used.
+    func returnUsage(albums: Int) {
+        guard albums > 0 else { return }
+        albumsUsed = max(0, albumsUsed - albums)
         UserDefaults.standard.set(albumsUsed, forKey: Self.usedKey)
     }
 

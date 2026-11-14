@@ -191,19 +191,27 @@ struct ResultCard: View {
     var body: some View {
         let summary = plan.summary
         let failed = plan.steps.filter { if case .failed = $0.state { true } else { false } }.count
+        let isUndo = plan.reverts != nil
         Card {
             VStack(spacing: Theme.Spacing.s) {
-                Image(systemName: failed == 0 ? "checkmark.circle.fill" : "exclamationmark.circle.fill")
+                Image(systemName: failed > 0 ? "exclamationmark.circle.fill" : isUndo ? "arrow.uturn.backward.circle.fill" : "checkmark.circle.fill")
                     .font(.system(size: 56))
                     .foregroundStyle(failed == 0 ? Theme.accent : Theme.tint(for: .documents))
                     .symbolEffect(.bounce, value: appeared)
                     .accessibilityHidden(true)
-                Text(failed == 0 ? "Fertig" : "Teilweise fertig").font(.title2.weight(.bold))
+                Text(isUndo ? (failed == 0 ? "Rückgängig gemacht" : "Teilweise rückgängig gemacht") : (failed == 0 ? "Fertig" : "Teilweise fertig"))
+                    .font(.title2.weight(.bold))
                     .accessibilityAddTraits(.isHeader)
-                Text(Counted.join([String(localized: "\(summary.newAlbums) neue Alben"), String(localized: "\(summary.extendedAlbums) ergänzt"),
-                                   String(localized: "\(summary.distinctAssets) Fotos einsortiert")], separator: ", ") + ".")
-                    .font(.subheadline)
-                    .multilineTextAlignment(.center)
+                Group {
+                    if isUndo {
+                        Text("Albumist hat seine Alben und Zuordnungen wieder entfernt. Deine Fotos sind unverändert.")
+                    } else {
+                        Text(Counted.join([String(localized: "\(summary.newAlbums) neue Alben"), String(localized: "\(summary.extendedAlbums) ergänzt"),
+                                           String(localized: "\(summary.distinctAssets) Fotos einsortiert")], separator: ", ") + ".")
+                    }
+                }
+                .font(.subheadline)
+                .multilineTextAlignment(.center)
                 if failed > 0 {
                     Text("\(failed) Schritte konnten nicht ausgeführt werden. Sie werden beim nächsten Durchgang erneut versucht.")
                         .font(.footnote).foregroundStyle(.secondary)
@@ -216,8 +224,10 @@ struct ResultCard: View {
                 Button("In Fotos ansehen") { openURL(photos) }
                     .buttonStyle(PrimaryButtonStyle())
             }
-            Button("Rückgängig machen") { confirmUndo = true }
-                .buttonStyle(SecondaryButtonStyle())
+            if !isUndo && !model.undonePlans.contains(plan.id) {
+                Button("Rückgängig machen") { confirmUndo = true }
+                    .buttonStyle(SecondaryButtonStyle())
+            }
         }
         .onAppear { appeared = true }
         .task {

@@ -220,6 +220,9 @@ struct PlanningExecutionTests {
         let undo = confirmed(UndoPlanner().undoPlan(for: executed, current: try await library.currentInventory()))
         let undone = try await ChangeExecutor(library: library, store: InMemoryPlanStore()).execute(undo)
         #expect(undone.status == .completed)
+        // The undo run remembers which plan it took back (history shows it as undone).
+        #expect(undone.reverts == executed.id)
+        #expect(executed.reverts == nil)
         let inv = try await library.currentInventory()
         #expect(inv["sommer"]?.title == "Sommerurlaub")
         #expect(inv["sommer"]?.assetIDs == ids("a", 0..<5))

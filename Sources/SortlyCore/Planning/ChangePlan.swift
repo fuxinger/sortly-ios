@@ -112,6 +112,8 @@ public struct ChangePlan: Hashable, Sendable, Codable, Identifiable {
     public var notes: [PlanNote]
     /// Planned key → created collection id, filled during execution.
     public var resolvedKeys: [String: CollectionID]
+    /// Set on an undo plan: the plan whose changes it takes back.
+    public var reverts: SortlyID? = nil
 
     public var summary: PlanSummary { PlanSummary(self) }
 }

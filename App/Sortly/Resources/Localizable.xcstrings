@@ -1591,16 +1591,6 @@
         }
       }
     },
-    "Die Analyse läuft immer auf deinem iPhone. Für genauere Orte sendet iOS nur Koordinaten an Apple, keine Fotos. Aus iCloud werden nur Screenshots und Dokumente geladen, nie Videos, und nur im WLAN, wenn du nichts anderes einstellst." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The analysis always runs on your iPhone. For more precise places, iOS sends only coordinates to Apple, never photos. Only screenshots and documents are downloaded from iCloud, never videos, and only over Wi‑Fi unless you choose otherwise."
-          }
-        }
-      }
-    },
     "Die Analyse läuft immer über die ganze Mediathek. Für den ersten Durchgang kann Albumist die Vorschläge aber auf ein Jahr beschränken, damit du das Ergebnis in Ruhe prüfen kannst." : {
       "localizations" : {
         "en" : {
@@ -4737,6 +4727,136 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sorting photos"
+          }
+        }
+      }
+    },
+    "Die Analyse läuft immer auf deinem Gerät. Für genauere Orte sendet iOS nur Koordinaten an Apple, keine Fotos. Aus iCloud werden nur Screenshots und Dokumente geladen, nie Videos, und nur im WLAN, wenn du nichts anderes einstellst." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The analysis always runs on your device. For more precise places, iOS sends only coordinates to Apple, never photos. Only screenshots and documents are downloaded from iCloud, never videos, and only over Wi‑Fi unless you choose otherwise."
+          }
+        }
+      }
+    },
+    "Rückgängig gemacht" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Undone"
+          }
+        }
+      }
+    },
+    "Teilweise rückgängig gemacht" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Partly Undone"
+          }
+        }
+      }
+    },
+    "Albumist hat seine Alben und Zuordnungen wieder entfernt. Deine Fotos sind unverändert." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Albumist removed its albums and assignments again. Your photos are unchanged."
+          }
+        }
+      }
+    },
+    "Deine Fotos bleiben auf deinem Gerät. Albumist hat keinen Server, kein Konto, keine Werbung und kein Tracking." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your photos stay on your device. Albumist has no server, no account, no ads and no tracking."
+          }
+        }
+      }
+    },
+    "Was Albumist speichert" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What Albumist Stores"
+          }
+        }
+      }
+    },
+    "Eine kleine Datenbank auf deinem Gerät: Datum, Ort und Analyseergebnisse deiner Fotos sowie deine Entscheidungen. Keine Bildkopien. Sie ist verschlüsselt und nicht im iCloud-Backup." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A small database on your device: the date, place and analysis results of your photos, and your decisions. No copies of images. It is encrypted and not part of your iCloud backup."
+          }
+        }
+      }
+    },
+    "Ausweise und medizinische Dokumente werden nicht als Text gespeichert. IBANs und Kartennummern werden unkenntlich gemacht." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Text from ID cards and medical documents is never stored. IBANs and card numbers are masked."
+          }
+        }
+      }
+    },
+    "Was dein Gerät verlässt" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What Leaves Your Device"
+          }
+        }
+      }
+    },
+    "Nur wenn „Orte online genauer bestimmen“ eingeschaltet ist, schickt iOS Koordinaten an Apple, um Ortsnamen zu finden. Fotos verlassen dein Gerät nie." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Only when “Refine places online” is on, iOS sends coordinates to Apple to find place names. Photos never leave your device."
+          }
+        }
+      }
+    },
+    "Käufe laufen über Apple. Albumist sieht keine Zahlungsdaten." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Purchases are handled by Apple. Albumist never sees payment details."
+          }
+        }
+      }
+    },
+    "Löschen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deleting"
+          }
+        }
+      }
+    },
+    "„Analyse neu aufbauen“ löscht alle Analysedaten. Wenn du die App löschst, ist alles weg. Deine Alben in Fotos bleiben." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“Rebuild analysis” deletes all analysis data. Deleting the app removes everything. Your albums in Photos stay."
           }
         }
       }

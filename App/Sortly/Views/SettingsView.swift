@@ -62,7 +62,7 @@ struct SettingsView: View {
             } header: {
                 Text("Datenschutz")
             } footer: {
-                Text("Die Analyse läuft immer auf deinem iPhone. Für genauere Orte sendet iOS nur Koordinaten an Apple, keine Fotos. Aus iCloud werden nur Screenshots und Dokumente geladen, nie Videos, und nur im WLAN, wenn du nichts anderes einstellst.")
+                Text("Die Analyse läuft immer auf deinem Gerät. Für genauere Orte sendet iOS nur Koordinaten an Apple, keine Fotos. Aus iCloud werden nur Screenshots und Dokumente geladen, nie Videos, und nur im WLAN, wenn du nichts anderes einstellst.")
             }
 
             Section("Verlauf") {
@@ -85,8 +85,21 @@ struct SettingsView: View {
                     Label("Freigeschaltet", systemImage: "checkmark.seal.fill").foregroundStyle(Theme.accent)
                 } else {
                     LabeledContent("Noch kostenlos", value: "\(purchases.remainingFreeAlbums) Alben")
+                    Button {
+                        Task { await purchases.purchase() }
+                    } label: {
+                        if let product = purchases.product {
+                            Text("Freischalten für \(product.displayPrice)")
+                        } else {
+                            Text("Freischalten")
+                        }
+                    }
+                    .disabled(purchases.isPurchasing)
                     Button("Kauf wiederherstellen") { Task { await purchases.restore() } }
                     Button("Code einlösen") { redeeming = true }
+                    if let error = purchases.lastError {
+                        Text(error).font(.footnote).foregroundStyle(.red)
+                    }
                 }
             }
             .offerCodeRedemption(isPresented: $redeeming) { _ in
@@ -100,6 +113,7 @@ struct SettingsView: View {
             #endif
 
             Section("Über") {
+                NavigationLink("Datenschutz") { PrivacyView() }
                 LabeledContent("Version", value: AppInfo.version)
                 Text("Kartendaten: Natural Earth (gemeinfrei). Ortsnamen online: Apple.")
                     .font(.footnote).foregroundStyle(.secondary)
@@ -149,7 +163,10 @@ struct HistoryRow: View {
                     .font(.footnote).foregroundStyle(.secondary)
             }
             Spacer()
-            if plan.status == .completed || plan.status == .completedWithErrors {
+            if model.undonePlans.contains(plan.id) {
+                Text("Rückgängig gemacht")
+                    .font(.subheadline).foregroundStyle(.secondary)
+            } else if plan.status == .completed || plan.status == .completedWithErrors {
                 Button("Rückgängig") { confirmUndo = true }
                     .font(.subheadline)
                     .disabled(model.execution.isRunning)
@@ -165,5 +182,29 @@ struct HistoryRow: View {
         } message: {
             Text("Alben und Zuordnungen von Albumist werden entfernt. Deine Fotos bleiben unverändert.")
         }
+    }
+}
+
+/// The privacy policy in plain words, readable without a network connection.
+struct PrivacyView: View {
+    var body: some View {
+        List {
+            Section {
+                Text("Deine Fotos bleiben auf deinem Gerät. Albumist hat keinen Server, kein Konto, keine Werbung und kein Tracking.")
+            }
+            Section("Was Albumist speichert") {
+                Text("Eine kleine Datenbank auf deinem Gerät: Datum, Ort und Analyseergebnisse deiner Fotos sowie deine Entscheidungen. Keine Bildkopien. Sie ist verschlüsselt und nicht im iCloud-Backup.")
+                Text("Ausweise und medizinische Dokumente werden nicht als Text gespeichert. IBANs und Kartennummern werden unkenntlich gemacht.")
+            }
+            Section("Was dein Gerät verlässt") {
+                Text("Nur wenn „Orte online genauer bestimmen“ eingeschaltet ist, schickt iOS Koordinaten an Apple, um Ortsnamen zu finden. Fotos verlassen dein Gerät nie.")
+                Text("Käufe laufen über Apple. Albumist sieht keine Zahlungsdaten.")
+            }
+            Section("Löschen") {
+                Text("„Analyse neu aufbauen“ löscht alle Analysedaten. Wenn du die App löschst, ist alles weg. Deine Alben in Fotos bleiben.")
+            }
+        }
+        .navigationTitle("Datenschutz")
+        .navigationBarTitleDisplayMode(.inline)
     }
 }

@@ -345,7 +345,8 @@ public struct UndoPlanner: Sendable {
             steps: steps,
             conflicts: [],
             notes: notes,
-            resolvedKeys: [:]
+            resolvedKeys: [:],
+            reverts: executed.id
         )
     }
 }

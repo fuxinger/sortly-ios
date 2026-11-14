@@ -95,7 +95,11 @@ final class AppModel {
     var progress = OrganizationStatusResolver.Progress()
     var inventory = CollectionInventory()
     var mergeSuggestions: [AlbumOverlapAnalyzer.MergeSuggestion] = []
+    /// Executed plans, newest first. Undo runs are not listed on their own; they mark the
+    /// plan they took back (see `undonePlans`).
     var history: [ChangePlan] = []
+    /// Plans whose changes were taken back by a completed undo.
+    var undonePlans: Set<SortlyID> = []
     /// Albums Albumist created or extended, with exactly the media it added.
     var managedAlbums: [ManagedAlbumState] = []
     var plan: ChangePlan?
@@ -274,7 +278,9 @@ final class AppModel {
             inventory = try await store.loadInventory()
             let inventory = inventory
             mergeSuggestions = await Task.detached(priority: .utility) { AlbumOverlapAnalyzer().suggestions(in: inventory) }.value
-            history = try await store.planHistory()
+            let plans = try await store.planHistory()
+            history = plans.filter { $0.reverts == nil }
+            undonePlans = Set(plans.filter { $0.status == .completed }.compactMap(\.reverts))
             let analyzed = Set(try await store.results(ContentAnalysis.self, kind: "content").keys)
             let overrides = OverrideSet(try await store.overrides())
             let facts = facts, snapshot = snapshot, settings = settings
@@ -526,10 +532,19 @@ final class AppModel {
     }
 
     func undo(_ executed: ChangePlan) async {
+        // Taking back the same plan twice would find nothing to do (or remove what the user
+        // added in the meantime), so a plan is undone once.
+        guard !undonePlans.contains(executed.id), executed.reverts == nil else { return }
         do {
             let current = try await library.currentInventory()
             let undoPlan = UndoPlanner().undoPlan(for: executed, current: current)
             await execute(undoPlan)
+            if let result = execution.finished, result.reverts == executed.id, result.status == .completed {
+                undonePlans.insert(executed.id)
+                // Albums that are gone again do not count against the free albums.
+                let summary = executed.summary
+                Purchases.shared.returnUsage(albums: summary.newAlbums + summary.extendedAlbums)
+            }
         } catch {
             message = error.localizedDescription
         }
