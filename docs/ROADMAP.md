@@ -6,8 +6,10 @@
 | 2 | Datenbank, Offline-Weltkarte, fortsetzbare Analyse | fertig |
 | 3 | iOS-App: alle Bildschirme, PhotoKit, Vision, Hintergrundlauf | fertig (nur Simulator geprüft) |
 | 4 | Freischaltung, Datenschutz-Manifest, Kurzbefehl, Bewertungsbitte | fertig |
-| 5 | Englische Übersetzung, App-Store-Texte | in Arbeit |
-| 6 | Apple Intelligence (wenn verfügbar): Suche in Sätzen, Namensvorschläge | in Arbeit |
+| 4a | Siri, Kurzbefehle und Spotlight (Länder, Vorschläge), Glasknöpfe, Haptik | fertig |
+| 5 | Englische Übersetzung, App-Store-Texte, Featuring-Check (`launch/FEATURING_AUDIT.md`) | fertig |
+| 6 | Apple Intelligence (wenn verfügbar): Suche in Sätzen, Namensvorschläge, Foto-Geschichte | fertig (nur Simulator geprüft) |
+| 6a | App-Icon im Icon-Composer-Format (Glas-Ebenen) | braucht einen Mac |
 | 7 | TestFlight mit echten Nutzern (braucht Apple-Developer-Konto) | offen |
 | 8 | Update 1.1: Personen und Haustiere (Opt-in), Widget, Belege verstehen | geplant |
 | 8a | Mitteilungen: „Analyse fertig“, Fortschritt auf dem Sperrbildschirm (Live Activity / BGContinuedProcessingTask), wöchentlicher Hinweis (Opt-in) | auf später verschoben (Entscheidung 2026-11-14) |

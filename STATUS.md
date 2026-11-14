@@ -29,7 +29,7 @@ Arbeitskopie im Projektordner: /mnt/project-files/sortly/ (Sync: /home/user/scri
 - `App/` – iOS-App (XcodeGen `project.yml`, SwiftUI, PhotoKit, Vision, StoreKit 2)
 
 ## Stand
-- [x] Kern, Store, Weltkarte, Engine: 143 Tests grün (Linux und macOS)
+- [x] Kern, Store, Weltkarte, Engine: 176 Tests grün (Linux und macOS), dazu App-Tests und UI-Durchlauf
 - [x] iOS-App: alle Bildschirme geschrieben
 - [x] iOS-Build in CI grün
 - [x] Simulator-Build als ZIP; Upload zu Appetize, sobald Fuchs das Secret `APPETIZE_TOKEN` anlegt
@@ -38,4 +38,7 @@ Arbeitskopie im Projektordner: /mnt/project-files/sortly/ (Sync: /home/user/scri
 - [x] Launch-Texte in `docs/launch/` (Presse und Webseite/Datenschutzerklärung laufen in eigenen Threads)
 - [ ] Gesichter/Haustiere (Opt-in), BGContinuedProcessingTask, Verwaltung der angelegten Alben
 - [x] Doku nach Prompt §24, App-Store-Texte, Featuring-Nominierung
+- [x] Atlas: Land antippen zeigt seine Fotos; „Album passt nicht“; Logiktest des Entscheidungs-Ablaufs
+- [x] Siri/Kurzbefehle/Spotlight, Glasknöpfe, Haptik, Dunkelmodus-Farben
+- [x] Featuring-Check: `docs/launch/FEATURING_AUDIT.md`; Gegenprüfung: `docs/review/CROSS_REVIEW_PROMPT.md`
 - Später (Entscheidung Fuchs): Mitteilungen/Live Activity, Widget, Personen/Haustiere (Update 1.1)
