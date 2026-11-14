@@ -268,14 +268,18 @@ public actor AnalysisPipeline {
             var result = TextResult()
             do {
                 let text = try await analyzer.recognizeText(asset, allowNetwork: networkAllowed)
-                result.text = text
                 result.document = documents.analyze(text: text.text)
                 if asset.isScreenshotLike {
                     let labels = Set(contents[asset.id]?.labels.map(\.identifier) ?? [])
                     let classified = screenshots.classify(text: text.text, barcodePayloads: text.barcodePayloads, imageLabels: labels)
                     result.screenshotCategories = classified.categories.filter { $0.value >= .plausible }.map(\.key.rawValue).sorted()
                 }
-                if !text.text.isEmpty { try await store.indexText(text.text, for: asset.id) }
+                // Analysis used the full text; only a minimized copy is kept on disk.
+                var stored = text
+                stored.text = TextMinimizer.storable(text.text)
+                if stored.text.isEmpty { stored.barcodePayloads = [] }
+                result.text = stored
+                if !stored.text.isEmpty { try await store.indexText(stored.text, for: asset.id) }
                 recognized += 1
             } catch AnalysisError.originalNotAvailable {
                 result.waitingForOriginal = true
