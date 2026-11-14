@@ -79,4 +79,50 @@ struct ClusteringEquivalenceTests {
         #expect(result.clusters.first?.memberIndices.count == 20_000)
         #expect(elapsed < .seconds(3))
     }
+
+    static func offset(_ c: GeoCoordinate, north: Double, east: Double) -> GeoCoordinate {
+        GeoCoordinate(latitude: c.latitude + north / GeoMath.metersPerDegreeLatitude,
+                      longitude: c.longitude + east / (GeoMath.metersPerDegreeLatitude * cos(c.latitude * .pi / 180)))
+    }
+
+    /// Audit 14.11.2026, 5.3: dense groups just about ε apart, in shapes where the groups'
+    /// boxes are close but most pairs are not. Same result as the textbook algorithm.
+    @Test(arguments: [1, 2, 3, 4, 5, 6])
+    func groupsAboutEpsilonApartMatchTextbookDBSCAN(seed: Int) {
+        var rng = LCG(state: UInt64(seed) &* 0x2545F4914F6CDD1D)
+        let eps = 200.0
+        let base = Fixture.Places.munichHome
+        var points: [GeoCoordinate] = []
+        // Two clumps in opposite corners of a square, and a third clump near one corner.
+        points += Self.scatter(base, count: 60, meters: 2, rng: &rng)
+        points += Self.scatter(Self.offset(base, north: 100, east: 100), count: 60, meters: 2, rng: &rng)
+        let distance = eps * Double.random(in: 0.95...1.08, using: &rng)
+        let angle = Double.random(in: 0..<(2 * .pi), using: &rng)
+        points += Self.scatter(Self.offset(base, north: 100 + distance * sin(angle), east: 100 + distance * cos(angle)), count: 60, meters: 3, rng: &rng)
+        points += Self.scatter(Self.offset(base, north: 50, east: 260), count: 40, meters: 25, rng: &rng)
+        points.shuffle(using: &rng)
+        let fast = GeoClusterer(epsilonMeters: eps, minPoints: 5).cluster(points)
+        let expected = Self.reference(points, eps: eps, minPoints: 5)
+        #expect(fast.clusters.map(\.memberIndices) == expected.clusters)
+        #expect(fast.noise == expected.noise)
+    }
+
+    /// Audit 14.11.2026, 5.3: two dense neighbouring groups that do not connect used to cost
+    /// a comparison of every pair (36 million distances); now a sort.
+    @Test func dbscanDenseAdjacentNonConnectingCellsPerformance() {
+        var rng = LCG(state: 7)
+        let base = Fixture.Places.munichHome
+        let eps = 200.0
+        var points = Self.scatter(base, count: 6_000, meters: 3, rng: &rng)
+        points += Self.scatter(Self.offset(base, north: 0, east: 1.04 * eps), count: 6_000, meters: 3, rng: &rng)
+        // An L-shape next to them: its box reaches within ε of the second group, its points do not.
+        points += Self.scatter(Self.offset(base, north: 150, east: 1.04 * eps + 150), count: 3_000, meters: 3, rng: &rng)
+        points += Self.scatter(Self.offset(base, north: 150 + 1.05 * eps, east: 1.04 * eps), count: 3_000, meters: 3, rng: &rng)
+        let clock = ContinuousClock()
+        var result: (clusters: [GeoClusterer.Cluster], noise: [Int]) = ([], [])
+        let elapsed = clock.measure { result = GeoClusterer(epsilonMeters: eps, minPoints: 5).cluster(points) }
+        #expect(result.clusters.count >= 3)
+        #expect(result.clusters.map(\.memberIndices.count).reduce(0, +) == points.count)
+        #expect(elapsed < .seconds(3)) // before: 5.3 s on the same machine, 1.1 s now (debug build)
+    }
 }

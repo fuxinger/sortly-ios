@@ -12,7 +12,12 @@ struct LibraryView: View {
     /// The photo zooms out of its thumbnail and back into it.
     @Namespace private var zoom
     @State private var addingToAlbum: [AssetID]?
+    /// Thumbnails shown so far; more on request, so large libraries stay smooth and every
+    /// photo can still be reached.
+    @State private var shown = Self.page
     @Environment(\.dynamicTypeSize) private var typeSize
+
+    private static let page = 3_000
 
     private static let buckets: [InboxBucket] = [.unorganized, .suggestions, .uncertain, .organized, .ignored, .all]
 
@@ -37,6 +42,17 @@ struct LibraryView: View {
                                            description: Text(emptyDescription))
                 } else {
                     grid(members)
+                    if members.count > shown {
+                        VStack(spacing: Theme.Spacing.s) {
+                            Text("\(shown.formatted()) von \(members.count.formatted()) angezeigt")
+                                .font(.footnote).foregroundStyle(.secondary).monospacedDigit()
+                            Button("Weitere Fotos anzeigen") { shown += Self.page }
+                                .buttonStyle(.bordered)
+                                .accessibilityIdentifier("library.showMore")
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, Theme.Spacing.s)
+                    }
                 }
             }
             .padding(.horizontal, Theme.Spacing.l)
@@ -110,7 +126,7 @@ struct LibraryView: View {
 
     private func grid(_ members: [AssetFacts]) -> some View {
         LazyVGrid(columns: [GridItem(.adaptive(minimum: 96), spacing: 3)], spacing: 3) {
-            ForEach(members.prefix(3000), id: \.id) { facts in
+            ForEach(members.prefix(shown), id: \.id) { facts in
                 let id = facts.id
                 // A real button: VoiceOver, Switch Control and the hit-area audit see it as one.
                 Button {
@@ -175,6 +191,7 @@ struct LibraryView: View {
     private func select(_ b: InboxBucket) {
         bucket = b
         selection = []
+        shown = Self.page
         if b == .suggestions { selecting = false }
     }
 

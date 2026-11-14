@@ -11,6 +11,9 @@ struct SearchView: View {
     @State private var searching = false
     @State private var detail: AssetFacts?
     @State private var addingToAlbum: [AssetID]?
+    /// Thumbnails shown so far; the count and "Als Album anlegen" always cover every hit.
+    @State private var shown = Self.page
+    private static let page = 2_000
     /// The field is shown and focused when the tab opens; testers did not find a hidden one.
     @State private var searchActive = false
     @Namespace private var zoom
@@ -55,11 +58,11 @@ struct SearchView: View {
                             Text("\(results.count.formatted()) Treffer").font(.footnote).foregroundStyle(.secondary).monospacedDigit()
                             Spacer()
                             // The search becomes an album in Photos (through the normal preview).
-                            Button("Als Album anlegen") { addingToAlbum = Array(results.prefix(2000)) }
+                            Button("Als Album anlegen") { addingToAlbum = results }
                                 .font(.footnote.weight(.semibold))
                         }
                         LazyVGrid(columns: [GridItem(.adaptive(minimum: 96), spacing: 3)], spacing: 3) {
-                            ForEach(results.prefix(2000), id: \.self) { id in
+                            ForEach(results.prefix(shown), id: \.self) { id in
                                 let hit = model.factsByID[id]
                                 Button {
                                     detail = hit
@@ -75,6 +78,17 @@ struct SearchView: View {
                             }
                         }
                         .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.tile, style: .continuous))
+                        if results.count > shown {
+                            VStack(spacing: Theme.Spacing.s) {
+                                Text("\(shown.formatted()) von \(results.count.formatted()) angezeigt")
+                                    .font(.footnote).foregroundStyle(.secondary).monospacedDigit()
+                                Button("Weitere Treffer anzeigen") { shown += Self.page }
+                                    .buttonStyle(.bordered)
+                                    .accessibilityIdentifier("search.showMore")
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding(.top, Theme.Spacing.s)
+                        }
                     }
                 }
             }
@@ -104,6 +118,7 @@ struct SearchView: View {
             guard !Task.isCancelled else { return }
             tokens = found.tokens
             results = found.results
+            shown = Self.page
             searching = false
         }
     }

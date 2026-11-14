@@ -7,10 +7,10 @@ import SortlyStore
 import SortlyWorldMap
 import SortlyTestSupport
 
-/// 20,000 photos over five years: everyday life, 30 trips, screenshots and 150 existing albums.
+/// 20,000 and 100,000 photos over five years: everyday life, 30 trips, screenshots and existing albums.
 /// Vision is faked, so this measures everything Albumist itself does (clustering, trips, places,
 /// proposals, matching, database, status, atlas). Run with SORTLY_LOAD_TEST=1.
-@Suite("Load test", .enabled(if: ProcessInfo.processInfo.environment["SORTLY_LOAD_TEST"] != nil))
+@Suite("Load test", .serialized, .enabled(if: ProcessInfo.processInfo.environment["SORTLY_LOAD_TEST"] != nil))
 struct LoadTests {
     static let destinations: [GeoCoordinate] = [
         Fixture.Places.rome, Fixture.Places.florence, Fixture.Places.naples, Fixture.Places.gardaLake,
@@ -24,6 +24,27 @@ struct LoadTests {
     ]
 
     @Test func twentyThousandPhotos() async throws {
+        try await run(photos: 20_000, perDay: 8, tripPerDay: 22, albumCount: 150, cloudShare: 0,
+                      limits: (first: .seconds(120), second: .seconds(15), peakMB: nil))
+    }
+
+    /// Audit 14.11.2026, 8.1: the promised 100,000 photos, 80 % of them only in iCloud
+    /// ("Optimize iPhone Storage"), with time and memory limits.
+    @Test func hundredThousandPhotosMostlyInICloud() async throws {
+        try await run(photos: 100_000, perDay: 45, tripPerDay: 60, albumCount: 500, cloudShare: 0.8,
+                      limits: (first: .seconds(300), second: .seconds(60), peakMB: 1_500)) // measured: 54 s, 12 s, 563 MB
+    }
+
+    /// Highest resident memory of this process so far (Linux), in MB.
+    static func peakMemoryMB() -> Int? {
+        guard let status = try? String(contentsOfFile: "/proc/self/status", encoding: .utf8),
+              let line = status.split(separator: "\n").first(where: { $0.hasPrefix("VmHWM:") }),
+              let kb = Int(line.split(separator: " ").dropFirst().first ?? "") else { return nil }
+        return kb / 1024
+    }
+
+    func run(photos target: Int, perDay: Int, tripPerDay: Int, albumCount: Int, cloudShare: Double,
+             limits: (first: Duration, second: Duration, peakMB: Int?)) async throws {
         var lib = LibraryBuilder()
         var tripRanges: [(String, String)] = []
         var tripPlans: [(String, String, GeoCoordinate)] = []
@@ -35,30 +56,36 @@ struct LoadTests {
                 tripPlans.append((start, end, Self.destinations[(year * 7 + i) % Self.destinations.count]))
             }
         }
-        lib.daily(from: "2021-01-01", to: "2025-12-31", at: Fixture.Places.munichHome, perDay: 8, skipping: tripRanges)
+        lib.daily(from: "2021-01-01", to: "2025-12-31", at: Fixture.Places.munichHome, perDay: perDay, skipping: tripRanges)
         for (start, end, place) in tripPlans {
-            lib.daily(from: start, to: end, at: place, perDay: 22, hour: 9)
+            lib.daily(from: start, to: end, at: place, perDay: tripPerDay, hour: 9)
         }
         var shotIDs: Set<AssetID> = []
         var day = 0
-        while lib.assets.count < 20_000 {
-            let date = Fixture.date("2021-01-01").addingTimeInterval(Double(day) * 86_400 * 1.9 + 72_000)
+        let spacing = max(1.0, 5 * 365 / Double(max(1, target - lib.assets.count)))
+        while lib.assets.count < target {
+            let date = Fixture.date("2021-01-01").addingTimeInterval(Double(day) * 86_400 * spacing + 72_000)
             shotIDs.insert(lib.photo(at: date, nil, subtypes: .screenshot))
             day += 1
         }
         let assets = lib.assets
-        #expect(assets.count == 20_000)
+        #expect(assets.count == target)
 
-        // 150 existing albums with random members.
+        // Existing albums with random members.
         var rng = SystemRandomNumberGenerator()
         var albums: [CollectionSnapshot] = []
-        for i in 0..<150 {
+        for i in 0..<albumCount {
             let start = Int.random(in: 0..<(assets.count - 400), using: &rng)
             let members = Set(assets[start..<(start + Int.random(in: 20...400, using: &rng))].map(\.id))
             albums.append(CollectionSnapshot(id: CollectionID("album-\(i)"), title: "Album \(i)", assetIDs: members))
         }
+        // Originals only in iCloud: text from them waits for the network.
+        let cloudOnly = Set(assets.enumerated().compactMap { index, asset in
+            Double(index % 100) < cloudShare * 100 ? asset.id : nil
+        })
         let shots = shotIDs
         let analyzer = FakeContentAnalyzer(
+            cloudOnly: cloudOnly,
             labels: { asset in asset.id.rawValue.hasSuffix("7") ? [LabelScore("dog", 0.9)] : [LabelScore("food", 0.6)] },
             text: { asset in shots.contains(asset.id) ? "Ihre Bestellung Bestellnummer 302-1234567 Lieferung" : "" }
         )
@@ -130,8 +157,11 @@ struct LoadTests {
         func ms(_ d: Duration) -> Int { Int(d.components.seconds * 1000 + d.components.attoseconds / 1_000_000_000_000_000) }
         print("LOAD_TIMING photos \(assets.count) proposals \(snapshot?.proposals.count ?? 0) countries \(atlas.countryCodes.count) trips \(atlas.tripCount) states \(states.count)")
         print("LOAD_TIMING first-run \(ms(full)) ms | second-run \(ms(again)) ms | facts \(ms(factsTime)) ms | status \(ms(statusTime)) ms | atlas \(ms(atlasTime)) ms | overlap \(ms(overlapTime)) ms | search \(ms(searchTime)) ms")
+        let peak = Self.peakMemoryMB()
+        print("LOAD_MEMORY photos \(assets.count) peak \(peak.map { "\($0) MB" } ?? "unknown")")
         #expect(atlas.tripCount >= 25)
-        #expect(full < .seconds(120))
-        #expect(again < .seconds(15)) // was 44 s before the grid DBSCAN
+        #expect(full < limits.first)
+        #expect(again < limits.second) // 20,000 photos: was 44 s before the grid DBSCAN
+        if let limit = limits.peakMB, let peak { #expect(peak < limit) }
     }
 }

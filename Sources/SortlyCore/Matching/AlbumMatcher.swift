@@ -148,8 +148,14 @@ public struct AlbumMatcher: Sendable {
         }
 
         var results: [SortlyID: MatchResult] = [:]
+        // Per family and album: how many of the album's photos each sibling suggestion has.
+        // Counted once per album instead of once per suggestion, so a big album shared by
+        // many suggestions (all favourites, a camera roll export) is read only once.
+        var siblingCounts: [String: [CollectionID: [SortlyID: Int]]] = [:]
         for proposal in proposals {
             let claimed = Set(owners.compactMap { albumID, ids in ids.contains(proposal.id) ? nil : albumID })
+            let family = proposal.kind.familyKey
+            var counts = siblingCounts[family, default: [:]]
             results[proposal.id] = match(
                 proposal,
                 inventory: inventory,
@@ -157,9 +163,11 @@ public struct AlbumMatcher: Sendable {
                 assigned: assignments[proposal.id],
                 claimedByOthers: claimed,
                 membership: membership,
-                siblings: siblingOf[proposal.kind.familyKey] ?? [:],
+                siblings: siblingOf[family] ?? [:],
+                siblingCounts: &counts,
                 titleIndex: titleIndex
             )
+            siblingCounts[family] = counts
         }
         return results
     }
@@ -172,6 +180,7 @@ public struct AlbumMatcher: Sendable {
         claimedByOthers: Set<CollectionID>,
         membership: [AssetID: [CollectionID]],
         siblings: [AssetID: SortlyID],
+        siblingCounts: inout [CollectionID: [SortlyID: Int]],
         titleIndex: [String: [CollectionID]]
     ) -> MatchResult {
         var intersections: [CollectionID: Int] = [:]
@@ -191,19 +200,26 @@ public struct AlbumMatcher: Sendable {
                   !overrides.isRejectedMatch(albumID, for: proposal.id) else { continue }
             let metrics = OverlapMetrics(proposalCount: proposal.assetIDs.count, albumCount: album.assetIDs.count, intersection: shared)
 
-            // Broader collection: a substantial part of the album belongs to other siblings.
-            var otherSiblingItems = 0
-            var otherSiblings = Set<SortlyID>()
-            for asset in album.assetIDs {
-                if let s = siblings[asset], s != proposal.id {
-                    otherSiblingItems += 1
-                    otherSiblings.insert(s)
+            // Broader collection: a substantial part of the album belongs to other siblings
+            // (only asked for event-like suggestions).
+            var broader = false
+            if proposal.kind.isEventLike, !album.assetIDs.isEmpty {
+                let counts: [SortlyID: Int]
+                if let cached = siblingCounts[albumID] {
+                    counts = cached
+                } else {
+                    var fresh: [SortlyID: Int] = [:]
+                    for asset in album.assetIDs { if let s = siblings[asset] { fresh[s, default: 0] += 1 } }
+                    siblingCounts[albumID] = fresh
+                    counts = fresh
                 }
+                let otherSiblingItems = counts.reduce(0) { $0 + ($1.key == proposal.id ? 0 : $1.value) }
+                let otherShare = Double(otherSiblingItems) / Double(album.assetIDs.count)
+                broader = otherSiblingItems > 0 && otherShare >= thresholds.broaderCollectionShare
             }
-            let otherShare = album.assetIDs.isEmpty ? 0 : Double(otherSiblingItems) / Double(album.assetIDs.count)
 
             let relation: AlbumRelation
-            if otherShare >= thresholds.broaderCollectionShare && !otherSiblings.isEmpty && proposal.kind.isEventLike {
+            if broader {
                 relation = .broaderCollection
             } else if metrics.purity >= thresholds.completePurity && metrics.coverage >= thresholds.completeCoverage {
                 relation = .equivalent

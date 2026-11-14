@@ -174,10 +174,31 @@ public struct TripDetector: Sendable {
             i += 1
         }
 
+        let (kind, stops) = Self.classify(dates: members.map { $0.creationDate! }, coordinates: coordinates, calendar: calendar)
+
+        return Trip(
+            id: .stable("trip", members.first!.id.rawValue),
+            start: start,
+            end: end,
+            geotaggedAssetIDs: members.map(\.id),
+            inferredAssetIDs: inferred,
+            centroid: centroid,
+            maxDistanceFromHomeMeters: maxDistance,
+            distinctStops: stops,
+            kind: kind
+        )
+    }
+
+    /// Kind of a trip from its photos (sorted by date) and the number of distinct overnight
+    /// stops. Days and evening hours are counted in `calendar`, which should use the
+    /// destination's time zone when it is known: an evening flight home across midnight is
+    /// still a day trip there.
+    public static func classify(dates: [Date], coordinates: [GeoCoordinate], calendar: Calendar) -> (kind: TripKind, stops: Int) {
+        guard let start = dates.first, let end = dates.last else { return (.dayTrip, 1) }
         // Distinct stops: ~25 km cells where photos were taken in the evening/night.
         var stopCells = Set<GeoCell>()
-        for (asset, c) in zip(members, coordinates) {
-            let hour = calendar.component(.hour, from: asset.creationDate!)
+        for (date, c) in zip(dates, coordinates) {
+            let hour = calendar.component(.hour, from: date)
             if hour >= 18 || hour < 6 { stopCells.insert(GeoCell(c, sizeMeters: 25_000)) }
         }
         let allCells = Set(coordinates.map { GeoCell($0, sizeMeters: 25_000) })
@@ -197,18 +218,30 @@ public struct TripDetector: Sendable {
         } else {
             kind = .vacation
         }
+        return (kind, max(stopCells.count, 1))
+    }
 
-        return Trip(
-            id: .stable("trip", members.first!.id.rawValue),
-            start: start,
-            end: end,
-            geotaggedAssetIDs: members.map(\.id),
-            inferredAssetIDs: inferred,
-            centroid: centroid,
-            maxDistanceFromHomeMeters: maxDistance,
-            distinctStops: max(stopCells.count, 1),
-            kind: kind
-        )
+    /// The trips with kind and stops counted in their destination's time zone (the most
+    /// common one among their photos' places), where that differs from `calendar`'s.
+    public static func inDestinationTime(_ trips: [Trip], assets: [AssetID: AssetSnapshot], timeZones: [AssetID: String], calendar: Calendar) -> [Trip] {
+        trips.map { trip in
+            var counts: [String: Int] = [:]
+            for id in trip.geotaggedAssetIDs { if let zone = timeZones[id] { counts[zone, default: 0] += 1 } }
+            guard let identifier = counts.max(by: { ($0.value, $1.key) < ($1.value, $0.key) })?.key,
+                  let zone = TimeZone(identifier: identifier), zone.identifier != calendar.timeZone.identifier else { return trip }
+            var local = calendar
+            local.timeZone = zone
+            let members = trip.geotaggedAssetIDs.compactMap { assets[$0] }
+                .compactMap { a -> (Date, GeoCoordinate)? in
+                    guard let date = a.creationDate, let c = a.usableLocation else { return nil }
+                    return (date, c)
+                }
+                .sorted { $0.0 < $1.0 }
+            guard !members.isEmpty else { return trip }
+            var result = trip
+            (result.kind, result.distinctStops) = classify(dates: members.map(\.0), coordinates: members.map(\.1), calendar: local)
+            return result
+        }
     }
 }
 

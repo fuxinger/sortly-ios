@@ -390,13 +390,15 @@ public struct AreaOverview: Hashable, Sendable, Identifiable {
             var existing = 0, new = 0, extendable = 0, uncertain = 0
             for p in ps {
                 assets.formUnion(p.assetIDs)
-                switch matches[p.id]?.status {
+                let status = matches[p.id]?.status
+                switch status {
                 case .alreadyComplete, .possibleMatch, .multipleMatches: existing += 1
                 case .extendable: existing += 1; extendable += 1
                 case .newAlbumRequired, .nameConflict, .notEditable, .none: new += 1
-                case .ambiguous: uncertain += 1
+                case .ambiguous: break
                 }
-                if p.reliability < .likely || p.requiresUserName { uncertain += 1 }
+                // One count per suggestion, whatever makes it uncertain.
+                if status == .ambiguous || p.reliability < .likely || p.requiresUserName { uncertain += 1 }
             }
             return AreaOverview(area: area, proposalCount: ps.count, distinctAssets: assets.count, existingMatches: existing,
                                 newAlbumsNeeded: new, extendable: extendable, uncertain: uncertain)

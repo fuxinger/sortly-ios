@@ -196,7 +196,7 @@ public actor AnalysisPipeline {
             // First run with identities: the trips of the last analysis are the starting point.
             known = (try await store.value([Trip].self, forKey: Key.trips) ?? []).map(TripIdentity.init)
         }
-        let trips = TripIdentity.carryOver(detected, from: known)
+        var trips = TripIdentity.carryOver(detected, from: known)
         try await store.setValue(Self.mergedIdentities(known, trips, library: Set(all.map(\.id))), forKey: Key.tripIdentities)
         var frequent = FrequentPlaceDetector(configuration: settings.frequentPlaces.advanced, calendar: calendar).detect(in: all)
         for i in frequent.indices { frequent[i].userName = settings.frequentPlaces.names[frequent[i].id] }
@@ -210,6 +210,17 @@ public actor AnalysisPipeline {
         report.placesResolved = placeOutcome.resolved
         report.placesPendingOnline = placeOutcome.pendingOnline.count
         report.onlineRequests = placeOutcome.onlineRequests
+        // Day trip or weekend is decided in the destination's days, once places know its time
+        // zone (an evening in New York is already the next day in Munich).
+        let zones = try await store.places().compactMapValues(\.components.timeZoneIdentifier)
+        if !zones.isEmpty {
+            let localTrips = TripDetector.inDestinationTime(trips, assets: Dictionary(uniqueKeysWithValues: all.map { ($0.id, $0) }),
+                                                            timeZones: zones, calendar: calendar)
+            if localTrips != trips {
+                trips = localTrips
+                try await store.setValue(trips, forKey: Key.trips)
+            }
+        }
         if let reason = await shouldStop() { report.pausedBecause = reason; return report }
         report.completedStages.append(.places)
 

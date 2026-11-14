@@ -31,6 +31,16 @@
         }
       }
     },
+    "%@ von %@ angezeigt" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Showing %1$@ of %2$@"
+          }
+        }
+      }
+    },
     "%@ von %@ Schritten" : {
       "localizations" : {
         "en" : {
@@ -5799,6 +5809,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Show older"
+          }
+        }
+      }
+    },
+    "Weitere Fotos anzeigen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show more photos"
+          }
+        }
+      }
+    },
+    "Weitere Treffer anzeigen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show more results"
           }
         }
       }

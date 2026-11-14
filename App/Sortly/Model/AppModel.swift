@@ -1025,7 +1025,8 @@ final class AppModel {
         guard !parsed.filter.isEmpty else { return (parsed.tokens, []) }
         var textHits: Set<AssetID>?
         if !parsed.filter.freeText.isEmpty, let store {
-            textHits = Set((try? await store.searchText(parsed.filter.freeText.joined(separator: " "))) ?? [])
+            // Every text hit counts: the number shown and an album made from the search include all.
+            textHits = Set((try? await store.searchText(parsed.filter.freeText.joined(separator: " "), limit: 1_000_000)) ?? [])
         }
         let overall = states.mapValues { resolver.overall($0) }
         let results = SearchEngine().search(parsed.filter, in: facts, statuses: overall, textHits: textHits)

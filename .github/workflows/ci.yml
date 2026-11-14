@@ -51,7 +51,7 @@ jobs:
         run: apt-get update -qq && apt-get install -y -qq libsqlite3-dev
       - name: Build and test
         run: swift test --parallel
-      - name: Load test (20,000 photos)
+      - name: Load test (20,000 and 100,000 photos, time and memory limits)
         run: SORTLY_LOAD_TEST=1 swift test --skip-build --filter LoadTests 2>&1 | grep -E "LOAD_|passed|failed|error"; exit ${PIPESTATUS[0]}
         shell: bash
 
