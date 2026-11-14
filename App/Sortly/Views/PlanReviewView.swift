@@ -118,7 +118,7 @@ struct PlanReviewView: View {
         if model.access == .limited && !UITestSupport.isRunning {
             FullAccessCard()
         } else if !purchases.allows(albums: albums) {
-            UnlockCard(albumsInPlan: albums)
+            UnlockCard(albumsInPlan: albums, onLimit: limitToFreeAlbums)
         } else {
             Button {
                 let albums = SortingShow.albums(from: plan, inventory: model.inventory)
@@ -138,6 +138,13 @@ struct PlanReviewView: View {
                     .font(.footnote).foregroundStyle(.secondary)
             }
         }
+    }
+
+    /// "Die ersten N jetzt anlegen", only for plans built from accepted suggestions.
+    private var limitToFreeAlbums: (() -> Void)? {
+        guard prebuilt == nil, purchases.remainingFreeAlbums > 0 else { return nil }
+        let free = purchases.remainingFreeAlbums
+        return { Task { await model.keepFirstAccepted(free) } }
     }
 
     /// One line of the summary. Icons share one width so the titles line up.
@@ -304,6 +311,8 @@ struct FullAccessCard: View {
 struct UnlockCard: View {
     @Environment(Purchases.self) private var purchases
     var albumsInPlan: Int
+    /// Shrinks the plan to the albums that are still free ("Die ersten N jetzt anlegen").
+    var onLimit: (() -> Void)? = nil
     @State private var redeeming = false
 
     var body: some View {
@@ -333,8 +342,15 @@ struct UnlockCard: View {
             .offerCodeRedemption(isPresented: $redeeming) { _ in
                 Task { await purchases.refreshEntitlements() }
             }
-            Text("Tipp: Du kannst auch weniger Vorschläge auf einmal übernehmen.")
-                .font(.footnote).foregroundStyle(.secondary)
+            if let onLimit {
+                Button("Die ersten \(purchases.remainingFreeAlbums) jetzt kostenlos anlegen", action: onLimit)
+                    .buttonStyle(SecondaryButtonStyle())
+                Text("Die übrigen Vorschläge bleiben offen und laufen dir nicht weg.")
+                    .font(.footnote).foregroundStyle(.secondary)
+            } else {
+                Text("Tipp: Du kannst auch weniger Vorschläge auf einmal übernehmen.")
+                    .font(.footnote).foregroundStyle(.secondary)
+            }
             if let error = purchases.lastError {
                 Text(error).font(.footnote).foregroundStyle(.red)
             }

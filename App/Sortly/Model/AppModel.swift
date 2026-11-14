@@ -378,6 +378,36 @@ final class AppModel {
         proposals.filter { decisions[$0.id] == nil && match(for: $0)?.status != .alreadyComplete }
     }
 
+    /// The best suggestions for a first round ("Dein Startpaket"): safe ones only (at least
+    /// likely, nothing sensitive, no name needed, a clear action), trips and places first,
+    /// then the biggest.
+    func starterSet(limit: Int) -> [AlbumProposal] {
+        func rank(_ p: AlbumProposal) -> Int {
+            switch p.kind.area {
+            case .trips: 2
+            case .places: 1
+            default: 0
+            }
+        }
+        return Array(openProposals
+            .filter { $0.reliability >= .likely && !$0.isSensitive && !$0.requiresUserName && recommendedDecision(for: $0).isAccepted }
+            .sorted { (rank($0), $0.assetIDs.count, $1.title) > (rank($1), $1.assetIDs.count, $0.title) }
+            .prefix(limit))
+    }
+
+    /// "Die ersten N jetzt anlegen": keeps the biggest accepted suggestions within the free
+    /// albums; the others go back to the open list (nothing is lost) and the plan is rebuilt.
+    func keepFirstAccepted(_ limit: Int) async {
+        let accepted = acceptedProposals.sorted { ($0.assetIDs.count, $1.title) > ($1.assetIDs.count, $0.title) }
+        for p in accepted.dropFirst(max(0, limit)) { decisions[p.id] = nil }
+        persistDecisions()
+        await buildPlan()
+    }
+
+    func accept(_ proposals: [AlbumProposal]) {
+        for p in proposals { setDecision(recommendedDecision(for: p), for: p) }
+    }
+
     var acceptedProposals: [AlbumProposal] {
         proposals.filter { decisions[$0.id]?.isAccepted == true }
     }

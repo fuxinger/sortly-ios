@@ -67,7 +67,7 @@ Quellen: **E1** Expertenrunde 14.11.2026 (Tempo, Oberfläche, Technik, Produkt) 
 | ✅ | Berechtigungstext und alle anderen Texte sagen „Gerät“ statt „iPhone“ (iPad). | S | E1 Produkt |
 | ✅ | Builds und Tests mit Xcode 27 auf iOS 27 (aktuelles iOS). | S | U |
 | ✅ | Erstes Ergebnis früh: Reisen, Länder und Orte erscheinen beim ersten Durchgang vor der Bildanalyse (statt nach Stunden). | M | E1 Produkt/Oberfläche |
-| 🔜 | Startpaket: „Deine 10 besten Alben“ vorausgewählt, ein Knopf „10 Alben anlegen, kostenlos“; bei großen Plänen „Die ersten N jetzt anlegen“. | M | E1 Produkt |
+| ✅ | Startpaket: „Dein Startpaket“ mit den besten Alben (Reisen und Orte zuerst), ein Knopf „10 Alben kostenlos anlegen“; bei großen Plänen „Die ersten N jetzt kostenlos anlegen“. | M | E1 Produkt |
 | ✅ | Kauf-Knopf in den Einstellungen; Gratis-Zähler gibt nach Rückgängig zurück. | S | E1 Produkt |
 | ✅ | Datenschutz-Seite in der App (offline lesbar). Für App Store Connect fehlt noch eine öffentliche Adresse. | S | E1 Produkt |
 | ✅ | Namensvorschläge für Reisen in der eingestellten Sprache (bisher immer Deutsch). | S | E1 Produkt |

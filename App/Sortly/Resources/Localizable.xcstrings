@@ -5072,6 +5072,186 @@
           }
         }
       }
+    },
+    "Dein Startpaket" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your Starter Set"
+          }
+        }
+      }
+    },
+    "Die %lld besten Alben aus deiner Mediathek, fertig zum Anlegen. Du siehst vorher genau, was passiert." : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "The best album from your library, ready to create. You see exactly what happens first."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "The %lld best albums from your library, ready to create. You see exactly what happens first."
+                }
+              }
+            }
+          }
+        },
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Das beste Album aus deiner Mediathek, fertig zum Anlegen. Du siehst vorher genau, was passiert."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Die %lld besten Alben aus deiner Mediathek, fertig zum Anlegen. Du siehst vorher genau, was passiert."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld Alben anlegen" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Create %lld Album"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Create %lld Albums"
+                }
+              }
+            }
+          }
+        },
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Album anlegen"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Alben anlegen"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld Alben kostenlos anlegen" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Create %lld Album for Free"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Create %lld Albums for Free"
+                }
+              }
+            }
+          }
+        },
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Album kostenlos anlegen"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Alben kostenlos anlegen"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Die ersten %lld jetzt kostenlos anlegen" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Create the First One Now for Free"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Create the First %lld Now for Free"
+                }
+              }
+            }
+          }
+        },
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Das erste jetzt kostenlos anlegen"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Die ersten %lld jetzt kostenlos anlegen"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Die übrigen Vorschläge bleiben offen und laufen dir nicht weg." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The other suggestions stay open and won’t go anywhere."
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

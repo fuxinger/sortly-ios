@@ -7,6 +7,8 @@ struct OverviewView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.dynamicTypeSize) private var typeSize
     @State private var showSettings = false
+    /// Lives here, not in the starter card: the card disappears once its albums are accepted.
+    @State private var showStarterPlan = false
 
     var body: some View {
         ScrollView {
@@ -16,6 +18,9 @@ struct OverviewView: View {
                 }
                 statusCard
                 analysisCard
+                if model.history.isEmpty && model.acceptedProposals.isEmpty {
+                    StarterSetCard { showStarterPlan = true }
+                }
                 if !model.openProposals.isEmpty {
                     NavigationLink {
                         ProposalListView(area: nil)
@@ -54,6 +59,7 @@ struct OverviewView: View {
         .sheet(isPresented: $showSettings) {
             NavigationStack { SettingsView() }
         }
+        .navigationDestination(isPresented: $showStarterPlan) { PlanReviewView() }
         .refreshable { await model.refreshDerived() }
     }
 
@@ -274,6 +280,50 @@ struct InterruptedPlanCard: View {
             }
         } message: {
             Text("Albumist entfernt die schon angelegten Alben und Zuordnungen. Deine Fotos bleiben unverändert.")
+        }
+    }
+}
+
+/// First use: the best albums of the library, ready to be created with one tap.
+struct StarterSetCard: View {
+    @Environment(AppModel.self) private var model
+    @Environment(Purchases.self) private var purchases
+    var onStart: () -> Void
+
+    var body: some View {
+        let limit = purchases.isUnlocked || Purchases.unlockedForUITests ? 10 : min(10, purchases.remainingFreeAlbums)
+        let set = model.starterSet(limit: limit)
+        if set.count >= 3 {
+            Card {
+                Text("Dein Startpaket").font(.headline)
+                Text("Die \(set.count) besten Alben aus deiner Mediathek, fertig zum Anlegen. Du siehst vorher genau, was passiert.")
+                    .font(.subheadline).foregroundStyle(.secondary)
+                HStack(spacing: -14) {
+                    ForEach(Array(set.prefix(5).enumerated()), id: \.element.id) { index, proposal in
+                        AssetThumbnail(id: proposal.coverAssetID ?? AssetID(""), side: 64)
+                            .frame(width: 56, height: 56)
+                            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                            .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).stroke(Theme.background, lineWidth: 2))
+                            .zIndex(Double(5 - index))
+                    }
+                }
+                .accessibilityHidden(true)
+                Text(ListFormatter.localizedString(byJoining: set.prefix(3).map { model.userTitles[$0.id] ?? $0.title })
+                     + (set.count > 3 ? " …" : ""))
+                    .font(.footnote).foregroundStyle(.secondary)
+                    .lineLimit(2)
+                Button {
+                    model.accept(set)
+                    onStart()
+                } label: {
+                    if purchases.isUnlocked {
+                        Text("\(set.count) Alben anlegen")
+                    } else {
+                        Text("\(set.count) Alben kostenlos anlegen")
+                    }
+                }
+                .buttonStyle(PrimaryButtonStyle())
+            }
         }
     }
 }
