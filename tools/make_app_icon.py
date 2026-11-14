@@ -125,5 +125,5 @@ if __name__ == "__main__":
     out = sys.argv[1] if len(sys.argv) > 1 else "."
     draw_icon("light").convert("RGB").save(f"{out}/AppIcon-1024.png")  # App Store icon: no alpha
     draw_icon("dark").save(f"{out}/AppIcon-Dark-1024.png")
-    draw_icon("tinted").convert("LA").save(f"{out}/AppIcon-Tinted-1024.png")
+    draw_icon("tinted").convert("LA").convert("RGBA").save(f"{out}/AppIcon-Tinted-1024.png")
     print("icons written to", out)
