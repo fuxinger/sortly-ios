@@ -135,7 +135,8 @@ struct ProposalDetailView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Theme.Spacing.m) {
-                ThumbnailGrid(ids: proposal.assetIDs.sorted(), columns: 4, limit: 12,
+                // Two rows: with more, the actions fell below the tab bar on a 6.1" iPhone.
+                ThumbnailGrid(ids: proposal.assetIDs.sorted(), columns: 4, limit: 8,
                               portrait: [.screenshots, .documents, .messenger].contains(proposal.kind.area))
 
                 VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
@@ -166,13 +167,14 @@ struct ProposalDetailView: View {
                         }
                     }
                     ForEach(Array(proposal.reasons.enumerated()), id: \.offset) { _, reason in
-                        Text(ReasonText.text(reason)).font(.body).foregroundStyle(.secondary)
+                        Text(ReasonText.text(reason)).font(.subheadline).foregroundStyle(.secondary)
                     }
                 }
 
-                matchCard
-
+                // Album status and destination folder in one card.
                 Card {
+                    matchContent
+                    if match != nil { Divider() }
                     LabeledContent("Ordner", value: ([model.settings.rootFolderTitle] + proposal.folderPath).joined(separator: " › "))
                     if !proposal.optionalAssetIDs.isEmpty {
                         LabeledContent("Nur vorgeschlagen", value: "\(proposal.optionalAssetIDs.count)")
@@ -208,9 +210,9 @@ struct ProposalDetailView: View {
     }
 
     @ViewBuilder
-    private var matchCard: some View {
+    private var matchContent: some View {
         if let match {
-            Card {
+            Group {
                 Label {
                     Text(match.status.label).font(.headline)
                 } icon: {
