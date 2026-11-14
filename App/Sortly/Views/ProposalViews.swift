@@ -18,6 +18,37 @@ struct ProposalListView: View {
             }
     }
 
+    /// Suggestions grouped by area in the app's area order; trips newest first.
+    private struct AreaSection: Identifiable {
+        let area: OrganizationArea
+        let items: [AlbumProposal]
+        var id: OrganizationArea { area }
+    }
+
+    private var sections: [AreaSection] {
+        let groups = Dictionary(grouping: proposals) { $0.kind.area }
+        return OrganizationArea.allCases.compactMap { area in
+            guard var items = groups[area] else { return nil }
+            if area == .trips {
+                items.sort { ($0.dateRange?.start ?? .distantPast) > ($1.dateRange?.start ?? .distantPast) }
+            }
+            return AreaSection(area: area, items: items)
+        }
+    }
+
+    private func rows(_ items: [AlbumProposal]) -> some View {
+        ForEach(items) { proposal in
+            // Destination-based link: this list is itself pushed by a destination-based
+            // link, and a value-based link here found no destination (row did nothing,
+            // a yellow warning triangle appeared on the way back).
+            NavigationLink {
+                ProposalDetailView(proposal: proposal)
+            } label: {
+                ProposalRow(proposal: proposal)
+            }
+        }
+    }
+
     /// Open suggestions that may be accepted in one go: at least "likely", no name needed,
     /// a clear recommended action, never sensitive ones (prompt §8).
     private var recommendable: [AlbumProposal] {
@@ -35,33 +66,36 @@ struct ProposalListView: View {
             }
             if !recommendable.isEmpty {
                 Section {
-                    Button { acceptRecommended() } label: { Text("\(recommendable.count) empfohlene übernehmen") }
+                    Button { acceptRecommended() } label: { Text("\(recommendable.count) empfohlene auswählen") }
                         .buttonStyle(PrimaryButtonStyle())
                         .listRowBackground(Color.clear)
                         .listRowInsets(EdgeInsets())
                 } footer: {
-                    Text("Empfohlen sind sichere und wahrscheinliche Vorschläge ohne persönliche Themen. Angelegt wird erst beim Umsetzen, vorher siehst du alles noch einmal.")
+                    Text("Empfohlen sind sichere und wahrscheinliche Vorschläge ohne persönliche Themen. Angelegt wird erst, wenn du auf „Alben anlegen“ tippst. Vorher siehst du jedes Album noch einmal.")
                 }
             }
-            ForEach(proposals) { proposal in
-                // Destination-based link: this list is itself pushed by a destination-based
-                // link, and a value-based link here found no destination (row did nothing,
-                // a yellow warning triangle appeared on the way back).
-                NavigationLink {
-                    ProposalDetailView(proposal: proposal)
-                } label: {
-                    ProposalRow(proposal: proposal)
+            if area == nil {
+                // All suggestions: one section per area, so a trip "Rom · 10.05.–14.05.2024"
+                // is not mistaken for a city album next to the countries (Fuchs, 14.11.).
+                ForEach(sections) { section in
+                    Section {
+                        rows(section.items)
+                    } header: {
+                        Text(section.area.title)
+                    }
                 }
+            } else {
+                rows(proposals)
             }
         }
         .navigationTitle(area?.title ?? "Vorschläge")
         // Accepted suggestions are created together: the way there is always in reach.
         .safeAreaInset(edge: .bottom) {
-            if !model.acceptedProposals.isEmpty {
+            if !model.proposalsToApply.isEmpty {
                 NavigationLink {
                     PlanReviewView()
                 } label: {
-                    Text("\(model.acceptedProposals.count) übernommene Vorschläge umsetzen")
+                    Text("\(model.proposalsToApply.count) ausgewählte Alben anlegen")
                 }
                 .buttonStyle(PrimaryButtonStyle())
                 .padding(.horizontal, Theme.Spacing.l)
@@ -73,7 +107,7 @@ struct ProposalListView: View {
     private func acceptRecommended() {
         let accepted = recommendable
         for p in accepted { model.setDecision(model.recommendedDecision(for: p), for: p) }
-        AccessibilityNotification.Announcement(String(localized: "\(accepted.count) Vorschläge übernommen")).post()
+        AccessibilityNotification.Announcement(String(localized: "\(accepted.count) Vorschläge ausgewählt")).post()
     }
 }
 
@@ -110,7 +144,7 @@ struct ProposalRow: View {
                 .font(.footnote.weight(.semibold))
                 .foregroundStyle(.secondary)
         case .some(let d) where d.isAccepted:
-            Label("Übernommen", systemImage: "checkmark.circle.fill")
+            Label("Ausgewählt", systemImage: "checkmark.circle.fill")
                 .labelStyle(CompactLabelStyle())
                 .font(.footnote.weight(.semibold))
                 .foregroundStyle(Theme.accent)
@@ -232,7 +266,7 @@ struct ProposalDetailView: View {
                         LabeledContent("Nur vorgeschlagen", value: "\(proposal.optionalAssetIDs.count)")
                     }
                     if proposal.isSensitive {
-                        Label("Persönlicher Inhalt: wird nie automatisch übernommen.", systemImage: "lock")
+                        Label("Persönlicher Inhalt: wird nie automatisch ausgewählt.", systemImage: "lock")
                             .font(.footnote).foregroundStyle(.secondary)
                     }
                 }
@@ -350,7 +384,7 @@ struct ProposalDetailView: View {
                 .buttonStyle(SecondaryButtonStyle())
             }
             if recommended.isAccepted && !recommended.isKeepExisting {
-                Button("Übernehmen und später anlegen") { accept(); dismiss() }
+                Button("Auswählen und später anlegen") { accept(); dismiss() }
                     .font(.subheadline.weight(.semibold))
                     .frame(minHeight: 44)
             }
@@ -394,7 +428,7 @@ struct ProposalDetailView: View {
             }
         case .createNew: "Album anlegen"
         case .undecided: proposal.requiresUserName ? "Erst einen Namen eingeben" : "Album auswählen"
-        default: "Übernehmen"
+        default: "Auswählen"
         }
     }
 }

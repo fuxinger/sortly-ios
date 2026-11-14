@@ -448,3 +448,32 @@ struct PlanningExecutionTests {
         #expect(overrides.mustNotRecreate(SortlyID("trip-1")))
     }
 }
+
+@Suite("Plan preview lists every album")
+struct PlanPreviewTests {
+    let planner = OrganizationPlanner(rootFolderTitle: "Albumist", chunkSize: 5)
+
+    @Test func newAndExtendedAlbumsWithFolders() {
+        let italy = AlbumProposal(id: SortlyID("it"), kind: .placeCollection(.country), title: "Italien", folderPath: ["Länder"], assetIDs: ids("a", 0..<12))
+        let trip = AlbumProposal(id: SortlyID("t"), kind: .trip, title: "Rom · 10.05.–14.05.2024", folderPath: ["Reisen", "2024"], assetIDs: ids("a", 0..<8))
+        let summer = AlbumProposal(id: SortlyID("s"), kind: .trip, title: "Gardasee", assetIDs: ids("b", 0..<10))
+        let existing = CollectionSnapshot(id: "sommer", title: "Sommer", assetIDs: ids("b", 0..<6))
+        let plan = planner.makePlan(from: [
+            ConfirmedProposal(proposal: italy, decision: .createNew(title: nil, folderPath: nil)),
+            ConfirmedProposal(proposal: trip, decision: .createNew(title: nil, folderPath: nil)),
+            ConfirmedProposal(proposal: summer, decision: .extendExisting("sommer")),
+        ], inventory: CollectionInventory([existing]))
+        let preview = plan.albumPreview(inventory: CollectionInventory([existing]))
+        #expect(preview.count == 3)
+        let it = preview.first { $0.title == "Italien" }
+        #expect(it?.folderPath == ["Albumist", "Länder"])
+        #expect(it?.addedCount == 12)   // several chunks count once
+        #expect(it?.isNew == true)
+        let rome = preview.first { $0.title.hasPrefix("Rom") }
+        #expect(rome?.folderPath == ["Albumist", "Reisen", "2024"])
+        let sommer = preview.first { $0.title == "Sommer" }
+        #expect(sommer?.isNew == false)
+        #expect(sommer?.addedCount == 4)
+        #expect(sommer?.folderPath == [])
+    }
+}

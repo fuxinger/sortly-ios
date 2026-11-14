@@ -450,6 +450,15 @@ final class AppModel {
         proposals.filter { decisions[$0.id]?.isAccepted == true }
     }
 
+    /// Selected suggestions that still change something in Photos: an album that is kept
+    /// as it is needs nothing, so it does not count on the "N ausgewählte Alben anlegen" button.
+    var proposalsToApply: [AlbumProposal] {
+        proposals.filter { p in
+            guard let decision = decisions[p.id] else { return false }
+            return decision.isAccepted && !decision.isKeepExisting
+        }
+    }
+
     func setDecision(_ decision: ProposalDecision, for proposal: AlbumProposal) {
         let wasRejected = decisions[proposal.id] == .reject
         decisions[proposal.id] = decision

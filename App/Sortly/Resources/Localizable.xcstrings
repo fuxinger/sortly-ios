@@ -901,46 +901,6 @@
         }
       }
     },
-    "%lld übernommene Vorschläge umsetzen" : {
-      "localizations" : {
-        "en" : {
-          "variations" : {
-            "plural" : {
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Apply %lld accepted suggestion"
-                }
-              },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "Apply %lld accepted suggestions"
-                }
-              }
-            }
-          }
-        },
-        "de" : {
-          "variations" : {
-            "plural" : {
-              "one" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "%lld übernommenen Vorschlag umsetzen"
-                }
-              },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "%lld übernommene Vorschläge umsetzen"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "+%lld" : {
       "localizations" : {
         "en" : {
@@ -1787,16 +1747,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tell my story"
-          }
-        }
-      }
-    },
-    "Es gibt gerade keine übernommenen Vorschläge." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "There are no accepted suggestions right now."
           }
         }
       }
@@ -2751,16 +2701,6 @@
         }
       }
     },
-    "Persönlicher Inhalt: wird nie automatisch übernommen." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Personal content: never accepted automatically."
-          }
-        }
-      }
-    },
     "Plan wird erstellt" : {
       "localizations" : {
         "en" : {
@@ -3151,16 +3091,6 @@
         }
       }
     },
-    "Tipp: Du kannst auch weniger Vorschläge auf einmal übernehmen." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tip: You can also accept fewer suggestions at once."
-          }
-        }
-      }
-    },
     "Titel" : {
       "localizations" : {
         "en" : {
@@ -3531,26 +3461,6 @@
         }
       }
     },
-    "Übernehmen" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Accept"
-          }
-        }
-      }
-    },
-    "Übernommen" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Accepted"
-          }
-        }
-      }
-    },
     "Übersicht" : {
       "localizations" : {
         "en" : {
@@ -3907,16 +3817,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Suggestions for This Photo"
-          }
-        }
-      }
-    },
-    "Tippe auf einen Vorschlag, um ihn anzusehen und zu übernehmen." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tap a suggestion to view and accept it."
           }
         }
       }
@@ -5313,46 +5213,6 @@
         }
       }
     },
-    "%lld empfohlene übernehmen" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Accept %lld Recommended"
-          }
-        }
-      }
-    },
-    "Empfohlen sind sichere und wahrscheinliche Vorschläge ohne persönliche Themen. Angelegt wird erst beim Umsetzen, vorher siehst du alles noch einmal." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Recommended means certain and likely suggestions without personal topics. Nothing is created until you apply them, and you see everything once more first."
-          }
-        }
-      }
-    },
-    "%lld Vorschläge übernommen" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld suggestions accepted"
-          }
-        }
-      }
-    },
-    "Übernehmen und später anlegen" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Accept and Create Later"
-          }
-        }
-      }
-    },
     "Sicher heißt: Die Fotos gehören eindeutig zusammen." : {
       "localizations" : {
         "en" : {
@@ -5609,6 +5469,216 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Allow all photos"
+          }
+        }
+      }
+    },
+    "%lld ausgewählte Alben anlegen" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Create %lld selected album"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Create %lld selected albums"
+                }
+              }
+            }
+          }
+        },
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld ausgewähltes Album anlegen"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld ausgewählte Alben anlegen"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld Vorschläge ausgewählt" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld suggestion selected"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld suggestions selected"
+                }
+              }
+            }
+          }
+        },
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Vorschlag ausgewählt"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Vorschläge ausgewählt"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Es gibt gerade keine ausgewählten Vorschläge." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "There are no selected suggestions right now."
+          }
+        }
+      }
+    },
+    "Persönlicher Inhalt: wird nie automatisch ausgewählt." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Personal content: never selected automatically."
+          }
+        }
+      }
+    },
+    "Tipp: Du kannst auch weniger Vorschläge auf einmal auswählen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tip: You can also select fewer suggestions at once."
+          }
+        }
+      }
+    },
+    "Ausgewählt" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Selected"
+          }
+        }
+      }
+    },
+    "Tippe auf einen Vorschlag, um ihn anzusehen und auszuwählen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap a suggestion to view and select it."
+          }
+        }
+      }
+    },
+    "%lld empfohlene auswählen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select %lld Recommended"
+          }
+        }
+      }
+    },
+    "Auswählen und später anlegen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select and Create Later"
+          }
+        }
+      }
+    },
+    "Empfohlen sind sichere und wahrscheinliche Vorschläge ohne persönliche Themen. Angelegt wird erst, wenn du auf „Alben anlegen“ tippst. Vorher siehst du jedes Album noch einmal." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recommended means certain and likely suggestions without personal topics. Nothing is created until you tap “Create albums”, and you see every album once more first."
+          }
+        }
+      }
+    },
+    "Diese Alben werden angelegt" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "These albums will be created"
+          }
+        }
+      }
+    },
+    "Diese Alben werden angelegt oder ergänzt" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "These albums will be created or extended"
+          }
+        }
+      }
+    },
+    "Weniger anzeigen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show Less"
+          }
+        }
+      }
+    },
+    "Alle %lld Alben anzeigen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show All %lld Albums"
+          }
+        }
+      }
+    },
+    "Ergänzt" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Extended"
           }
         }
       }

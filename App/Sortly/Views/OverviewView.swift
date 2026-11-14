@@ -34,11 +34,11 @@ struct OverviewView: View {
                     }
                     .buttonStyle(PrimaryButtonStyle())
                 }
-                if !model.acceptedProposals.isEmpty {
+                if !model.proposalsToApply.isEmpty {
                     NavigationLink {
                         PlanReviewView()
                     } label: {
-                        Text("\(model.acceptedProposals.count) übernommene Vorschläge umsetzen")
+                        Text("\(model.proposalsToApply.count) ausgewählte Alben anlegen")
                     }
                     .buttonStyle(SecondaryButtonStyle())
                 }

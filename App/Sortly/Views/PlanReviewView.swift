@@ -38,7 +38,7 @@ struct PlanReviewView: View {
                     planContent(plan)
                 } else {
                     ContentUnavailableView("Nichts zu tun", systemImage: "checkmark.circle",
-                                           description: Text("Es gibt gerade keine übernommenen Vorschläge."))
+                                           description: Text("Es gibt gerade keine ausgewählten Vorschläge."))
                 }
                 if let failure = model.execution.failure {
                     Card {
@@ -93,6 +93,9 @@ struct PlanReviewView: View {
             if summary.removedMemberships > 0 { row("minus.rectangle", "Aus Alben genommen", summary.removedMemberships) }
             if summary.deletedContainers > 0 { row("rectangle.stack.badge.minus", "Entfernte Alben", summary.deletedContainers) }
         }
+
+        let albumList = plan.albumPreview(inventory: model.inventory)
+        if !albumList.isEmpty { PlanAlbumList(albums: albumList) }
 
         Card {
             Label {
@@ -363,12 +366,93 @@ struct UnlockCard: View {
                 Text("Die übrigen Vorschläge bleiben offen und laufen dir nicht weg.")
                     .font(.footnote).foregroundStyle(.secondary)
             } else {
-                Text("Tipp: Du kannst auch weniger Vorschläge auf einmal übernehmen.")
+                Text("Tipp: Du kannst auch weniger Vorschläge auf einmal auswählen.")
                     .font(.footnote).foregroundStyle(.secondary)
             }
             if let error = purchases.lastError {
                 Text(error).font(.footnote).foregroundStyle(.red)
             }
+        }
+    }
+}
+
+/// Every album of the plan with its folder and photo count, so it is clear what
+/// Albumist will make before anything happens (Fuchs, 14.11.).
+struct PlanAlbumList: View {
+    let albums: [PlannedAlbumPreview]
+    @State private var showAll = false
+    private let collapsedCount = 6
+
+    var body: some View {
+        let visible = showAll ? albums : Array(albums.prefix(collapsedCount))
+        Card {
+            if albums.allSatisfy(\.isNew) {
+                Text("Diese Alben werden angelegt").font(.headline)
+            } else {
+                Text("Diese Alben werden angelegt oder ergänzt").font(.headline)
+            }
+            ForEach(visible) { album in
+                PlanAlbumRow(album: album)
+                if album.id != visible.last?.id { Divider() }
+            }
+            if albums.count > collapsedCount {
+                Button {
+                    withAnimation(.smooth(duration: 0.3)) { showAll.toggle() }
+                } label: {
+                    if showAll {
+                        Text("Weniger anzeigen")
+                    } else {
+                        Text("Alle \(albums.count) Alben anzeigen")
+                    }
+                }
+                .font(.subheadline.weight(.semibold))
+                .frame(minHeight: 44)
+            }
+        }
+    }
+}
+
+private struct PlanAlbumRow: View {
+    let album: PlannedAlbumPreview
+    @ScaledMetric(relativeTo: .body) private var side: CGFloat = 44
+
+    var body: some View {
+        HStack(spacing: Theme.Spacing.m) {
+            cover
+                .frame(width: side, height: side)
+                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(album.title).font(.body.weight(.medium)).lineLimit(2)
+                if !album.folderPath.isEmpty {
+                    Text(album.folderPath.joined(separator: " › "))
+                        .font(.footnote).foregroundStyle(.secondary).lineLimit(2)
+                }
+            }
+            Spacer(minLength: Theme.Spacing.s)
+            VStack(alignment: .trailing, spacing: 2) {
+                badge
+                Text("\(album.addedCount) Fotos").font(.footnote).foregroundStyle(.secondary).monospacedDigit()
+            }
+        }
+        .accessibilityElement(children: .combine)
+    }
+
+    @ViewBuilder
+    private var cover: some View {
+        if let id = album.coverAssetID {
+            AssetThumbnail(id: id, side: side)
+        } else {
+            Theme.accent.opacity(0.15)
+        }
+    }
+
+    @ViewBuilder
+    private var badge: some View {
+        if album.isNew {
+            Text("Neu").font(.caption.weight(.semibold)).foregroundStyle(Theme.accent)
+        } else {
+            Text("Ergänzt").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
         }
     }
 }

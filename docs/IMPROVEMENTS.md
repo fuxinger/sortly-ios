@@ -57,6 +57,9 @@ Quellen: **E1** Expertenrunde 14.11.2026 (Tempo, Oberfläche, Technik, Produkt) 
 | ✅ | „0 Alben gefunden“ wirkte wie ein Fehler. Nur noch „N davon in deinen Alben“, wenn es welche gibt. | S | B |
 | ✅ | Ring zeigte bei größter Schrift „6…“. Ring wächst mit der Schrift, Zahl bleibt lesbar. | S | B |
 | ✅ | Zu viele Alben auf einmal: Land + Stadt + Reise ergab schnell 40 Alben. Entscheidung Fuchs 14.11.: standardmäßig nur Länder und Reisen, Städte per Schalter „Städte als eigene Alben“ in den Einstellungen. | S | B (3 von 5) |
+| ✅ | „Umsetzen“ zeigte nur Zahlen (8 Ordner, 10 Alben), aber nicht, welche Alben entstehen. Die Vorschau listet jetzt jedes Album mit Titelbild, Ordner, Fotoanzahl und „Neu“ oder „Ergänzt“. | S | Fuchs 14.11. |
+| ✅ | „Übernommen“ war unklar (ist schon etwas angelegt?). Jetzt durchgehend „auswählen“ und „N ausgewählte Alben anlegen“; Alben, die so bleiben, zählen nicht mehr mit. | S | Fuchs 14.11. |
+| ✅ | Reisen wie „Rom · 10.05.–14.05.2024“ wirkten wie Stadt-Alben, weil alle Vorschläge gemischt standen. Die Gesamtliste hat jetzt Abschnitte je Bereich (Länder und Orte, Reisen …), Reisen neueste zuerst. | S | Fuchs 14.11. |
 | ✅ | Städte schon beim Einrichten wählbar: Schalter „Städte als eigene Alben“ unter „Länder und Orte“ (vorher nur in den Einstellungen). | S | Fuchs 14.11. |
 | 💡 | Bereich „Kinder und Familie“ (Gesichter). Mit Personen-Erkennung in Update 1.1. | L | B |
 | 💡 | Fertig-Bildschirm mit Collage der neuen Alben statt nur Zahlen. | M | B |

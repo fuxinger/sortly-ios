@@ -239,7 +239,7 @@ final class SortlyFlowUITests: XCTestCase {
             sleep(1)
             shot("07-suggestions"); audit("suggestions")
             // Rows live in a List (collection view), not a scroll view. The first cell can be
-            // the "N empfohlene übernehmen" button, so pick the first real suggestion row.
+            // the "N empfohlene auswählen" button, so pick the first real suggestion row.
             let first = suggestionRow()
             if tap(first, "open first suggestion", timeout: 10) {
                 sleep(1)
@@ -253,7 +253,7 @@ final class SortlyFlowUITests: XCTestCase {
                 XCTAssertTrue(list, "Back from a suggestion did not return to the list")
                 shot("08b-back-to-list")
             }
-            if tap(button("empfohlene übernehmen"), "accept recommended") {
+            if tap(button("empfohlene auswählen"), "accept recommended") {
                 sleep(1)
                 shot("09-accepted")
             }
@@ -276,9 +276,17 @@ final class SortlyFlowUITests: XCTestCase {
         }
 
         // Apply
-        if tap(button("umsetzen"), "open plan", timeout: 20) {
+        if tap(button("ausgewählte Alben anlegen"), "open plan", timeout: 20) {
             sleep(3)
             shot("10-plan"); audit("plan")
+            // The plan names every album it will make, not only the counts.
+            let list = app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH %@", "Diese Alben werden")).firstMatch
+            print(list.waitForExistence(timeout: 5) ? "UI_STEP_OK plan lists albums" : "UI_STEP_MISSING plan lists albums")
+            if list.exists {
+                app.swipeUp(); sleep(1)
+                shot("10a-plan-albums")
+                app.swipeDown(); sleep(1)
+            }
             if tap(button("Jetzt umsetzen"), "apply plan", timeout: 30) {
                 let applied = Date()
                 // Mid-show frames of "photos fly into albums".

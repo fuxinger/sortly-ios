@@ -279,7 +279,7 @@ struct AssetDetailView: View {
                     } header: {
                         Text("Vorschläge für dieses Foto")
                     } footer: {
-                        Text("Tippe auf einen Vorschlag, um ihn anzusehen und zu übernehmen.")
+                        Text("Tippe auf einen Vorschlag, um ihn anzusehen und auszuwählen.")
                     }
                 } else if let reason = reasonText {
                     Section("Warum nicht sortiert?") {
