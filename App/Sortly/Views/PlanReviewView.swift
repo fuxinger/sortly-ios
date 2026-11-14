@@ -11,6 +11,7 @@ struct PlanReviewView: View {
     /// A plan built elsewhere (album merge); otherwise the accepted proposals are planned.
     var prebuilt: ChangePlan? = nil
     @State private var loading = true
+    @ScaledMetric(relativeTo: .body) private var iconWidth: CGFloat = 28
 
     var body: some View {
         ScrollView {
@@ -60,9 +61,9 @@ struct PlanReviewView: View {
         let summary = plan.summary
         Text("Das passiert jetzt").font(.title2.weight(.bold))
         Card {
-            row("folder.badge.plus", "Neue Ordner", summary.newFolders)
+            if summary.newFolders > 0 { row("folder.badge.plus", "Neue Ordner", summary.newFolders) }
             row("rectangle.stack.badge.plus", "Neue Alben", summary.newAlbums)
-            row("plus.rectangle.on.rectangle", "Ergänzte Alben", summary.extendedAlbums)
+            if summary.extendedAlbums > 0 { row("plus.rectangle.on.rectangle", "Ergänzte Alben", summary.extendedAlbums) }
             row("photo", "Betroffene Fotos und Videos", summary.distinctAssets)
             if summary.totalAssignments != summary.distinctAssets {
                 row("square.on.square", "Album-Zuordnungen", summary.totalAssignments)
@@ -121,12 +122,18 @@ struct PlanReviewView: View {
         }
     }
 
+    /// One line of the summary. Icons share one width so the titles line up.
     private func row(_ symbol: String, _ title: LocalizedStringKey, _ value: Int) -> some View {
-        HStack {
-            Label(title, systemImage: symbol)
-            Spacer()
+        HStack(spacing: Theme.Spacing.m) {
+            Image(systemName: symbol)
+                .foregroundStyle(Theme.accent)
+                .frame(width: iconWidth)
+                .accessibilityHidden(true)
+            Text(title)
+            Spacer(minLength: Theme.Spacing.s)
             Text(value.formatted()).monospacedDigit().font(.body.weight(.semibold))
         }
+        .accessibilityElement(children: .combine)
     }
 
     private var runningCard: some View {
@@ -142,7 +149,6 @@ struct PlanReviewView: View {
     }
 }
 
-/// Result of an executed plan with undo.
 /// Haptic feedback when the changes are done, or when something went wrong.
 /// (A separate modifier keeps the screen's body quick to type-check.)
 private struct ExecutionHaptics: ViewModifier {
@@ -159,33 +165,48 @@ private struct ExecutionHaptics: ViewModifier {
     }
 }
 
+/// Result of an executed plan: what happened, a way to see it in Photos, and undo.
 struct ResultCard: View {
     @Environment(AppModel.self) private var model
     @Environment(\.requestReview) private var requestReview
     var plan: ChangePlan
     @State private var confirmUndo = false
+    @State private var appeared = false
+    @Environment(\.openURL) private var openURL
     private static let reviewKey = "review.askedAfterFirstAlbums"
 
     var body: some View {
         let summary = plan.summary
         let failed = plan.steps.filter { if case .failed = $0.state { true } else { false } }.count
         Card {
-            Label {
-                Text(failed == 0 ? "Fertig" : "Teilweise fertig").font(.title3.weight(.bold))
-            } icon: {
+            VStack(spacing: Theme.Spacing.s) {
                 Image(systemName: failed == 0 ? "checkmark.circle.fill" : "exclamationmark.circle.fill")
+                    .font(.system(size: 56))
                     .foregroundStyle(failed == 0 ? Theme.accent : Theme.tint(for: .documents))
+                    .symbolEffect(.bounce, value: appeared)
+                    .accessibilityHidden(true)
+                Text(failed == 0 ? "Fertig" : "Teilweise fertig").font(.title2.weight(.bold))
+                    .accessibilityAddTraits(.isHeader)
+                Text(Counted.join([String(localized: "\(summary.newAlbums) neue Alben"), String(localized: "\(summary.extendedAlbums) ergänzt"),
+                                   String(localized: "\(summary.distinctAssets) Fotos einsortiert")], separator: ", ") + ".")
+                    .font(.subheadline)
+                    .multilineTextAlignment(.center)
+                if failed > 0 {
+                    Text("\(failed) Schritte konnten nicht ausgeführt werden. Sie werden beim nächsten Durchgang erneut versucht.")
+                        .font(.footnote).foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                }
             }
-            Text(Counted.join([String(localized: "\(summary.newAlbums) neue Alben"), String(localized: "\(summary.extendedAlbums) ergänzt"),
-                               String(localized: "\(summary.distinctAssets) Fotos einsortiert")], separator: ", ") + ".")
-                .font(.subheadline)
-            if failed > 0 {
-                Text("\(failed) Schritte konnten nicht ausgeführt werden. Sie werden beim nächsten Durchgang erneut versucht.")
-                    .font(.footnote).foregroundStyle(.secondary)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, Theme.Spacing.s)
+            if let photos = URL(string: "photos-redirect://") {
+                Button("In Fotos ansehen") { openURL(photos) }
+                    .buttonStyle(PrimaryButtonStyle())
             }
             Button("Rückgängig machen") { confirmUndo = true }
                 .buttonStyle(SecondaryButtonStyle())
         }
+        .onAppear { appeared = true }
         .task {
             // Ask for a rating once, at the moment the first albums are done (never after errors).
             let summary = plan.summary

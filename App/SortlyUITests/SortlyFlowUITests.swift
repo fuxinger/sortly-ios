@@ -365,7 +365,7 @@ final class SortlyFlowUITests: XCTestCase {
     // MARK: Tap-through sweep
 
     /// Labels the sweep never taps: anything that changes the library or the analysis.
-    private let sweepSkip = ["Pause", "Neu prüfen", "Jetzt umsetzen", "Rückgängig", "Löschen", "Entfernen", "Anlegen",
+    private let sweepSkip = ["Pause", "Neu prüfen", "Jetzt umsetzen", "Rückgängig", "In Fotos ansehen", "Löschen", "Entfernen", "Anlegen",
                              "Übernehmen", "Nicht jetzt", "ergänzen", "so lassen", "Fortsetzen", "Beispiel", "Ignorieren", "Auswählen"]
 
     private func isSafe(_ label: String) -> Bool {

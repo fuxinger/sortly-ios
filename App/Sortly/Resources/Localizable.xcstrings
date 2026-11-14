@@ -4690,6 +4690,16 @@
           }
         }
       }
+    },
+    "In Fotos ansehen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View in Photos"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"
