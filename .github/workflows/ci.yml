@@ -94,6 +94,23 @@ jobs:
           name: Sortly-simulator-app
           path: build/Sortly-simulator.zip
           retention-days: 30
+      - name: Upload to Appetize for browser testing
+        # Runs only when the repository has the secret APPETIZE_TOKEN. Keeps one app
+        # (note "sortly-ci") and updates it, so the test link stays the same.
+        if: success() && hashFiles('build/Sortly-simulator.zip') != ''
+        continue-on-error: true
+        env:
+          APPETIZE_TOKEN: ${{ secrets.APPETIZE_TOKEN }}
+        run: |
+          if [ -z "$APPETIZE_TOKEN" ]; then echo "No APPETIZE_TOKEN secret, skipping."; exit 0; fi
+          key=$(curl -sS -H "X-API-KEY: $APPETIZE_TOKEN" https://api.appetize.io/v1/apps \
+            | jq -r '[.data[]? | select(.note == "sortly-ci")][0].publicKey // empty')
+          url=https://api.appetize.io/v1/apps${key:+/$key}
+          curl -sS --fail-with-body -X POST "$url" -H "X-API-KEY: $APPETIZE_TOKEN" \
+            -F "file=@build/Sortly-simulator.zip" -F "platform=ios" -F "note=sortly-ci" > appetize.json
+          key=$(jq -r '.publicKey' appetize.json)
+          echo "APPETIZE_LINK https://appetize.io/app/$key"
+          echo "### Im Browser testen: https://appetize.io/app/$key" >> "$GITHUB_STEP_SUMMARY"
       - name: Export strings for translation
         if: success() && hashFiles('App/project.yml') != ''
         run: |
