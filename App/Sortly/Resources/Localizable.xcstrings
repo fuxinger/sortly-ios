@@ -5682,6 +5682,16 @@
           }
         }
       }
+    },
+    "Auswahl aufheben" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear Selection"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

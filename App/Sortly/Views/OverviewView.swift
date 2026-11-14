@@ -13,6 +13,8 @@ struct OverviewView: View {
     @State private var showSettings = false
     /// Lives here, not in the starter card: the card disappears once its albums are accepted.
     @State private var showStarterPlan = false
+    /// The starter set is selected only while its preview is open.
+    @State private var starterSelection: AppModel.PreviewSelection?
 
     var body: some View {
         ScrollView {
@@ -24,7 +26,10 @@ struct OverviewView: View {
                 statusCard
                 analysisCard
                 if model.history.isEmpty && model.acceptedProposals.isEmpty {
-                    StarterSetCard { showStarterPlan = true }
+                    StarterSetCard { set in
+                        starterSelection = model.selectForPreview(set.map { ($0, model.recommendedDecision(for: $0)) })
+                        showStarterPlan = true
+                    }
                 }
                 if !model.openProposals.isEmpty {
                     NavigationLink {
@@ -65,6 +70,13 @@ struct OverviewView: View {
             NavigationStack { SettingsView() }
         }
         .navigationDestination(isPresented: $showStarterPlan) { PlanReviewView() }
+        .onChange(of: showStarterPlan) { _, showing in
+            // Back without creating: the starter set is not selected any more.
+            if !showing, let selection = starterSelection {
+                model.endPreview(selection)
+                starterSelection = nil
+            }
+        }
         .refreshable { await model.refreshDerived() }
     }
 
@@ -308,7 +320,7 @@ struct InterruptedPlanCard: View {
 struct StarterSetCard: View {
     @Environment(AppModel.self) private var model
     @Environment(Purchases.self) private var purchases
-    var onStart: () -> Void
+    var onStart: ([AlbumProposal]) -> Void
 
     var body: some View {
         let limit = purchases.isUnlocked || Purchases.unlockedForUITests ? 10 : min(10, purchases.remainingFreeAlbums)
@@ -333,8 +345,7 @@ struct StarterSetCard: View {
                     .font(.footnote).foregroundStyle(.secondary)
                     .lineLimit(2)
                 Button {
-                    model.accept(set)
-                    onStart()
+                    onStart(set)
                 } label: {
                     if purchases.isUnlocked {
                         Text("\(set.count) Alben anlegen")

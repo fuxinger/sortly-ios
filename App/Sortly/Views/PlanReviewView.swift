@@ -15,6 +15,7 @@ struct PlanReviewView: View {
     @State private var show: [SortingShow.Album]?
     @ScaledMetric(relativeTo: .body) private var iconWidth: CGFloat = 28
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.dismiss) private var dismiss
     @State private var scroll = ScrollPosition(edge: .top)
     /// The screen loads once; coming back from another tab keeps the result and its undo.
     @State private var didLoad = false
@@ -151,6 +152,15 @@ struct PlanReviewView: View {
                 Text("Kostenlos. Danach hast du noch \(purchases.remainingFreeAlbums - albums) von \(Purchases.freeAlbumLimit) Gratis-Alben.")
                     .font(.footnote).foregroundStyle(.secondary)
             }
+        }
+        if prebuilt == nil && !model.acceptedProposals.isEmpty {
+            // The way out: nothing selected, back to the open suggestions.
+            Button("Auswahl aufheben") {
+                model.clearSelection()
+                dismiss()
+            }
+            .font(.subheadline.weight(.semibold))
+            .frame(maxWidth: .infinity, minHeight: 44)
         }
     }
 

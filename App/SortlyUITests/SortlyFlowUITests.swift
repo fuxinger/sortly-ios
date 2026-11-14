@@ -234,6 +234,22 @@ final class SortlyFlowUITests: XCTestCase {
         shot("06b-overview-areas")
         app.swipeDown(); app.swipeDown()
 
+        // Fuchs, 14.11.: looking at the starter set and going back must not select anything.
+        let starter = app.buttons.matching(NSPredicate(format: "label MATCHES %@", "[0-9]+ Alben (kostenlos )?anlegen")).firstMatch
+        if starter.waitForExistence(timeout: 5) {
+            tap(starter, "open starter set")
+            let preview = app.navigationBars["Umsetzen"].waitForExistence(timeout: 20)
+            print(preview ? "UI_STEP_OK starter preview opened" : "UI_STEP_MISSING starter preview opened")
+            sleep(2); shot("06c-starter-plan")
+            back(); sleep(2)
+            let leftover = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "ausgewählte")).firstMatch.exists
+            print(leftover ? "UI_STEP_MISSING nothing selected after starter preview" : "UI_STEP_OK nothing selected after starter preview")
+            XCTAssertFalse(leftover, "Going back from the starter preview left suggestions selected")
+            shot("06d-back-from-starter")
+        } else {
+            print("UI_STEP_MISSING starter set card")
+        }
+
         // Suggestions
         if tap(button("Vorschläge prüfen"), "open suggestions", timeout: 20) {
             sleep(1)
@@ -247,7 +263,16 @@ final class SortlyFlowUITests: XCTestCase {
                 print(opened ? "UI_STEP_OK suggestion detail opened" : "UI_STEP_MISSING suggestion detail opened")
                 XCTAssertTrue(opened, "Tapping a suggestion did not open its detail")
                 shot("08-suggestion-detail"); audit("suggestion detail")
+                // "Album anlegen" opens a preview; back without creating selects nothing.
+                let create = app.buttons["Album anlegen"]
+                if create.exists {
+                    create.tap()
+                    if app.navigationBars["Umsetzen"].waitForExistence(timeout: 20) { sleep(1); back(); sleep(1) }
+                }
                 back(); sleep(1)
+                let selected = suggestionRow().label.contains("Ausgewählt")
+                print(selected ? "UI_STEP_MISSING nothing selected after single preview" : "UI_STEP_OK nothing selected after single preview")
+                XCTAssertFalse(selected, "Going back from a single preview left the suggestion selected")
                 let list = app.navigationBars["Vorschläge"].waitForExistence(timeout: 5)
                 print(list ? "UI_STEP_OK back to suggestions" : "UI_STEP_MISSING back to suggestions")
                 XCTAssertTrue(list, "Back from a suggestion did not return to the list")
@@ -444,7 +469,8 @@ final class SortlyFlowUITests: XCTestCase {
 
     /// Labels the sweep never taps: anything that changes the library or the analysis.
     private let sweepSkip = ["Pause", "Neu prüfen", "Jetzt umsetzen", "Rückgängig", "In Fotos ansehen", "Löschen", "Entfernen", "Anlegen",
-                             "Übernehmen", "Nicht jetzt", "ergänzen", "so lassen", "Fortsetzen", "Beispiel", "Ignorieren", "Auswählen"]
+                             "Übernehmen", "Nicht jetzt", "ergänzen", "so lassen", "Fortsetzen", "Beispiel", "Ignorieren", "Auswählen",
+                             "aufheben"]
 
     private func isSafe(_ label: String) -> Bool {
         !label.isEmpty && !sweepSkip.contains { label.localizedCaseInsensitiveContains($0) }

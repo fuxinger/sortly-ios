@@ -60,6 +60,7 @@ Quellen: **E1** Expertenrunde 14.11.2026 (Tempo, Oberfläche, Technik, Produkt) 
 | ✅ | „Umsetzen“ zeigte nur Zahlen (8 Ordner, 10 Alben), aber nicht, welche Alben entstehen. Die Vorschau listet jetzt jedes Album mit Titelbild, Ordner, Fotoanzahl und „Neu“ oder „Ergänzt“. | S | Fuchs 14.11. |
 | ✅ | „Übernommen“ war unklar (ist schon etwas angelegt?). Jetzt durchgehend „auswählen“ und „N ausgewählte Alben anlegen“; Alben, die so bleiben, zählen nicht mehr mit. | S | Fuchs 14.11. |
 | ✅ | Reisen wie „Rom · 10.05.–14.05.2024“ wirkten wie Stadt-Alben, weil alle Vorschläge gemischt standen. Die Gesamtliste hat jetzt Abschnitte je Bereich (Länder und Orte, Reisen …), Reisen neueste zuerst. | S | Fuchs 14.11. |
+| ✅ | Heimliche Auswahl: „Dein Startpaket – N Alben anlegen“ und „Album anlegen“ wählten Vorschläge aus, die nach „Zurück“ ausgewählt blieben (Fuchs sah 34 ausgewählte, ohne etwas gewählt zu haben). Zurück ohne Anlegen stellt jetzt alles wieder her; „Auswahl aufheben“ in der Vorschau; UI-Test prüft beide Wege. | M | Fuchs 14.11. |
 | ✅ | Städte schon beim Einrichten wählbar: Schalter „Städte als eigene Alben“ unter „Länder und Orte“ (vorher nur in den Einstellungen). | S | Fuchs 14.11. |
 | 💡 | Bereich „Kinder und Familie“ (Gesichter). Mit Personen-Erkennung in Update 1.1. | L | B |
 | 💡 | Fertig-Bildschirm mit Collage der neuen Alben statt nur Zahlen. | M | B |

@@ -446,6 +446,42 @@ final class AppModel {
         for p in proposals { setDecision(recommendedDecision(for: p), for: p) }
     }
 
+    /// Decisions set only for a preview opened straight from a button ("Dein Startpaket",
+    /// "Album anlegen"), with what was there before.
+    struct PreviewSelection {
+        fileprivate var entries: [(proposal: AlbumProposal, previous: ProposalDecision?, chosen: ProposalDecision)]
+    }
+
+    /// Selects suggestions for a preview. Leaving the preview without creating anything must
+    /// undo this with `endPreview(_:)`: nothing may stay selected that the user never chose
+    /// (Fuchs, 14.11.: "Ich hatte aber noch nichts ausgewählt").
+    func selectForPreview(_ items: [(AlbumProposal, ProposalDecision)]) -> PreviewSelection {
+        let entries = items.map { (proposal: $0.0, previous: decisions[$0.0.id], chosen: $0.1) }
+        for e in entries { setDecision(e.chosen, for: e.proposal) }
+        return PreviewSelection(entries: entries)
+    }
+
+    /// Back from a preview: decisions that are still the preview's own go back to what they
+    /// were. Applied suggestions were already cleared by the execution and stay as they are.
+    func endPreview(_ selection: PreviewSelection) {
+        var cleared = false
+        for e in selection.entries where decisions[e.proposal.id] == e.chosen {
+            if let previous = e.previous {
+                setDecision(previous, for: e.proposal)
+            } else {
+                decisions[e.proposal.id] = nil
+                cleared = true
+            }
+        }
+        if cleared { persistDecisions() }
+    }
+
+    /// "Auswahl aufheben" on the preview: every selected suggestion goes back to the open list.
+    func clearSelection() {
+        for (id, decision) in decisions where decision.isAccepted { decisions[id] = nil }
+        persistDecisions()
+    }
+
     var acceptedProposals: [AlbumProposal] {
         proposals.filter { decisions[$0.id]?.isAccepted == true }
     }

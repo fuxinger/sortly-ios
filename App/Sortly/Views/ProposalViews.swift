@@ -167,6 +167,8 @@ struct ProposalDetailView: View {
     @State private var preparing = false
     @State private var applied = false
     @State private var rejectingMatch = false
+    /// Set by "Album anlegen" for its preview only; undone when the user comes back without creating.
+    @State private var previewSelection: AppModel.PreviewSelection?
     @State private var explainReliability = false
 
     /// Only trips get a creative name; places and dates keep their exact titles.
@@ -298,8 +300,15 @@ struct ProposalDetailView: View {
             if showDirect && finished != nil { applied = true }
         }
         .onChange(of: showDirect) { _, showing in
-            // Back from the finished preview: the suggestion is done, return to the list.
-            if !showing && applied { dismiss() }
+            guard !showing else { return }
+            if applied {
+                // Back from the finished preview: the suggestion is done, return to the list.
+                dismiss()
+            } else if let selection = previewSelection {
+                // Back without creating: the suggestion is not selected.
+                model.endPreview(selection)
+            }
+            previewSelection = nil
         }
     }
 
@@ -399,13 +408,15 @@ struct ProposalDetailView: View {
 
     /// Applies this one suggestion right away (preview, then the album exists in Photos).
     private func applyNow() async {
-        accept()
+        if proposal.requiresUserName { model.setUserTitle(name, for: proposal) }
+        previewSelection = model.selectForPreview([(proposal, recommended)])
         preparing = true
         defer { preparing = false }
         if let plan = await model.singlePlan(for: proposal) {
             directPlan = plan
             showDirect = true
         } else {
+            previewSelection = nil
             dismiss() // nothing to change (album already complete or kept as it is)
         }
     }
