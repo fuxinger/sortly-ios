@@ -30,7 +30,8 @@ Feste Versprechen an die Nutzer, die der Code nie brechen darf:
 
 Rahmen: aktuelles iOS 27 mit Xcode 27 (Mindestversion iOS 26), Swift 6 mit strikter Nebenläufigkeitsprüfung,
 keine Fremdbibliotheken. Die Fachlogik liegt in einem Swift-Paket und läuft auch auf Linux.
-Es gibt 180+ automatische Tests (Swift Testing) und einen UI-Test im Simulator.
+Es gibt rund 200 automatische Tests (Swift Testing), einen Stresstest mit zufälligen
+Mediatheken und einen UI-Test im Simulator, der die ganze App einmal durchklickt.
 
 ## Aufbau des Codes
 
@@ -46,6 +47,19 @@ Es gibt 180+ automatische Tests (Swift Testing) und einen UI-Test im Simulator.
 
 Lies zuerst `docs/ARCHITECTURE.md`, `docs/DECISIONS.md` und `docs/KNOWN_LIMITATIONS.md`.
 Was dort als bewusste Entscheidung oder bekannte Grenze steht, ist kein Fehler.
+
+## Zuletzt geändert (bitte besonders genau ansehen)
+
+- **Rückgängig in einem Schritt:** Alle Alben und Ordner eines Plans werden in *einer*
+  PhotoKit-Anfrage gelöscht (iOS fragt dann nur einmal). Ein Ordner nur, wenn alles darin
+  mitgeht. `ChangeExecutor.deleteBatch`, `PhotoKitLibrary.deleteCollections`, `UndoPlanner`.
+- **Städte sind jetzt optional:** Standard sind nur Länder und Reisen
+  (`PlaceSettings.levels`), Städte per Schalter in den Einstellungen.
+- **Album-Abgleich bei Ländern:** Ein Land wird nie mit einem kleineren, anders benannten
+  Album („Rom · 2024“ in Italien) oder mit dem Album eines anderen Vorschlags abgeglichen
+  (`AlbumMatcher.isPart`, `claimedByOthers`). Bei mehreren passenden Alben wählt der Nutzer.
+- **Eingeschränkter Fotozugriff:** Karte in der Übersicht mit Anzahl der sichtbaren Fotos und
+  „Auswahl ändern“ (`LimitedAccessCard` in `OverviewView.swift`).
 
 ## Prüfauftrag, in dieser Reihenfolge
 
