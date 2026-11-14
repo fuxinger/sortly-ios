@@ -248,12 +248,11 @@ public actor SortlyStore: ChangePlanStoring {
     // MARK: - Recognized text (search)
 
     public func indexText(_ text: String, for asset: AssetID) throws {
-        try db.execute("DELETE FROM text_plain WHERE asset_id = ?", [.text(asset.rawValue)])
-        try db.execute("INSERT INTO text_plain (asset_id, content) VALUES (?, ?)", [.text(asset.rawValue), .text(text)])
-        if hasFullTextSearch {
-            try db.execute("DELETE FROM text_fts WHERE asset_id = ?", [.text(asset.rawValue)])
-            try db.execute("INSERT INTO text_fts (asset_id, content) VALUES (?, ?)", [.text(asset.rawValue), .text(text)])
-        }
+        // The full-text index follows through triggers (see Migrations.ftsSQL).
+        try db.execute("""
+            INSERT INTO text_plain (asset_id, content) VALUES (?, ?)
+            ON CONFLICT(asset_id) DO UPDATE SET content = excluded.content
+            """, [.text(asset.rawValue), .text(text)])
     }
 
     /// Full-text search over recognized text. Uses FTS5 when available, LIKE otherwise.
@@ -262,7 +261,10 @@ public actor SortlyStore: ChangePlanStoring {
         guard !terms.isEmpty else { return [] }
         if hasFullTextSearch {
             let match = terms.map { "\"" + $0.replacingOccurrences(of: "\"", with: "") + "\"*" }.joined(separator: " AND ")
-            return try db.query("SELECT asset_id FROM text_fts WHERE text_fts MATCH ? LIMIT ?", [.text(match), .integer(Int64(limit))])
+            return try db.query("""
+                SELECT p.asset_id FROM text_fts JOIN text_plain p ON p.id = text_fts.rowid
+                WHERE text_fts MATCH ? LIMIT ?
+                """, [.text(match), .integer(Int64(limit))])
                 .compactMap { $0["asset_id"]?.string.map { AssetID($0) } }
         }
         let clause = terms.map { _ in "content LIKE ?" }.joined(separator: " AND ")
@@ -378,7 +380,6 @@ public actor SortlyStore: ChangePlanStoring {
             for table in ["analysis_results", "asset_places", "place_cache", "analysis_progress", "text_plain"] {
                 try db.execute("DELETE FROM \(table)")
             }
-            if hasFullTextSearch { try db.execute("DELETE FROM text_fts") }
             try db.execute("UPDATE assets SET analysis_version = 0")
             if includingDecisions {
                 for table in ["overrides", "rules", "managed_albums", "plans", "settings"] { try db.execute("DELETE FROM \(table)") }

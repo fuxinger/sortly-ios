@@ -10,7 +10,7 @@ struct StoreTests {
 
     @Test func migrationsRun() async throws {
         let s = try store()
-        #expect(await s.schemaVersion == 2)
+        #expect(await s.schemaVersion == 3)
     }
 
     @Test func fileBackedStoreSurvivesReopen() async throws {
@@ -22,7 +22,7 @@ struct StoreTests {
         }
         let reopened = try SortlyStore(url: url)
         #expect(try await reopened.assetCount() == 1)
-        #expect(await reopened.schemaVersion == 2)
+        #expect(await reopened.schemaVersion == 3)
     }
 
     @Test func upsertReportsOnlyChangedAssetsAndRoundTrips() async throws {
@@ -84,6 +84,49 @@ struct StoreTests {
         #expect(try await s.searchText("amazon bestell") == ["a"])
         #expect(try await s.searchText("Bäckerei") == ["b"])
         #expect(try await s.searchText("").isEmpty)
+    }
+
+    @Test func version2DatabaseKeepsItsSearchableText() async throws {
+        let dir = FileManager.default.temporaryDirectory.appendingPathComponent("sortly-mig-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let path = dir.appendingPathComponent("db.sqlite").path
+        do {
+            // A database as version 2 left it, including the old index with an orphaned row.
+            let old = try SQLiteDatabase(path: path)
+            for step in Migrations.steps where step.version <= 2 { try old.execute(step.sql) }
+            try old.setUserVersion(2)
+            try old.execute("CREATE VIRTUAL TABLE text_fts USING fts5(asset_id UNINDEXED, content)")
+            try old.execute("INSERT INTO assets (id, kind, subtypes, pixel_width, pixel_height, duration, is_favorite, fingerprint) VALUES ('a', 'image', 0, 1, 1, 0, 0, 'x')")
+            try old.execute("INSERT INTO text_plain (asset_id, content) VALUES ('a', 'Rechnung Hotel Rom')")
+            try old.execute("INSERT INTO text_fts (asset_id, content) VALUES ('a', 'Rechnung Hotel Rom')")
+            try old.execute("INSERT INTO text_fts (asset_id, content) VALUES ('gone', 'Kontoauszug alt')")
+        }
+        let s = try SortlyStore(url: URL(fileURLWithPath: path))
+        #expect(await s.schemaVersion == 3)
+        #expect(await s.hasFullTextSearch)
+        #expect(try await s.searchText("Hotel") == ["a"])
+        #expect(try await s.searchText("Kontoauszug").isEmpty) // orphan from the old index is gone
+    }
+
+    @Test func searchIndexFollowsTextChangesAndDeletedPhotos() async throws {
+        let s = try store()
+        #expect(await s.hasFullTextSearch)
+        try await s.upsertAssets([AssetSnapshot(id: "a"), AssetSnapshot(id: "b")])
+        try await s.indexText("Rechnung Hotel Rom", for: "a")
+        try await s.indexText("Kassenbon Bäckerei", for: "b")
+        // Re-recognized text replaces the old one in the index.
+        try await s.indexText("Rechnung Hotel Florenz", for: "a")
+        #expect(try await s.searchText("Rom").isEmpty)
+        #expect(try await s.searchText("Florenz") == ["a"])
+        // A photo deleted from the library leaves no searchable text behind.
+        _ = try await s.removeAssets(notIn: ["b"])
+        #expect(try await s.searchText("Rechnung").isEmpty)
+        #expect(try await s.recognizedText(for: "a") == nil)
+        #expect(try await s.searchText("Bäckerei") == ["b"])
+        // Rebuilding the analysis clears the whole index.
+        try await s.resetAnalysis()
+        #expect(try await s.searchText("Bäckerei").isEmpty)
     }
 
     @Test func rulesAreVersionedInTheStore() async throws {

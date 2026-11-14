@@ -90,10 +90,38 @@ enum Migrations {
         (2, """
         ALTER TABLE asset_places ADD COLUMN precision_m REAL;
         """),
+        // v3: recognized text gets a row id so the full-text index follows it automatically
+        // (triggers). Deleting a photo now also removes its text from the search index, and
+        // updates no longer scan the whole index.
+        (3, """
+        CREATE TABLE text_plain_v3 (
+            id INTEGER PRIMARY KEY,
+            asset_id TEXT NOT NULL UNIQUE REFERENCES assets(id) ON DELETE CASCADE,
+            content TEXT NOT NULL
+        );
+        INSERT INTO text_plain_v3 (asset_id, content) SELECT asset_id, content FROM text_plain;
+        DROP TABLE text_plain;
+        ALTER TABLE text_plain_v3 RENAME TO text_plain;
+        DROP TABLE IF EXISTS text_fts;
+        """),
     ]
 
-    /// Optional full-text index. Created only if the SQLite build has FTS5.
-    static let ftsSQL = "CREATE VIRTUAL TABLE IF NOT EXISTS text_fts USING fts5(asset_id UNINDEXED, content, tokenize = 'unicode61 remove_diacritics 2')"
+    /// Optional full-text index over `text_plain` (external content), kept in sync by
+    /// triggers. Created only if the SQLite build has FTS5.
+    static let ftsSQL = """
+        CREATE VIRTUAL TABLE text_fts USING fts5(content, content = 'text_plain', content_rowid = 'id', tokenize = 'unicode61 remove_diacritics 2');
+        CREATE TRIGGER text_plain_ai AFTER INSERT ON text_plain BEGIN
+            INSERT INTO text_fts (rowid, content) VALUES (new.id, new.content);
+        END;
+        CREATE TRIGGER text_plain_ad AFTER DELETE ON text_plain BEGIN
+            INSERT INTO text_fts (text_fts, rowid, content) VALUES ('delete', old.id, old.content);
+        END;
+        CREATE TRIGGER text_plain_au AFTER UPDATE ON text_plain BEGIN
+            INSERT INTO text_fts (text_fts, rowid, content) VALUES ('delete', old.id, old.content);
+            INSERT INTO text_fts (rowid, content) VALUES (new.id, new.content);
+        END;
+        INSERT INTO text_fts (text_fts) VALUES ('rebuild');
+        """
 
     static func migrate(_ db: SQLiteDatabase) throws {
         let current = db.userVersion
@@ -104,6 +132,13 @@ enum Migrations {
             }
         }
         // FTS is optional; absence falls back to LIKE search.
-        try? db.execute(ftsSQL)
+        let hasIndex = (try? db.query("SELECT 1 FROM sqlite_master WHERE name = 'text_fts'").isEmpty == false) ?? false
+        if !hasIndex {
+            do {
+                try db.transaction { try db.execute(ftsSQL) }
+            } catch {
+                // No FTS5 in this SQLite build: search uses LIKE on text_plain.
+            }
+        }
     }
 }

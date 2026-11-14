@@ -1,4 +1,5 @@
 import Foundation
+import Synchronization
 import Testing
 @testable import SortlyEngine
 import SortlyCore
@@ -72,10 +73,45 @@ struct LoadTests {
         )
 
         let clock = ContinuousClock()
+        if ProcessInfo.processInfo.environment["SORTLY_LOAD_PROFILE"] != nil {
+            let probe = try SortlyStore(url: dir.appendingPathComponent("probe.sqlite"))
+            let t1 = try await clock.measure { _ = try await probe.upsertAssets(assets) }
+            let t2 = try await clock.measure { _ = try await probe.upsertAssets(assets) }
+            let t3 = try await clock.measure { _ = try await probe.removeAssets(notIn: Set(assets.map(\.id))) }
+            let t4 = try await clock.measure { try await probe.saveInventory(CollectionInventory(albums)) }
+            let t5 = try await clock.measure { try await probe.saveInventory(CollectionInventory(albums)) }
+            let t6 = try await clock.measure { _ = try await probe.allAssets() }
+            let all = try await probe.allAssets()
+            let t7 = clock.measure { _ = TripDetector(configuration: OrganizationSettings().trips.advanced, calendar: Fixture.calendar).detect(in: all, corrections: TripCorrections()) }
+            let t8 = clock.measure { _ = FrequentPlaceDetector(configuration: OrganizationSettings().frequentPlaces.advanced, calendar: Fixture.calendar).detect(in: all) }
+            print("LOAD_PROFILE trips \(t7) frequent \(t8)")
+            print("LOAD_PROFILE upsert1 \(t1) upsert2 \(t2) remove \(t3) inventory1 \(t4) inventory2 \(t5) allAssets \(t6)")
+        }
         var report: AnalysisPipeline.Report?
-        let full = try await clock.measure { report = try await pipeline.run() }
+        let firstMarks = Mutex<[(String, ContinuousClock.Instant)]>([(String, ContinuousClock.Instant)]())
+        let started = ContinuousClock.now
+        let full = try await clock.measure {
+            report = try await pipeline.run { progress in
+                let now = ContinuousClock.now
+                firstMarks.withLock { m in
+                    if m.last?.0 != "\(progress.stage)" { m.append(("\(progress.stage)", now)) } else { m[m.count - 1].1 = now }
+                }
+            }
+        }
+        let fm = firstMarks.withLock { $0 }
+        print("LOAD_STAGES first run (end of stage): " + fm.map { "\($0.0)@\(($0.1 - started).components.seconds * 1000 + ($0.1 - started).components.attoseconds / 1_000_000_000_000_000)ms" }.joined(separator: " "))
         #expect(report?.isComplete == true)
-        let again = try await clock.measure { _ = try await pipeline.run() }
+        let marks = Mutex<[(String, ContinuousClock.Instant)]>([])
+        let again = try await clock.measure {
+            _ = try await pipeline.run { progress in
+                let now = ContinuousClock.now
+                marks.withLock { m in
+                    if m.last?.0 != "\(progress.stage)" { m.append(("\(progress.stage)", now)) }
+                }
+            }
+        }
+        let stageMarks = marks.withLock { $0 }
+        print("LOAD_STAGES second run: " + stageMarks.map { "\($0.0)@\(Int((($0.1 - stageMarks[0].1).components.attoseconds / 1_000_000_000_000_000) + ($0.1 - stageMarks[0].1).components.seconds * 1000))ms" }.joined(separator: " "))
         var facts: [AssetFacts] = []
         let factsTime = try await clock.measure { facts = try await pipeline.currentFacts() }
         let snapshot = try await pipeline.latestProposals()
@@ -95,7 +131,7 @@ struct LoadTests {
         print("LOAD_TIMING photos \(assets.count) proposals \(snapshot?.proposals.count ?? 0) countries \(atlas.countryCodes.count) trips \(atlas.tripCount) states \(states.count)")
         print("LOAD_TIMING first-run \(ms(full)) ms | second-run \(ms(again)) ms | facts \(ms(factsTime)) ms | status \(ms(statusTime)) ms | atlas \(ms(atlasTime)) ms | overlap \(ms(overlapTime)) ms | search \(ms(searchTime)) ms")
         #expect(atlas.tripCount >= 25)
-        #expect(full < .seconds(300))
-        #expect(again < .seconds(30))
+        #expect(full < .seconds(120))
+        #expect(again < .seconds(15)) // was 44 s before the grid DBSCAN
     }
 }

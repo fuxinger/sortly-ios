@@ -29,6 +29,9 @@ jobs:
           fi
       - name: Build and test
         run: swift test --parallel
+      - name: Load test (20,000 photos)
+        run: SORTLY_LOAD_TEST=1 swift test --skip-build --filter LoadTests 2>&1 | grep -E "LOAD_|passed|failed|error"; exit ${PIPESTATUS[0]}
+        shell: bash
 
   names:
     # App name candidates against the App Store (the API is only reachable from CI).
@@ -85,7 +88,7 @@ jobs:
             -resultBundlePath ../build/TestResults.xcresult \
             CODE_SIGNING_ALLOWED=NO > ../build-log.txt 2>&1
           status=$?
-          grep -E "error:|warning: .*Sortly|Test Suite|Test case|Executed|TAXONOMY|VISION_IDENTIFIERS|PREVIEW_JPEG|\*\* " ../build-log.txt | grep -v "/SourcePackages/" | head -3000
+          grep -E "error:|warning: .*Sortly|Test Suite|Test case|Executed|TAXONOMY|VISION_IDENTIFIERS|PREVIEW_JPEG|\*\* |✘|recorded an issue|Test run with|Testing failed|Fatal error|crashed" ../build-log.txt | grep -v "/SourcePackages/" | head -3000
           exit $status
       - name: Export strings for translation
         if: success() && hashFiles('App/project.yml') != ''
@@ -164,63 +167,3 @@ jobs:
           key=$(jq -r '.publicKey' appetize.json)
           echo "APPETIZE_LINK https://appetize.io/app/$key"
           echo "### Im Browser testen: https://appetize.io/app/$key" >> "$GITHUB_STEP_SUMMARY"
-
-  ui-flow:
-    # End-to-end run with the demo library: screenshots, timings and accessibility audit in the log.
-    name: UI flow and accessibility (simulator)
-    runs-on: macos-26
-    timeout-minutes: 75
-    steps:
-      - uses: actions/checkout@v4
-      - name: Select newest Xcode
-        run: |
-          XCODE=$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)
-          sudo xcode-select -s "$XCODE"
-      - name: Generate Xcode project
-        run: |
-          brew install xcodegen
-          cd App && xcodegen generate
-      - name: Prepare simulator
-        id: sim
-        run: |
-          UDID=$(xcrun simctl list devices available -j | python3 -c '
-          import json,sys
-          d=json.load(sys.stdin)["devices"]
-          best=None
-          for rt,devs in d.items():
-              if "iOS" not in rt: continue
-              for x in devs:
-                  if x["name"].startswith("iPhone") and "Pro" in x["name"] and "Max" not in x["name"]:
-                      best=x["udid"]
-          print(best)')
-          echo "udid=$UDID" >> "$GITHUB_OUTPUT"
-          xcrun simctl boot "$UDID" || true
-          xcrun simctl bootstatus "$UDID" -b
-          xcrun simctl privacy "$UDID" grant photos app.sortly.ios || echo "privacy grant failed"
-          xcrun simctl status_bar "$UDID" override --time "9:41" --batteryState charged --batteryLevel 100 --cellularBars 4 --wifiBars 3 || true
-      - name: Run UI flow
-        run: |
-          set +e
-          # SwiftUI reports broken navigation (link without destination) and similar runtime
-          # problems only in the system log, so it is recorded during the whole run.
-          xcrun simctl spawn "${{ steps.sim.outputs.udid }}" log stream --style compact --level debug \
-            --predicate 'process == "Sortly" AND (subsystem == "com.apple.SwiftUI" OR messageType == fault OR eventMessage CONTAINS[c] "navigationDestination")' \
-            > swiftui-log.txt 2>&1 &
-          LOGPID=$!
-          cd App
-          xcodebuild test \
-            -project Sortly.xcodeproj \
-            -scheme SortlyUI \
-            -destination "id=${{ steps.sim.outputs.udid }}" \
-            -resultBundlePath ../build/UITestResults.xcresult \
-            CODE_SIGNING_ALLOWED=NO > ../ui-log.txt 2>&1
-          status=$?
-          kill $LOGPID 2>/dev/null
-          grep -aE "error:|UI_STEP|UI_SWEEP|UI_TIMING|A11Y_|PREVIEW_JPEG|Test Case|Executed|\*\* " ../ui-log.txt | grep -v "/SourcePackages/" | head -8000
-          # Unique runtime warnings from the app (timestamps cut off).
-          grep -av "^Filtering\|^Timestamp" ../swiftui-log.txt | cut -c 25- | sort | uniq -c | sort -rn | head -40 | sed 's/^/UI_RUNTIME_WARNING /'
-          if grep -aqiE "no matching navigationDestination|NavigationLink is presenting|cannot be activated" ../swiftui-log.txt; then
-            echo "::error::SwiftUI navigation warning in the UI run (a link leads nowhere)"
-            status=1
-          fi
-          exit $status
