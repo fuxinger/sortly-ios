@@ -24,6 +24,8 @@ und legt eine Simulator-Version als `Sortly-simulator-app` ab (für Appetize.io)
 ## Tests
 ```bash
 swift test                     # Kernlogik, Datenbank, Analyse-Pipeline (Linux und macOS)
+SORTLY_STRESS_SEEDS=300 swift test --filter RandomLibraryTests   # 300 zufällige Mediatheken
+SORTLY_LOAD_TEST=1 swift test --filter LoadTests                  # 20.000 Fotos
 cd App && xcodebuild test -project Sortly.xcodeproj -scheme Sortly \
   -destination 'platform=iOS Simulator,name=iPhone 17' CODE_SIGNING_ALLOWED=NO
 ```
@@ -39,7 +41,8 @@ cd App && xcodebuild test -project Sortly.xcodeproj -scheme Sortly \
 | `App/` | iOS-App (SwiftUI, PhotoKit, Vision, StoreKit 2), Projekt via `App/project.yml` |
 | `Tests/` | Swift-Testing-Suites für Kern, Store und Engine |
 | `scripts/worldmap` | Generator für die Offline-Karte |
-| `docs/` | Produkt-, Architektur- und Testdokumentation |
+| `docs/` | Produkt-, Architektur- und Testdokumentation; `docs/review/` Anleitung für eine externe Code-Prüfung |
+| `tools/` | App-Icon-Generator, `make_review_zip.sh` (Code als ZIP für die Prüfung) |
 
 Weitere Dokumente: [PRODUCT_SPEC](docs/PRODUCT_SPEC.md) · [ARCHITECTURE](docs/ARCHITECTURE.md) ·
 [DATA_MODEL](docs/DATA_MODEL.md) · [ALBUM_MATCHING](docs/ALBUM_MATCHING.md) ·
