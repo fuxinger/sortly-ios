@@ -362,6 +362,9 @@ final class SortlyFlowUITests: XCTestCase {
                 field.typeText("Rom")
                 sleep(3)
                 shot("20-search-rom"); audit("search")
+                // Close the keyboard: it covers the tab bar, and a tap on "Übersicht" would hit it.
+                field.typeText("\n")
+                sleep(1)
             }
         }
 
