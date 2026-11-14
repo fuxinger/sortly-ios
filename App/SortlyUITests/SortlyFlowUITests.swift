@@ -475,6 +475,8 @@ final class SortlyFlowUITests: XCTestCase {
                         shot("22-undo-not-finished")
                     }
                     XCTAssertTrue(undone, "Undo did not finish")
+                    // The receipt now ends with what the undo removed.
+                    app.swipeUp(); app.swipeUp(); sleep(1)
                     shot("22-after-undo")
                 }
                 if opened { back(); sleep(1) }
@@ -611,7 +613,8 @@ final class SortlyFlowUITests: XCTestCase {
         let restored = card.waitForExistence(timeout: 30)
         print(restored ? "UI_STEP_OK restored card" : "UI_STEP_MISSING restored card")
         XCTAssertTrue(restored, "The decisions did not come back after the database was rebuilt")
-        sleep(1)
+        // The analysis starts again right away, as after a real rebuild.
+        sleep(4)
         shot("40-restored-card"); audit("restored card")
         let withHistory = anything("Alben und den Verlauf aus der Sicherung").exists
         print("UI_FACT restore included history \(withHistory)")

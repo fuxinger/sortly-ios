@@ -21,7 +21,10 @@ struct SortlyApp: App {
                     await model.bootstrap()
                     if model.access.canRead { LibraryChangeWatcher.shared.start() }
                     // Photos may have changed while Albumist was closed (albums made in Photos).
-                    if model.phase == .ready && model.access.canRead && !UITestSupport.isRunning { model.startAnalysis() }
+                    // (UI runs start it themselves, except the one that rebuilds the database.)
+                    if model.phase == .ready && model.access.canRead && (!UITestSupport.isRunning || UITestSupport.rebuildsDatabase) {
+                        model.startAnalysis()
+                    }
                 }
                 .onChange(of: scenePhase) { _, phase in
                     // The copy of the decisions for the iPhone backup is current before iOS may
