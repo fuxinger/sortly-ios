@@ -18,7 +18,8 @@ enum Theme {
         static let button: CGFloat = 16
     }
 
-    static let accent = Color.accentColor
+    /// Named asset instead of `Color.accentColor`, so off-screen renders (share image) keep the teal too.
+    static let accent = Color("AccentColor")
     static let background = Color(uiColor: .systemGroupedBackground)
     static let card = Color(uiColor: .secondarySystemGroupedBackground)
     static let secondaryText = Color.secondary
