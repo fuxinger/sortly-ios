@@ -5522,6 +5522,36 @@
           }
         }
       }
+    },
+    "Städte als eigene Alben" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cities as Separate Albums"
+          }
+        }
+      }
+    },
+    "Zum Beispiel Rom und Florenz zusätzlich zu Italien." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "For example Rome and Florence in addition to Italy."
+          }
+        }
+      }
+    },
+    "Alben für die Länder, in denen du fotografiert hast. Städte auf Wunsch." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Albums for the countries where you took photos. Cities if you like."
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

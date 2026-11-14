@@ -61,8 +61,17 @@ struct ProposalEngineTests {
         #expect(!without.contains { $0.folderPath == ["Reisen"] })
     }
 
-    @Test func placeCollectionsAreHierarchical() {
+    /// Default: countries only, so a trip does not turn into four albums (usability test 14.11.2026).
+    @Test func citiesAreOptInByDefault() {
         let places = engine().proposals(for: romeAnalysis()).filter { $0.kind.area == .places }
+        #expect(places.contains { $0.title == "Italien" && $0.folderPath == ["Länder"] })
+        #expect(!places.contains { $0.title == "München" })
+        #expect(!places.contains { $0.folderPath == ["Länder", "Italien"] })
+    }
+
+    @Test func placeCollectionsAreHierarchical() {
+        let places = engine { $0.places.levels = PlaceSettings.Preset.countriesAndCities.levels }
+            .proposals(for: romeAnalysis()).filter { $0.kind.area == .places }
         let rome = places.first { $0.title == "Rom" }
         #expect(rome?.folderPath == ["Länder", "Italien"])
         #expect(places.contains { $0.title == "Italien" && $0.folderPath == ["Länder"] })

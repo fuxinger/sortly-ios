@@ -50,7 +50,7 @@ extension OrganizationArea {
 
     var explanation: LocalizedStringKey {
         switch self {
-        case .places: "Alben für Länder und Städte, in denen du fotografiert hast."
+        case .places: "Alben für die Länder, in denen du fotografiert hast. Städte auf Wunsch."
         case .trips: "Erkennt Reisen und Ausflüge und trennt sie vom Alltag zu Hause."
         case .frequentPlaces: "Orte, an denen du oft fotografierst. Du gibst ihnen selbst einen Namen."
         case .peopleAndPets: "Haustiere und – nur wenn du es einschaltest – Gesichter."

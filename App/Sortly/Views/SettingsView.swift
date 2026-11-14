@@ -45,6 +45,21 @@ struct SettingsView: View {
                     TextField("Albumist", text: $model.settings.rootFolderTitle)
                         .multilineTextAlignment(.trailing)
                 }
+                if model.settings.enabledAreas.contains(.places) {
+                    // Off by default: a trip would otherwise bring a country, two cities and
+                    // itself as four albums (usability test 14.11.2026).
+                    Toggle(isOn: Binding(
+                        get: { model.settings.places.levels.contains(.locality) },
+                        set: { model.settings.places.levels = $0 ? PlaceSettings.Preset.countriesAndCities.levels : PlaceSettings.Preset.countries.levels }
+                    )) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Städte als eigene Alben")
+                            Text("Zum Beispiel Rom und Florenz zusätzlich zu Italien.")
+                                .font(.footnote)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
                 Toggle("Foto in mehreren Alben erlauben", isOn: $model.settings.allowMultipleAssignments)
                 NavigationLink {
                     ManagedAlbumsView()

@@ -50,8 +50,9 @@ public struct OrganizationSettings: Hashable, Sendable, Codable {
 }
 
 public struct PlaceSettings: Hashable, Sendable, Codable {
-    /// Levels that get albums. Presets map to prompt §4.1 options 1–6.
-    public var levels: [PlaceLevel] = [.country, .locality]
+    /// Levels that get albums. Presets map to prompt §4.1 options 1–6. Countries only by
+    /// default; cities are a switch in Settings (usability test 14.11.2026: too many albums).
+    public var levels: [PlaceLevel] = [.country]
     /// Nest lower levels inside folders of higher levels.
     public var hierarchical = true
     public var minPhotos = 10
