@@ -5,7 +5,7 @@ andere KIs) kommen neue Punkte dazu. Status: ✅ erledigt · 🔜 als Nächstes 
 Aufwand: S klein, M mittel, L groß.
 
 Quellen: **E1** Expertenrunde 14.11.2026 (Tempo, Oberfläche, Technik, Produkt) · **U** Nutzer
-(Fuchs) · **T** Testläufe · **B** Bedienungstest 14.11.2026 (5 unabhängige Testpersonen: Gelegenheitsnutzerin, Vielreisender, Senior mit großer Schrift, Fotografin, Vater mit Kinderfotos).
+(Fuchs) · **T** Testläufe · **B** Bedienungstest 14.11.2026 (5 unabhängige Testpersonen: Gelegenheitsnutzerin, Vielreisender, Senior mit großer Schrift, Fotografin, Vater mit Kinderfotos) · **G** Gegenprüfung durch ChatGPT/Gemini 14.11.2026 (43 Befunde, alle bewertet in `docs/review/AUDIT_2026-11-14.md`; 16 Produktideen, unten eingeordnet).
 
 ## Datensicherheit und Zuverlässigkeit
 
@@ -18,7 +18,7 @@ Quellen: **E1** Expertenrunde 14.11.2026 (Tempo, Oberfläche, Technik, Produkt) 
 | ✅ | „Ausgewählte Fotos“-Zugriff: vor dem Umsetzen klarer Hinweis „Voller Zugriff nötig“ mit Link zu Einstellungen statt Fehlermeldung. | S | E1 Technik |
 | ✅ | Bereits rückgängig gemachte Pläne nicht nochmal rückgängig machen; Rückgängig-Läufe nicht als eigene Einträge zeigen. | S | E1 Technik |
 | ✅ | Fehlender Elternordner (zweites Gerät hat ihn gelöscht): nie oben auf der Mediathek-Ebene anlegen, sondern abbrechen. | S | E1 Technik |
-| 💡 | Fotos nur in iCloud: nicht als „erledigt“ markieren, später erneut versuchen. | M | E1 Technik |
+| ✅ | Fotos nur in iCloud: nicht als „erledigt“ markieren, später erneut versuchen. Fehlversuche werden gezählt und in späteren Läufen wiederholt; Text aus der kleinen Vorschau wird mit dem Original nachgelesen. | M | E1 Technik, G 5.1/2.4 |
 | ✅ | Ausgeblendete Fotos in Alben mitzählen, damit Rückgängig nichts Fremdes löscht. | S | E1 Technik |
 | ✅ | Beschädigte Datenbank: „Neu aufbauen“-Knopf statt Sackgasse. | S | E1 Technik |
 | ✅ | StoreKit: nicht geprüfte Käufe sauber abschließen und Fehlermeldung zeigen; wartende Käufe (Familienfreigabe) erklären. | S | E1 Technik |
@@ -132,6 +132,30 @@ Quellen: **E1** Expertenrunde 14.11.2026 (Tempo, Oberfläche, Technik, Produkt) 
 | 💡 | Familienfreigabe für den Kauf, Small Business Program (15 % statt 30 %). | S | E1 Produkt |
 | 💡 | „Alle Fotos dieses Albums verbessern“: Apples automatische Verbesserung (Core Image) für viele Fotos auf einmal, mit Vorher/Nachher, in Fotos jederzeit umkehrbar. Erst nach dem Start (Update 1.2), weil es das Versprechen „Fotos bleiben unverändert“ aufweicht; Apples KI-Bereinigen ist für Apps nicht verfügbar. | M | U |
 | 💡 | Produktseite: Bildschirmfoto 1 beantwortet „Warum nicht einfach Fotos?“ (echte Alben überall); keine Zahl zeigen, die nicht stimmt. | S | E1 Produkt |
+
+## Aus der Gegenprüfung (G): Produktideen
+
+Einordnung der 16 Vorschläge. Leitlinie bleibt: wenige verlässliche Abläufe statt langer
+Funktionsliste; nichts, was Fotos löscht oder ohne Bestätigung ändert.
+
+| Status | Punkt | Aufwand | Quelle |
+|---|---|---|---|
+| 🔜 | **I01 Änderungsbeleg:** pro Plan eine Seite „Das hat Albumist geändert“ mit echten Zahlen aus dem neuen Ausführungsjournal und „Originale unverändert“. Grundlage ist jetzt da (Journal mit echten Änderungen). | M | G I01 |
+| 🔜 | **I12 Sicherung der Entscheidungen:** abgelehnte Vorschläge, verwaltete Alben und Verlauf zusätzlich in einer kleinen Datei, die das iPhone-Backup mitnimmt; Wiederherstellen nach Neuaufbau der Datenbank. Schließt die Restlücke von Befund 3.2. | M | G I12 |
+| 🔜 | **I16 Geführte Reparatur:** bei unterbrochenen oder fehlgeschlagenen Plänen ein klarer Weg „Fortsetzen / Rückgängig / so lassen“ plus Diagnose-Export ohne Fotos und Namen. | M | G I16 |
+| 💡 | **I04 Lebende Alben:** neue Fotos einer Reise oder eines Themas als kleine Ergänzung vorschlagen statt neu zu sortieren. Passt zum Wochenhinweis für 1.1. | L | G I04 |
+| 💡 | **I07 Reise-Werkstatt:** Reisen teilen und zusammenlegen in der Oberfläche (der Kern kann es schon: `TripCorrections`, Reise-Identität bleibt jetzt erhalten). | L | G I07 |
+| 💡 | **I02 Sortier-Kompass:** beim Start zwei, drei Fragen („wenige große Alben“ oder „viele genaue“), die Bereiche und Schwellen setzen. Erweitert die Bereichsauswahl. | M | G I02 |
+| 💡 | **I06 Album-Gesundheitscheck:** „Ähnliche Alben“ ausbauen: leere Alben, fast gleiche Alben, Alben ohne Titelbild, nur lesend mit Vorschlag. | M | G I06 |
+| 💡 | **I09 Ähnliche Fotos:** „Mehr wie dieses“ über die schon berechneten Bild-Merkmale (Feature Print), nur lesend. | L | G I09 |
+| 💡 | **I08 Gespeicherte Suchen:** eine Suche als Sammlung merken, ohne echtes Album. | M | G I08 |
+| 💡 | **I11 Atlas 2.0:** Jahresrückblick der Reisen im Atlas, direkt mit Album-Vorschlag. | M | G I11 |
+| 💡 | **I13 Analyse-Assistent:** vor der ersten Analyse ehrlich sagen, wie lange es dauert und was iCloud braucht; Teile davon gibt es schon (erste Ergebnisse früh, Pause bei Wärme je Foto). | M | G I13 |
+| 💡 | **I03 Lernschleife:** aus abgelehnten und angepassten Vorschlägen Regeln vorschlagen, sichtbar und abschaltbar. | L | G I03 |
+| 💡 | **I05 Regelstudio:** Regeln (gibt es im Kern) mit einfacher Oberfläche und Vorschau „würde 120 Fotos betreffen“. | M | G I05 |
+| 💡 | **I10 Beleg-Assistent:** Felder aus Rechnungen (Händler, Betrag, Datum) prüfbar anzeigen und suchen. | L | G I10 |
+| 💡 | **I14 Personen und Haustiere:** nur bestätigte Gruppen, Opt-in; schon für 1.1 geplant. | XL | G I14 |
+| 💡 | **I15 Widget und Kurzbefehle:** Widget „offene Vorschläge“, Kurzbefehl „neue Fotos sortieren“; Widget ist für 1.1 geplant. | M | G I15 |
 
 ## Wow-Ideen
 

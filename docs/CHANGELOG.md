@@ -27,6 +27,12 @@
   ablehnen, 40 zufällige Abläufe mit Invarianten).
 - Anleitung und Skript für eine unabhängige Code-Prüfung (`docs/review/`, `tools/make_review_zip.sh`).
 ### Korrigiert
+- Gegenprüfung 14.11.2026 (43 Befunde, `docs/review/AUDIT_2026-11-14.md`): Ausführungsjournal
+  mit echten Änderungen, sicherer Wiederanlauf und Rückgängig, geschützte Löschungen, eine
+  Ausführung zur Zeit, Abschluss in einer Transaktion, Reisen behalten ihre Identität, alte
+  Orte und Texte nach Änderungen verworfen, iCloud-Fotos später erneut gelesen, WLAN je Foto
+  geprüft, schnellerer Abgleich und Ortsgruppen, Mediathek und Suche ohne Obergrenze,
+  Lasttest mit 100 000 Fotos.
 - Reise-Erkennung: Wer zu Hause wenig fotografiert, bekam nur eine Reise; das Zuhause
   braucht jetzt Fotos über mindestens drei Wochen verteilt.
 - Umgesetzte Vorschläge kamen als „mehrere passende Alben“ zurück, wenn zwei Alben dieselben
