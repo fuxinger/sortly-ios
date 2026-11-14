@@ -11,15 +11,13 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  core-linux:
-    name: Core tests (Linux)
+  lint:
+    # Fast checks that need no compiler; they fail within seconds.
+    name: App rules and strings
     runs-on: ubuntu-24.04
-    container: swift:6.2-noble
     steps:
       - uses: actions/checkout@v4
-      - name: Install SQLite headers
-        run: apt-get update -qq && apt-get install -y -qq libsqlite3-dev
-      - name: App code rules
+      - name: Navigation rule
         # Navigation uses destination-based links only. A value-based link inside a screen that
         # was itself pushed by a destination-based link leads nowhere (dead row, warning triangle).
         run: |
@@ -29,6 +27,15 @@ jobs:
           fi
       - name: Every UI string has English
         run: python3 .github/scripts/check_strings.py .
+
+  core-linux:
+    name: Core tests (Linux)
+    runs-on: ubuntu-24.04
+    container: swift:6.2-noble
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install SQLite headers
+        run: apt-get update -qq && apt-get install -y -qq libsqlite3-dev
       - name: Build and test
         run: swift test --parallel
       - name: Load test (20,000 photos)

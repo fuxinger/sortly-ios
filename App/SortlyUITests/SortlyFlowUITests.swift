@@ -33,7 +33,13 @@ final class SortlyFlowUITests: XCTestCase {
     /// A tab bar button; the iOS 26 tab bar shrinks while scrolling, so it is expanded first.
     private func tabButton(_ name: String) -> XCUIElement {
         let button = app.tabBars.buttons[name]
-        if !button.isHittable { app.swipeDown(); sleep(1) }
+        var tries = 0
+        while !(button.exists && button.isHittable) && tries < 3 {
+            // Minimized bar: scroll back up first, then tap the bar itself to expand it.
+            if tries < 2 { app.swipeDown() } else if app.tabBars.firstMatch.exists { app.tabBars.firstMatch.tap() }
+            sleep(1)
+            tries += 1
+        }
         return button
     }
 

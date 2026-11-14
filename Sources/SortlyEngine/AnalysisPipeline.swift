@@ -333,7 +333,8 @@ public actor AnalysisPipeline {
             groups: groups
         )
         let proposals = ProposalEngine(settings: settings, calendar: calendar).proposals(for: analysis, overrides: overrides)
-        let matches = AlbumMatcher().match(proposals, against: inventory, overrides: overrides)
+        let matches = AlbumMatcher().match(proposals, against: inventory, overrides: overrides,
+                                           assignments: Self.assignments(try await store.managedAlbums()))
         let snapshot = ProposalSnapshot(generatedAt: Date(), scope: scope, proposals: proposals, matches: matches)
         try await store.setValue(snapshot, forKey: Key.proposals)
         return snapshot
@@ -363,6 +364,11 @@ public actor AnalysisPipeline {
         )
     }
 
+    /// Suggestion → the album it was applied to, from the managed-album records.
+    static func assignments(_ states: [ManagedAlbumState]) -> [SortlyID: CollectionID] {
+        Dictionary(states.flatMap { state in state.allSourceIDs.map { ($0, state.albumID) } }, uniquingKeysWith: { first, _ in first })
+    }
+
     public func latestProposals() async throws -> ProposalSnapshot? {
         try await store.value(ProposalSnapshot.self, forKey: Key.proposals)
     }
@@ -374,7 +380,8 @@ public actor AnalysisPipeline {
         guard var snapshot = try await latestProposals() else { return nil }
         let inventory = try await store.loadInventory()
         let overrides = OverrideSet(try await store.overrides())
-        snapshot.matches = AlbumMatcher().match(snapshot.proposals, against: inventory, overrides: overrides)
+        snapshot.matches = AlbumMatcher().match(snapshot.proposals, against: inventory, overrides: overrides,
+                                                assignments: Self.assignments(try await store.managedAlbums()))
         try await store.setValue(snapshot, forKey: Key.proposals)
         return snapshot
     }

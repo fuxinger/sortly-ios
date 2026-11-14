@@ -284,6 +284,31 @@ struct PlanningExecutionTests {
         #expect(try await library.currentInventory()[paris.albumID]?.assetIDs == ["a-299"])
     }
 
+    @Test func twoSuggestionsInOneAlbumAreBothRemembered() async throws {
+        let existing = CollectionSnapshot(id: "best", title: "Beste Fotos", assetIDs: ids("a", 0..<5))
+        let library = InMemoryPhotoLibrary(assets: allAssets, collections: [existing])
+        let items = [
+            ConfirmedProposal(proposal: proposal("x", .trip, "Rom", [], ids("a", 10..<15)), decision: .extendExisting("best")),
+            ConfirmedProposal(proposal: proposal("y", .trip, "Paris", [], ids("a", 20..<25)), decision: .extendExisting("best")),
+        ]
+        let plan = confirmed(planner.makePlan(from: items, inventory: try await library.currentInventory()))
+        let executed = try await ChangeExecutor(library: library, store: InMemoryPlanStore()).execute(plan)
+        let states = ManagedAlbumTracker().record(executed, into: [], inventory: try await library.currentInventory())
+        let state = try #require(states.first)
+        #expect(state.allSourceIDs == [SortlyID("x"), SortlyID("y")])
+        // Deleting that album keeps both suggestions from coming back.
+        let overrides = OverrideSet(ManagedAlbumTracker().reconcile(states, with: CollectionInventory([])).newOverrides)
+        #expect(overrides.mustNotRecreate(SortlyID("x")) && overrides.mustNotRecreate(SortlyID("y")))
+    }
+
+    @Test func managedAlbumRecordsFromOlderVersionsStillLoad() throws {
+        let old = #"{"albumID":"a1","sourceID":"s1","lastKnownTitle":"Rom","lastKnownMembers":["a-1"],"addedBySortly":["a-1"],"createdBySortly":true}"#
+        let state = try JSONDecoder().decode(ManagedAlbumState.self, from: Data(old.utf8))
+        #expect(state.allSourceIDs == [SortlyID("s1")])
+        let roundTrip = try JSONDecoder().decode(ManagedAlbumState.self, from: JSONEncoder().encode(state))
+        #expect(roundTrip == state)
+    }
+
     @Test func deletedManagedAlbumIsNotSuggestedAgain() async throws {
         let state = ManagedAlbumState(albumID: "gone", sourceID: SortlyID("trip-1"), lastKnownTitle: "Rom", lastKnownParentID: nil,
                                       lastKnownMembers: ids("a", 0..<3), addedBySortly: ids("a", 0..<3), createdBySortly: true)

@@ -62,11 +62,14 @@ jobs:
             CODE_SIGNING_ALLOWED=NO > ../ui-log.txt 2>&1
           status=$?
           kill $LOGPID 2>/dev/null
-          grep -aE "error:|UI_STEP|UI_SWEEP|UI_TIMING|A11Y_|PREVIEW_JPEG|Test Case|Executed|\*\* |Testing failed|Fatal error|crashed" ../ui-log.txt | grep -v "/SourcePackages/" | head -8000
-          # Unique runtime warnings from the app (timestamps cut off).
-          grep -av "^Filtering\|^Timestamp" ../swiftui-log.txt | cut -c 25- | sort | uniq -c | sort -rn | head -40 | sed 's/^/UI_RUNTIME_WARNING /'
+          grep -aE "error:|UI_STEP|UI_SWEEP|UI_TIMING|UI_FACT|A11Y_|PREVIEW_JPEG|Test Case|Executed|\*\* |Testing failed|Fatal error|crashed" ../ui-log.txt | grep -v "/SourcePackages/" | head -8000
+          # Unique runtime warnings from the app (timestamps cut off; scene setup and view dumps are noise).
+          grep -avE "^Filtering|^Timestamp|SwiftUI:Scenes|_UIHostingView|renderbox" ../swiftui-log.txt | cut -c 25- | sort | uniq -c | sort -rn | head -40 | sed 's/^/UI_RUNTIME_WARNING /'
           if grep -aqiE "no matching navigationDestination|NavigationLink is presenting|cannot be activated" ../swiftui-log.txt; then
             echo "::error::SwiftUI navigation warning in the UI run (a link leads nowhere)"
             status=1
+          fi
+          if grep -aqiE "Publishing changes from within view updates|Modifying state during view update" ../swiftui-log.txt; then
+            echo "::warning::SwiftUI state was changed during a view update (see UI_RUNTIME_WARNING)"
           fi
           exit $status

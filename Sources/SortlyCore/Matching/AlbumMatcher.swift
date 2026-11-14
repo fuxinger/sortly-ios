@@ -113,10 +113,16 @@ public struct AlbumMatcher: Sendable {
     }
 
     /// Matches all proposals in one pass using an inverted membership index.
-    /// - Parameter overrides: albums the user marked as "passt nicht" for a suggestion are
-    ///   never offered for it again (neither as best match nor as alternative).
+    /// - Parameters:
+    ///   - overrides: albums the user marked as "passt nicht" for a suggestion are never offered
+    ///     for it again (neither as best match nor as alternative); photos the user took out
+    ///     of an album do not count as missing.
+    ///   - assignments: the album a suggestion was already applied to (from the managed-album
+    ///     records). That album stays the suggestion's album even if it holds many other photos
+    ///     or another album has the same content, so an applied suggestion never comes back.
     public func match(_ proposals: [AlbumProposal], against inventory: CollectionInventory,
-                      overrides: OverrideSet = OverrideSet()) -> [SortlyID: MatchResult] {
+                      overrides: OverrideSet = OverrideSet(),
+                      assignments: [SortlyID: CollectionID] = [:]) -> [SortlyID: MatchResult] {
         let membership = inventory.albumMembershipIndex()
 
         // Sibling map per proposal family, to detect albums that span several siblings.
@@ -138,6 +144,7 @@ public struct AlbumMatcher: Sendable {
                 proposal,
                 inventory: inventory,
                 overrides: overrides,
+                assigned: assignments[proposal.id],
                 membership: membership,
                 siblings: siblingOf[proposal.kind.familyKey] ?? [:],
                 titleIndex: titleIndex
@@ -150,6 +157,7 @@ public struct AlbumMatcher: Sendable {
         _ proposal: AlbumProposal,
         inventory: CollectionInventory,
         overrides: OverrideSet,
+        assigned: CollectionID?,
         membership: [AssetID: [CollectionID]],
         siblings: [AssetID: SortlyID],
         titleIndex: [String: [CollectionID]]
@@ -208,6 +216,17 @@ public struct AlbumMatcher: Sendable {
             if qualifies { candidates.append(candidate) } else { weak.append(candidate) }
         }
 
+        // The album this suggestion was applied to stays its album (first in line).
+        if let assigned, let album = inventory[assigned], album.isEditableAlbum, !overrides.isRejectedMatch(assigned, for: proposal.id) {
+            candidates.removeAll { $0.albumID == assigned }
+            weak.removeAll { $0.albumID == assigned }
+            let metrics = OverlapMetrics(proposalCount: proposal.assetIDs.count, albumCount: album.assetIDs.count,
+                                         intersection: intersections[assigned] ?? 0)
+            candidates.append(MatchCandidate(albumID: assigned, albumTitle: album.title, metrics: metrics, relation: .partOfProposal,
+                                             nameSimilarity: Self.tokenSimilarity(proposalTokens, AlbumTitle.tokens(album.title)),
+                                             score: 2, isEditable: true))
+        }
+
         candidates.sort { ($0.score, $0.albumID.rawValue) > ($1.score, $1.albumID.rawValue) }
         weak.sort { ($0.score, $0.albumID.rawValue) > ($1.score, $1.albumID.rawValue) }
 
@@ -234,8 +253,17 @@ public struct AlbumMatcher: Sendable {
         }
 
         let alternatives = (candidates.filter { $0.albumID != best.albumID }) + weak
+        // Missing photos SORTLY may still add: photos the user took out of the album by hand stay out.
+        let bestMembers = inventory[best.albumID]?.assetIDs ?? []
+        let addable = best.metrics.missing == 0 ? 0 : proposal.assetIDs.filter {
+            !bestMembers.contains($0) && overrides.mayAdd($0, toAlbum: best.albumID) && overrides.mayAdd($0, toSource: proposal.id)
+        }.count
+        // The album already holds everything: there is nothing to choose, even if other
+        // albums hold the same photos (a country with one city, a trip that is the whole visit).
+        let bestIsComplete = best.isEditable && addable == 0
+            && (best.relation == .equivalent || best.relation == .partOfProposal)
         reasons.append(.albumContains(album: best.albumTitle, contained: best.metrics.intersection, total: best.metrics.proposalCount))
-        if best.metrics.missing > 0 { reasons.append(.missingItems(count: best.metrics.missing)) }
+        if addable > 0 { reasons.append(.missingItems(count: addable)) }
         if best.metrics.extra > 0 { reasons.append(.albumHasOtherItems(album: best.albumTitle, count: best.metrics.extra)) }
 
         if !best.isEditable {
@@ -243,7 +271,7 @@ public struct AlbumMatcher: Sendable {
             return MatchResult(proposalID: proposal.id, status: .notEditable, best: best, alternatives: alternatives, sameNameAlbums: sameName, reasons: reasons)
         }
 
-        let strongRivals = editable.dropFirst().filter {
+        let strongRivals = bestIsComplete ? [] : editable.dropFirst().filter {
             $0.metrics.purity >= thresholds.extendablePurity && best.score - $0.score < thresholds.multipleMatchScoreGap
         }
         if !strongRivals.isEmpty {
@@ -253,9 +281,11 @@ public struct AlbumMatcher: Sendable {
 
         let status: MatchStatus
         switch best.relation {
+        case _ where bestIsComplete:
+            status = .alreadyComplete
         case .equivalent:
             status = .alreadyComplete
-        case .partOfProposal where best.metrics.missing == 0:
+        case .partOfProposal where addable == 0:
             status = .alreadyComplete
         case .partOfProposal where best.metrics.coverage >= thresholds.extendableCoverage:
             status = .extendable

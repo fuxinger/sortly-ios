@@ -13,6 +13,15 @@ public struct ManagedAlbumState: Hashable, Sendable, Codable {
     public var addedBySortly: Set<AssetID>
     /// True if SORTLY created the album (vs. extended an existing user album).
     public var createdBySortly: Bool
+    /// Further suggestions that were applied to this album (two suggestions put into one album).
+    public var otherSourceIDs: Set<SortlyID> = []
+
+    /// Every suggestion this album stands for.
+    public var allSourceIDs: Set<SortlyID> { otherSourceIDs.union([sourceID]) }
+
+    enum CodingKeys: String, CodingKey {
+        case albumID, sourceID, lastKnownTitle, lastKnownParentID, lastKnownMembers, addedBySortly, createdBySortly, otherSourceIDs
+    }
 
     public init(
         albumID: CollectionID,
@@ -30,6 +39,21 @@ public struct ManagedAlbumState: Hashable, Sendable, Codable {
         self.lastKnownMembers = lastKnownMembers
         self.addedBySortly = addedBySortly
         self.createdBySortly = createdBySortly
+    }
+}
+
+extension ManagedAlbumState {
+    /// Records saved before `otherSourceIDs` existed still load.
+    public init(from decoder: any Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        albumID = try c.decode(CollectionID.self, forKey: .albumID)
+        sourceID = try c.decode(SortlyID.self, forKey: .sourceID)
+        lastKnownTitle = try c.decode(String.self, forKey: .lastKnownTitle)
+        lastKnownParentID = try c.decodeIfPresent(CollectionID.self, forKey: .lastKnownParentID)
+        lastKnownMembers = try c.decode(Set<AssetID>.self, forKey: .lastKnownMembers)
+        addedBySortly = try c.decode(Set<AssetID>.self, forKey: .addedBySortly)
+        createdBySortly = try c.decode(Bool.self, forKey: .createdBySortly)
+        otherSourceIDs = try c.decodeIfPresent(Set<SortlyID>.self, forKey: .otherSourceIDs) ?? []
     }
 }
 
@@ -61,13 +85,12 @@ public struct ManagedAlbumTracker: Sendable {
 
         for var state in states {
             guard let album = inventory[state.albumID] else {
-                // Deleted on purpose by the user: never silently re-create it.
+                // Deleted on purpose by the user: never silently re-create it (for any of the
+                // suggestions it stood for).
                 changes.append(.deleted(albumID: state.albumID, sourceID: state.sourceID))
-                overrides.append(UserOverride(
-                    scope: .source(state.sourceID),
-                    decision: .doNotRecreateAlbum,
-                    createdAt: now
-                ))
+                for source in state.allSourceIDs.sorted(by: { $0.rawValue < $1.rawValue }) {
+                    overrides.append(UserOverride(scope: .source(source), decision: .doNotRecreateAlbum, createdAt: now))
+                }
                 continue
             }
             if album.title != state.lastKnownTitle {
@@ -216,6 +239,7 @@ extension ManagedAlbumTracker {
                     albumID: albumID, sourceID: source, lastKnownTitle: inventory[albumID]?.title ?? "",
                     lastKnownParentID: nil, lastKnownMembers: [], addedBySortly: [], createdBySortly: false)
                 state.addedBySortly.formUnion(assets)
+                if source != state.sourceID { state.otherSourceIDs.insert(source) }
                 byID[albumID] = state
                 touched.insert(albumID)
             case .removeAssets(let album, let assets):

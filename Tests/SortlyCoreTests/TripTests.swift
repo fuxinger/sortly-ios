@@ -79,18 +79,20 @@ struct TripTests {
             (GeoCoordinate(latitude: 35.0116, longitude: 135.7681), 2024, 10, 8, 6, 16),  // Kyoto
         ]
         for i in 0..<45 {
-            lib.photo(at: date(2018 + i % 7, 1 + (i * 5) % 12, 1 + (i * 7) % 27, hour: 10 + i % 9), Fixture.Places.munichHome, jitterMeters: 3_000)
+            _ = lib.photo(at: date(2018 + i % 7, 1 + (i * 5) % 12, 1 + (i * 7) % 27, hour: 10 + i % 9), Fixture.Places.munichHome, jitterMeters: 3_000)
         }
         for i in 0..<12 {
-            lib.photo(at: date(2020 + i % 5, 1 + (i * 3) % 12, 5 + i, hour: 15), GeoCoordinate(latitude: 48.3520, longitude: 11.7930))
+            _ = lib.photo(at: date(2020 + i % 5, 1 + (i * 3) % 12, 5 + i, hour: 15), GeoCoordinate(latitude: 48.3520, longitude: 11.7930))
         }
         for (place, y, m, d, days, photos) in trips {
-            for i in 0..<photos { lib.photo(at: date(y, m, d, plusDays: i % days, hour: 9 + i % 10), place, jitterMeters: 2_000) }
+            for i in 0..<photos { _ = lib.photo(at: date(y, m, d, plusDays: i % days, hour: 9 + i % 10), place, jitterMeters: 2_000) }
         }
         let found = detector.detect(in: lib.assets)
         #expect(found.count == 12)
         #expect(found.allSatisfy { $0.maxDistanceFromHomeMeters > 250_000 })
-        #expect(found.map(\.allAssetIDs.count).reduce(0, +) == trips.map(\.5).reduce(0, +))
+        let tripPhotos: Int = found.reduce(0) { $0 + $1.allAssetIDs.count }
+        let expectedPhotos: Int = trips.reduce(0) { $0 + $1.5 }
+        #expect(tripPhotos == expectedPhotos)
     }
 
     /// A brand-new library (two weeks at home, then a weekend away) keeps its home: the

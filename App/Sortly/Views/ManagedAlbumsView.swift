@@ -8,7 +8,8 @@ struct ManagedAlbumsView: View {
     @State private var pending: ManagedAlbumState?
     @State private var plan: ChangePlan?
     @State private var showPlan = false
-    @State private var removingSource: SortlyID?
+    /// The suggestions behind the album being removed; they are not offered again afterwards.
+    @State private var removingSources: Set<SortlyID> = []
     @State private var nothingToDo = false
 
     var body: some View {
@@ -54,9 +55,10 @@ struct ManagedAlbumsView: View {
             PlanReviewView(prebuilt: plan)
         }
         .onChange(of: model.execution.finished) { _, finished in
-            guard finished != nil, let source = removingSource else { return }
-            removingSource = nil
-            Task { await model.forgetProposal(source) }
+            guard finished != nil, !removingSources.isEmpty else { return }
+            let sources = removingSources
+            removingSources = []
+            Task { for source in sources { await model.forgetProposal(source) } }
         }
     }
 
@@ -86,7 +88,7 @@ struct ManagedAlbumsView: View {
             nothingToDo = true
             return
         }
-        removingSource = state.sourceID
+        removingSources = state.allSourceIDs
         plan = removal
         showPlan = true
     }
