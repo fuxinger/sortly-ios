@@ -16,3 +16,5 @@
 | XcodeGen statt eingechecktem Projekt | lesbare Projektdatei, keine Konflikte | .xcodeproj | Build braucht `xcodegen generate` |
 | Standardbereiche ohne Jahre/Monate, Medientypen, Messenger | vermeidet Album-Flut; Fotos-App zeigt Datum und Medientypen schon | alles an | Nutzer schaltet diese Bereiche bei Bedarf ein |
 | Reise-Atlas im Apple-Stil (Systemfarben, Karten wie in Fotos) | einheitlich mit der App, Featuring | dunkler Neon-Look | Teilen-Bild hell, mit echtem Foto vom Lieblingsziel, vor dem Teilen abschaltbar |
+| Navigation nur mit Ziel-Links (`NavigationLink { Ziel } label:`) | Wert-Links in per Ziel-Link geöffneten Bildschirmen führten ins Leere (tote Zeilen, gelbes Warndreieck) | `NavigationLink(value:)` + `navigationDestination` | CI bricht bei `NavigationLink(value:` und bei SwiftUI-Navigationswarnungen ab |
+| Von SORTLY angelegte Alben werden gemerkt (welche Fotos SORTLY hinzugefügt hat) | sicheres Entfernen, manuelles Löschen/Umbenennen in Fotos wird respektiert | nichts merken | gelöschte Alben werden nicht erneut vorgeschlagen |

@@ -296,4 +296,95 @@ final class SortlyFlowUITests: XCTestCase {
         }
         XCUIDevice.shared.appearance = .light
     }
+
+    // MARK: Tap-through sweep
+
+    /// Labels the sweep never taps: anything that changes the library or the analysis.
+    private let sweepSkip = ["Pause", "Neu prüfen", "Jetzt umsetzen", "Rückgängig", "Löschen", "Entfernen", "Anlegen",
+                             "Übernehmen", "Nicht jetzt", "ergänzen", "so lassen", "Fortsetzen", "Beispiel", "Ignorieren", "Auswählen"]
+
+    private func isSafe(_ label: String) -> Bool {
+        !label.isEmpty && !sweepSkip.contains { label.localizedCaseInsensitiveContains($0) }
+    }
+
+    private var screenTitle: String {
+        let bar = app.navigationBars.firstMatch
+        return bar.exists ? bar.identifier : "-"
+    }
+
+    /// Closes a sheet or popover if one is open; returns true if it did.
+    @discardableResult
+    private func closeSheet() -> Bool {
+        for label in ["Fertig", "Abbrechen", "Schließen"] {
+            let b = app.buttons[label]
+            if b.exists && b.isHittable { b.tap(); sleep(1); return true }
+        }
+        return false
+    }
+
+    /// Taps every row (and on top-level screens every button in the content) and checks
+    /// that each tap leads somewhere and back works: no dead rows, no crash, no lost screen.
+    private func sweep(_ screen: String, depth: Int, strict: Bool = false) {
+        let start = screenTitle
+        let useCells = app.collectionViews.cells.count > 0
+        if depth > 0 && !useCells { return } // detail screens hold actions, not navigation
+        let query = useCells ? app.collectionViews.cells : app.scrollViews.firstMatch.buttons
+        var labels: [String] = []
+        for i in 0..<min(query.count, 8) {
+            let label = query.element(boundBy: i).label
+            if isSafe(label) && !labels.contains(label) { labels.append(label) }
+        }
+        for label in labels.prefix(6) {
+            let element = query.matching(NSPredicate(format: "label == %@", label)).firstMatch
+            guard element.exists else { continue }
+            if !element.isHittable { app.swipeUp(); sleep(1) }
+            guard element.isHittable else { continue }
+            element.tap(); sleep(2)
+            guard app.state == .runningForeground else {
+                print("UI_SWEEP_CRASH \(screen) › \(label)")
+                XCTFail("App crashed after tapping \(label) on \(screen)")
+                launch(); sleep(5)
+                return
+            }
+            let now = screenTitle
+            if now != start {
+                print("UI_SWEEP_OK \(screen) › \(label) → \(now)")
+                if depth == 0 && useCells { sweep("\(screen) › \(label)", depth: 1) }
+                back(); sleep(1)
+                if screenTitle != start {
+                    print("UI_SWEEP_BACK_FAILED \(screen) › \(label) (still \(screenTitle))")
+                    XCTFail("Back did not return to \(screen) after \(label)")
+                    back(); sleep(1)
+                }
+            } else if closeSheet() {
+                print("UI_SWEEP_OK \(screen) › \(label) → sheet")
+            } else {
+                print("UI_SWEEP_NOOP \(screen) › \(label)")
+                if strict { XCTFail("Row '\(label)' on \(screen) did nothing") }
+            }
+        }
+    }
+
+    /// Third run: every tab, every row, one level deep.
+    func test3_TapThroughSweep() {
+        continueAfterFailure = true
+        launch()
+        sleep(5)
+        sweep("Übersicht", depth: 0)
+        for tab in ["Mediathek", "Alben", "Suche"] {
+            let button = app.tabBars.buttons[tab]
+            guard button.waitForExistence(timeout: 5) else { print("UI_STEP_MISSING sweep tab \(tab)"); continue }
+            button.tap(); sleep(2)
+            sweep(tab, depth: 0)
+        }
+        // Suggestions list, the screen that had dead rows.
+        app.tabBars.buttons["Übersicht"].tap(); sleep(1)
+        let suggestions = button("Vorschläge prüfen")
+        if suggestions.waitForExistence(timeout: 5) {
+            suggestions.tap(); sleep(2)
+            sweep("Vorschläge", depth: 0, strict: true)
+            back()
+        }
+        print("UI_SWEEP_DONE")
+    }
 }

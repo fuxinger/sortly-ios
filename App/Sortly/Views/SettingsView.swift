@@ -45,6 +45,11 @@ struct SettingsView: View {
                         .multilineTextAlignment(.trailing)
                 }
                 Toggle("Foto in mehreren Alben erlauben", isOn: $model.settings.allowMultipleAssignments)
+                NavigationLink {
+                    ManagedAlbumsView()
+                } label: {
+                    LabeledContent("Von SORTLY angelegt", value: model.managedAlbums.count.formatted())
+                }
             }
 
             Section {

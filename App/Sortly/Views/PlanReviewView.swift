@@ -68,6 +68,8 @@ struct PlanReviewView: View {
             }
             if summary.renamedCollections > 0 { row("pencil", "Umbenannt", summary.renamedCollections) }
             if summary.movedCollections > 0 { row("arrow.right.square", "Verschoben", summary.movedCollections) }
+            if summary.removedMemberships > 0 { row("minus.rectangle", "Aus Alben genommen", summary.removedMemberships) }
+            if summary.deletedContainers > 0 { row("rectangle.stack.badge.minus", "Entfernte Alben", summary.deletedContainers) }
         }
 
         Card {

@@ -3396,6 +3396,146 @@
           }
         }
       }
+    },
+    "Album entfernen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove Album"
+          }
+        }
+      }
+    },
+    "Aus Alben genommen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Removed from albums"
+          }
+        }
+      }
+    },
+    "Die %lld Fotos, die SORTLY hinzugefügt hat, werden aus dem Album genommen. Alles andere bleibt, wie es ist." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The %lld photos SORTLY added will be removed from the album. Everything else stays as it is."
+          }
+        }
+      }
+    },
+    "Die Fotos von SORTLY sind schon nicht mehr in diesem Album." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SORTLY's photos are no longer in this album."
+          }
+        }
+      }
+    },
+    "Entfernte Alben" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Removed albums"
+          }
+        }
+      }
+    },
+    "Ergänzt · %lld Fotos von SORTLY" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Extended · %lld photos from SORTLY"
+          }
+        }
+      }
+    },
+    "Hier erscheinen Alben, die SORTLY angelegt oder ergänzt hat." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Albums SORTLY created or added photos to appear here."
+          }
+        }
+      }
+    },
+    "Neu angelegt · %lld Fotos von SORTLY" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Created · %lld photos from SORTLY"
+          }
+        }
+      }
+    },
+    "SORTLY hat dieses Album angelegt. Es wird gelöscht, die Fotos bleiben in deiner Mediathek. Hast du selbst Fotos hineingelegt, bleibt das Album mit diesen Fotos bestehen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SORTLY created this album. It will be deleted; the photos stay in your library. If you added photos yourself, the album stays with those photos."
+          }
+        }
+      }
+    },
+    "SORTLYs Fotos herausnehmen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove SORTLY's Photos"
+          }
+        }
+      }
+    },
+    "Tippe auf ein Album, um SORTLYs Änderungen daran zurückzunehmen. Fotos, die du selbst hinzugefügt hast, bleiben drin. Deine Originale bleiben immer in der Mediathek." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap an album to take back SORTLY's changes. Photos you added yourself stay in it. Your originals always stay in your library."
+          }
+        }
+      }
+    },
+    "Von SORTLY angelegt" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Created by SORTLY"
+          }
+        }
+      }
+    },
+    "Änderungen von SORTLY zurücknehmen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Take back SORTLY's changes"
+          }
+        }
+      }
+    },
+    "„%@“ zurücknehmen?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Take back “%@”?"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

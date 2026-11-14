@@ -19,6 +19,14 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install SQLite headers
         run: apt-get update -qq && apt-get install -y -qq libsqlite3-dev
+      - name: App code rules
+        # Navigation uses destination-based links only. A value-based link inside a screen that
+        # was itself pushed by a destination-based link leads nowhere (dead row, warning triangle).
+        run: |
+          if grep -rn "NavigationLink(value:" App/Sortly; then
+            echo "::error::Use NavigationLink { destination } label: { … } instead of NavigationLink(value:)"
+            exit 1
+          fi
       - name: Build and test
         run: swift test --parallel
 
@@ -185,6 +193,12 @@ jobs:
       - name: Run UI flow
         run: |
           set +e
+          # SwiftUI reports broken navigation (link without destination) and similar runtime
+          # problems only in the system log, so it is recorded during the whole run.
+          xcrun simctl spawn "${{ steps.sim.outputs.udid }}" log stream --style compact --level debug \
+            --predicate 'process == "Sortly" AND (subsystem == "com.apple.SwiftUI" OR messageType == fault OR eventMessage CONTAINS[c] "navigationDestination")' \
+            > swiftui-log.txt 2>&1 &
+          LOGPID=$!
           cd App
           xcodebuild test \
             -project Sortly.xcodeproj \
@@ -193,5 +207,12 @@ jobs:
             -resultBundlePath ../build/UITestResults.xcresult \
             CODE_SIGNING_ALLOWED=NO > ../ui-log.txt 2>&1
           status=$?
-          grep -aE "error:|UI_STEP|UI_TIMING|A11Y_|PREVIEW_JPEG|Test Case|Executed|\*\* " ../ui-log.txt | grep -v "/SourcePackages/" | head -6000
+          kill $LOGPID 2>/dev/null
+          grep -aE "error:|UI_STEP|UI_SWEEP|UI_TIMING|A11Y_|PREVIEW_JPEG|Test Case|Executed|\*\* " ../ui-log.txt | grep -v "/SourcePackages/" | head -8000
+          # Unique runtime warnings from the app (timestamps cut off).
+          grep -av "^Filtering\|^Timestamp" ../swiftui-log.txt | cut -c 25- | sort | uniq -c | sort -rn | head -40 | sed 's/^/UI_RUNTIME_WARNING /'
+          if grep -aqiE "no matching navigationDestination|NavigationLink is presenting|cannot be activated" ../swiftui-log.txt; then
+            echo "::error::SwiftUI navigation warning in the UI run (a link leads nowhere)"
+            status=1
+          fi
           exit $status
