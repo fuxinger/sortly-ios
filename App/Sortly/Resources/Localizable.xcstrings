@@ -251,6 +251,46 @@
         }
       }
     },
+    "%lld Schritte hast du nach der Unterbrechung so gelassen." : {
+      "localizations" : {
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Schritt hast du nach der Unterbrechung so gelassen."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Schritte hast du nach der Unterbrechung so gelassen."
+                }
+              }
+            }
+          }
+        },
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "You left %lld step as it was after the interruption."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "You left %lld steps as they were after the interruption."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld Schritte konnte Albumist in der Mediathek nicht nachprüfen. Sie zählen hier nicht mit." : {
       "localizations" : {
         "en" : {

@@ -644,4 +644,79 @@ final class SortlyFlowUITests: XCTestCase {
             XCTAssertTrue(gone, "The restored card did not go away")
         }
     }
+
+    /// Fifth run: the app is closed while a plan runs. The next start offers to continue,
+    /// undo or leave it; "So lassen" keeps what was done, the change receipt says so and
+    /// "Fehlendes erneut versuchen" makes a plan with only the missing steps.
+    func test5_InterruptedPlanCanBeLeftAndRetried() {
+        continueAfterFailure = true
+        launch()
+        _ = waitStable("analysis idle before interruption", timeout: 120) { analysisIdle }
+        // Select something to apply: the selection of earlier runs, else the recommended ones.
+        var apply = button("ausgewählte Alben anlegen")
+        if !apply.waitForExistence(timeout: 5), tap(button("Vorschläge prüfen"), "open suggestions for interruption", timeout: 20) {
+            sleep(1)
+            if button("empfohlene auswählen").waitForExistence(timeout: 5) { button("empfohlene auswählen").tap(); sleep(1) }
+            back(); sleep(1)
+            apply = button("ausgewählte Alben anlegen")
+        }
+        guard tap(apply, "open plan for interruption", timeout: 20) else { return }
+        sleep(3)
+        guard tap(button("Jetzt umsetzen"), "start plan for interruption", timeout: 30) else { return }
+        // The run takes about 16 s; closing the app after 3 s leaves it half done.
+        sleep(3)
+        app.terminate()
+        sleep(2)
+        launch()
+        let card = anything("Umsetzen wurde unterbrochen")
+        guard card.waitForExistence(timeout: 30) else {
+            // The plan finished before the app was closed: nothing to repair in this run.
+            print("UI_FACT no interruption card (plan finished before the app was closed)")
+            return
+        }
+        print("UI_STEP_OK interruption card")
+        sleep(1)
+        shot("50-interrupted"); audit("interrupted card")
+        let keep = app.buttons["interrupted.keep"]
+        if !keep.isHittable { app.swipeUp(); sleep(1) }
+        guard tap(keep, "leave interrupted plan as it is") else { return }
+        let gone = waitGone(card, timeout: 30)
+        print(gone ? "UI_STEP_OK interruption card gone after keep" : "UI_STEP_MISSING interruption card gone after keep")
+        XCTAssertTrue(gone, "The interruption card stayed after \"So lassen\"")
+
+        // The kept plan is the newest history row; its receipt says what is missing.
+        guard tap(app.buttons["Einstellungen"], "settings after keep") else { return }
+        sleep(1)
+        let row = app.buttons["history.row"].firstMatch
+        let list = app.collectionViews.firstMatch
+        var swipes = 0
+        while !(row.exists && row.isHittable) && swipes < 10 {
+            (list.exists ? list : app).swipeUp()
+            swipes += 1
+        }
+        guard tap(row, "kept plan in history", timeout: 10) else { return }
+        sleep(2)
+        let partial = anything("Teilweise umgesetzt").waitForExistence(timeout: 5)
+        print(partial ? "UI_STEP_OK kept plan is partial" : "UI_STEP_MISSING kept plan is partial")
+        XCTAssertTrue(partial, "The kept plan does not say it is partial")
+        shot("51-kept-receipt"); audit("kept receipt")
+        let retry = app.buttons["receipt.retry"]
+        var more = 0
+        while !(retry.exists && retry.isHittable) && more < 6 { app.swipeUp(); more += 1 }
+        sleep(1)
+        shot("52-receipt-repair")
+        guard tap(retry, "retry missing steps", timeout: 10) else { return }
+        let plan = app.navigationBars["Umsetzen"].waitForExistence(timeout: 20)
+        print(plan ? "UI_STEP_OK retry plan opened" : "UI_STEP_MISSING retry plan opened")
+        XCTAssertTrue(plan, "\"Fehlendes erneut versuchen\" did not open a plan")
+        sleep(2)
+        shot("53-retry-plan"); audit("retry plan")
+        if tap(button("Jetzt umsetzen"), "apply retry plan", timeout: 30) {
+            let done = button("Rückgängig machen").waitForExistence(timeout: 300)
+            print(done ? "UI_STEP_OK retry plan finished" : "UI_STEP_MISSING retry plan finished")
+            XCTAssertTrue(done, "The retry plan did not finish")
+            sleep(1)
+            shot("54-retry-result")
+        }
+    }
 }

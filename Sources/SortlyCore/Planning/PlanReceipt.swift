@@ -54,6 +54,8 @@ public struct PlanReceipt: Hashable, Sendable {
     public var moved = 0
     public var unavailablePhotos = 0
     public var failedSteps = 0
+    /// Steps the user chose to leave undone ("So lassen"); not counted as failed.
+    public var leftSteps = 0
     /// There is no operation that deletes, edits or copies an original (`PlannedOperation`),
     /// so these are zero by construction, not by counting.
     public let originalsDeleted = 0
@@ -117,13 +119,16 @@ public struct PlanReceipt: Hashable, Sendable {
             let succeeded: Bool = if case .succeeded = step.state { true } else { false }
             let failed: Bool
             switch step.state {
+            case .skipped(StepState.leftByUserReason):
+                failed = true
+                leftSteps += 1
             case .failed(let reason), .skipped(let reason):
                 failed = true
+                failedSteps += 1
                 if !reason.isEmpty && !problems.contains(reason) { problems.append(reason) }
             default:
                 failed = false
             }
-            if failed { failedSteps += 1 }
             let unconfirmed = record?.unverified.contains(step.id) ?? false
             // Only what the library confirmed counts as done.
             let done = succeeded && !unconfirmed
@@ -202,5 +207,5 @@ public struct PlanReceipt: Hashable, Sendable {
     }
 
     /// Whether everything the plan set out to do was done and confirmed.
-    public var isComplete: Bool { failedSteps == 0 && unconfirmedSteps == 0 && problems.isEmpty }
+    public var isComplete: Bool { failedSteps == 0 && leftSteps == 0 && unconfirmedSteps == 0 && problems.isEmpty }
 }

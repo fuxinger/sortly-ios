@@ -94,4 +94,21 @@ struct PlanReceiptTests {
         #expect(receipt.albums.first { $0.title == "Urlaub" }?.added == 0)
         #expect(receipt.photosAdded == 0 && receipt.failedSteps == 1)
     }
+
+    @Test func stepsLeftByTheUserAreNotFailures() {
+        let plan = ChangePlan(id: SortlyID("p"), createdAt: Date(), confirmedAt: Date(), status: .completedWithErrors, baseline: [:],
+                              baselineCollectionIDs: [],
+                              steps: [
+                                  PlanStep(id: "s0", operation: .createAlbum(key: "A", title: "Rom", parent: .topLevel), sourceID: nil,
+                                           state: .succeeded(createdID: "a", verifiedAt: Date())),
+                                  PlanStep(id: "s1", operation: .createAlbum(key: "B", title: "Paris", parent: .topLevel), sourceID: nil,
+                                           state: .skipped(reason: StepState.leftByUserReason)),
+                              ],
+                              conflicts: [], notes: [], resolvedKeys: ["A": "a"])
+        let receipt = PlanReceipt(plan: plan, inventory: CollectionInventory([CollectionSnapshot(id: "a", title: "Rom")]))
+        #expect(receipt.failedSteps == 0 && receipt.leftSteps == 1)
+        #expect(receipt.problems.isEmpty)
+        #expect(!receipt.isComplete)
+        #expect(receipt.albumsCreated == 1)
+    }
 }

@@ -130,6 +130,9 @@ struct PlanReceiptView: View {
             if receipt.failedSteps > 0 {
                 Text("\(receipt.failedSteps) Schritte konnten nicht ausgeführt werden.")
             }
+            if receipt.leftSteps > 0 {
+                Text("\(receipt.leftSteps) Schritte hast du nach der Unterbrechung so gelassen.")
+            }
             ForEach(StepProblemText.texts(receipt.problems), id: \.self) { text in
                 Label(text, systemImage: "exclamationmark.triangle")
                     .font(.subheadline).foregroundStyle(.secondary)
@@ -166,7 +169,7 @@ struct PlanReceiptView: View {
 
     /// Only plans that changed the library and were not taken back can be completed.
     private func canRepair(_ receipt: PlanReceipt) -> Bool {
-        !receipt.isUndo && receipt.failedSteps > 0 && !model.undonePlans.contains(plan.id)
+        !receipt.isUndo && receipt.failedSteps + receipt.leftSteps > 0 && !model.undonePlans.contains(plan.id)
             && plan.steps.contains { $0.state.canBeRetried }
     }
 
