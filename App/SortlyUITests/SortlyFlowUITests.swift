@@ -312,6 +312,11 @@ final class SortlyFlowUITests: XCTestCase {
             sleep(2)
             shot("14-library"); audit("library")
             let photo = app.buttons.matching(NSPredicate(format: "label MATCHES %@", ".*20[0-9][0-9].*")).firstMatch
+            // After the plan ran, "Nicht sortiert" can be empty: show the sorted photos instead.
+            if !photo.waitForExistence(timeout: 3), tap(button("Sortiert"), "sorted photos") {
+                sleep(2)
+                shot("14b-library-sorted")
+            }
             if tap(photo, "open photo") {
                 sleep(2)
                 shot("15-photo-detail"); audit("photo detail")
