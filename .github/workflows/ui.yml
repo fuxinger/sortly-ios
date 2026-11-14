@@ -22,13 +22,14 @@ jobs:
   ui-flow:
     # End-to-end run with the demo library: screenshots, timings and accessibility audit in the log.
     name: UI flow and accessibility (simulator)
-    runs-on: macos-26
+    runs-on: xcode-27
     timeout-minutes: 75
     steps:
       - uses: actions/checkout@v5
       - name: Select newest Xcode
         run: |
-          XCODE=$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)
+          XCODE=$(ls -d /Applications/Xcode_*.app 2>/dev/null | sort -V | tail -1)
+          [ -n "$XCODE" ] || XCODE=$(ls -d /Applications/Xcode*.app | sort -V | tail -1)
           sudo xcode-select -s "$XCODE"
       - name: Generate Xcode project
         run: |
@@ -37,16 +38,7 @@ jobs:
       - name: Prepare simulator
         id: sim
         run: |
-          UDID=$(xcrun simctl list devices available -j | python3 -c '
-          import json,sys
-          d=json.load(sys.stdin)["devices"]
-          best=None
-          for rt,devs in d.items():
-              if "iOS" not in rt: continue
-              for x in devs:
-                  if x["name"].startswith("iPhone") and "Pro" in x["name"] and "Max" not in x["name"]:
-                      best=x["udid"]
-          print(best)')
+          UDID=$(xcrun simctl list devices available -j | python3 .github/scripts/pick_simulator.py --pro)
           echo "udid=$UDID" >> "$GITHUB_OUTPUT"
           xcrun simctl boot "$UDID" || true
           xcrun simctl bootstatus "$UDID" -b

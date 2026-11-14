@@ -66,14 +66,15 @@ jobs:
 
   ios:
     name: iOS build and tests (macOS)
-    runs-on: macos-26
+    runs-on: xcode-27
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v5
       - name: Select newest Xcode
         run: |
           ls -d /Applications/Xcode*.app
-          XCODE=$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)
+          XCODE=$(ls -d /Applications/Xcode_*.app 2>/dev/null | sort -V | tail -1)
+          [ -n "$XCODE" ] || XCODE=$(ls -d /Applications/Xcode*.app | sort -V | tail -1)
           sudo xcode-select -s "$XCODE"
           xcodebuild -version
           xcrun simctl list runtimes
@@ -88,16 +89,7 @@ jobs:
         if: hashFiles('App/project.yml') != ''
         id: sim
         run: |
-          UDID=$(xcrun simctl list devices available -j | python3 -c '
-          import json,sys
-          d=json.load(sys.stdin)["devices"]
-          best=None
-          for rt,devs in d.items():
-              if "iOS" not in rt: continue
-              for x in devs:
-                  if x["name"].startswith("iPhone"):
-                      best=(rt,x["udid"],x["name"])
-          print(best[1])')
+          UDID=$(xcrun simctl list devices available -j | python3 .github/scripts/pick_simulator.py)
           echo "udid=$UDID" >> "$GITHUB_OUTPUT"
       - name: Build and test app
         if: hashFiles('App/project.yml') != ''
@@ -139,13 +131,14 @@ jobs:
   simulator:
     # Runs in parallel with the tests so the browser-test link is ready sooner.
     name: Simulator app for browser testing
-    runs-on: macos-26
+    runs-on: xcode-27
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v5
       - name: Select newest Xcode
         run: |
-          XCODE=$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)
+          XCODE=$(ls -d /Applications/Xcode_*.app 2>/dev/null | sort -V | tail -1)
+          [ -n "$XCODE" ] || XCODE=$(ls -d /Applications/Xcode*.app | sort -V | tail -1)
           sudo xcode-select -s "$XCODE"
       - name: Generate Xcode project
         run: |
