@@ -123,6 +123,7 @@ struct AtlasView: View {
     /// nil = all years.
     @State private var year: Int?
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     private var atlas: TravelAtlas { model.travelAtlas(year: year) }
 
@@ -172,14 +173,28 @@ struct AtlasView: View {
 
 extension AtlasView {
     /// "Alle Jahre" plus every year with travel photos, for a yearly review ("Mein Reisejahr").
+    /// At the largest text sizes a menu: chips that big leave one and a half on screen.
+    @ViewBuilder
     var yearPicker: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: Theme.Spacing.s) {
-                yearChip(nil)
-                ForEach(model.atlasYears, id: \.self) { yearChip($0) }
+        if typeSize.isAccessibilitySize {
+            Picker(selection: $year) {
+                Text("Alle Jahre").tag(Int?.none)
+                ForEach(model.atlasYears, id: \.self) { Text(verbatim: String($0)).tag(Int?.some($0)) }
+            } label: {
+                Text("Jahr")
             }
+            .pickerStyle(.menu)
+            .tint(Theme.accent)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        } else {
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: Theme.Spacing.s) {
+                    yearChip(nil)
+                    ForEach(model.atlasYears, id: \.self) { yearChip($0) }
+                }
+            }
+            .scrollClipDisabled()
         }
-        .scrollClipDisabled()
     }
 
     private func yearChip(_ value: Int?) -> some View {

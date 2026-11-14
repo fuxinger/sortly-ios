@@ -93,20 +93,25 @@ struct ProposalRow: View {
                 if let status = model.match(for: proposal)?.status {
                     StatusBadge(text: status.label, tint: status.tint)
                 }
+                decisionLabel
             }
             Spacer(minLength: 0)
-            decisionMark
         }
         .padding(.vertical, 2)
     }
 
+    /// The decision in words, not only as a small symbol (testers missed the check mark).
     @ViewBuilder
-    private var decisionMark: some View {
+    private var decisionLabel: some View {
         switch model.decisions[proposal.id] {
         case .reject:
-            Image(systemName: "xmark.circle").foregroundStyle(.secondary).accessibilityLabel("Abgelehnt")
+            Label("Nicht jetzt", systemImage: "xmark.circle")
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(.secondary)
         case .some(let d) where d.isAccepted:
-            Image(systemName: "checkmark.circle.fill").foregroundStyle(Theme.accent).accessibilityLabel("Übernommen")
+            Label("Übernommen", systemImage: "checkmark.circle.fill")
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(Theme.accent)
         default:
             EmptyView()
         }

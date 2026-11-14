@@ -5,7 +5,7 @@ andere KIs) kommen neue Punkte dazu. Status: ✅ erledigt · 🔜 als Nächstes 
 Aufwand: S klein, M mittel, L groß.
 
 Quellen: **E1** Expertenrunde 14.11.2026 (Tempo, Oberfläche, Technik, Produkt) · **U** Nutzer
-(Fuchs) · **T** Testläufe.
+(Fuchs) · **T** Testläufe · **B** Bedienungstest 14.11.2026 (5 unabhängige Testpersonen: Gelegenheitsnutzerin, Vielreisender, Senior mit großer Schrift, Fotografin, Vater mit Kinderfotos).
 
 ## Datensicherheit und Zuverlässigkeit
 
@@ -31,6 +31,36 @@ Quellen: **E1** Expertenrunde 14.11.2026 (Tempo, Oberfläche, Technik, Produkt) 
 | ✅ | Sortier-Show: beim schnellen Blättern überlappten sich Alben, der Platzhalter schimmerte durch das Titelbild. | S | T 14.11. (Video) |
 | ✅ | UI-Test: Tab-Leiste schrumpfte beim Scrollen und versteckte die Tabs; fehlende Schritte machen jetzt ein Bildschirmfoto. | S | T 14.11. |
 | 💡 | Bedienungshilfen-Prüfung meldet zu wenig Kontrast bei den großen Glas-Knöpfen. Gemessen: Weiß auf Petrol 6:1, also bestanden; vermutlich misst die Prüfung den Glas-Effekt mit. Auf echtem Gerät nachprüfen. | S | T 14.11. |
+
+## Aus dem Bedienungstest (B)
+
+| Status | Punkt | Aufwand | Quelle |
+|---|---|---|---|
+| ✅ | „Alle sicheren übernehmen“ war im „…“-Menü versteckt (4 von 5 fanden es nicht). Jetzt großer Knopf „N empfohlene übernehmen“ oben in der Liste, mit Erklärung darunter. | S | B |
+| ✅ | Nach dem Übernehmen fehlte der Weg zum Umsetzen. Unten in der Liste steht jetzt „N übernommene Vorschläge umsetzen“. | S | B |
+| ✅ | Liste sprang nach jedem Übernehmen um. Feste Reihenfolge: Reisen neueste zuerst, sonst nach Größe. | S | B |
+| ✅ | „Sicher“, „Wahrscheinlich“ ohne Erklärung. Antippen zeigt jetzt einen Satz, was das heißt. | S | B |
+| ✅ | „Für später vormerken“ unklar. Heißt jetzt „Übernehmen und später anlegen“. | S | B |
+| ✅ | „Überspringen“ in der Show klang nach „Arbeit abbrechen“. Jetzt „Animation überspringen“ als Glas-Knopf. | S | B |
+| ✅ | Großer Fotozähler blieb in der Show stehen (Fotos im Land und in der Reise zählen einmal). Groß zählt jetzt „Alben fertig“, darunter die Fotos. | S | B |
+| ✅ | Zurück während des Umsetzens sah wie Abbrechen aus. Zurück-Knopf ist währenddessen weg. | S | B |
+| ✅ | „Noch 10 Alben kostenlos“ unklar, ob vor oder nach diesem Plan. Jetzt „Kostenlos. Danach hast du noch N von 10 Gratis-Alben.“ | S | B |
+| ✅ | Rückgängig auf dem Fertig-Bildschirm: Hinweis, dass es auch später geht und Fotos bleiben. | S | B |
+| ✅ | Suchfeld im Tab „Suchen“ nicht sichtbar (alle 5). Feld ist jetzt beim Öffnen aktiv. | S | B |
+| ✅ | „Voller Zugriff“ machte Angst ums Löschen. Zugriffsseite sagt jetzt: Albumist löscht und verändert nie ein Foto. | S | B |
+| ✅ | „Erst ein Probelauf?“ verwirrte. Heißt jetzt „Womit soll Albumist anfangen?“. | S | B |
+| ✅ | „0 Alben gefunden“ wirkte wie ein Fehler. Nur noch „N davon in deinen Alben“, wenn es welche gibt. | S | B |
+| ✅ | Ring zeigte bei größter Schrift „6…“. Ring wächst mit der Schrift, Zahl bleibt lesbar. | S | B |
+| 🔜 | Zu viele Alben auf einmal: Land + Stadt + Reise ergibt schnell 40 Alben. Vorschlag: Städte standardmäßig aus, nur Länder und Reisen. **Entscheidung von Fuchs.** | S | B (3 von 5) |
+| 💡 | Bereich „Kinder und Familie“ (Gesichter). Mit Personen-Erkennung in Update 1.1. | L | B |
+| 💡 | Fertig-Bildschirm mit Collage der neuen Alben statt nur Zahlen. | M | B |
+| 💡 | Länderseite im Atlas mit kleiner Karte der Orte. | M | B |
+| 💡 | Teilen-Karte im Atlas: standardmäßig mit Foto statt nur Karte. | S | B |
+| 💡 | Namensfeld bei Orten ohne Namen deutlicher als Eingabefeld zeigen. | S | B |
+| ✅ | Filter-Chips (Mediathek, Atlas-Jahre) liefen bei größter Schrift aus dem Bild. Bei den größten Schriftstufen jetzt ein Menü. | S | B |
+| ✅ | Übernommen nur als kleines Häkchen. Zeilen sagen jetzt „Übernommen“ oder „Nicht jetzt“ in Worten. | S | B |
+| 💡 | Atlas-Kacheln wachsen bei größter Schrift nicht ganz mit (Zahlen und Untertitel). | S | B |
+| 💡 | Albumnamen in der Sortier-Show bei langen Reisen abgekürzt („Paris · 05.10.–07.10…“). | S | B |
 
 ## Tempo bei großen Mediatheken
 

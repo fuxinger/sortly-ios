@@ -12,6 +12,7 @@ struct LibraryView: View {
     /// The photo zooms out of its thumbnail and back into it.
     @Namespace private var zoom
     @State private var addingToAlbum: [AssetID]?
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     private static let buckets: [InboxBucket] = [.unorganized, .suggestions, .uncertain, .organized, .ignored, .all]
 
@@ -19,21 +20,7 @@ struct LibraryView: View {
         let members = model.bucketMembers(bucket)
         ScrollView {
             VStack(alignment: .leading, spacing: Theme.Spacing.m) {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: Theme.Spacing.s) {
-                        ForEach(Self.buckets, id: \.self) { b in
-                            Button { bucket = b; selection = []; if b == .suggestions { selecting = false } } label: {
-                                Text(b.label)
-                                    .font(.subheadline.weight(.semibold))
-                                    .padding(.horizontal, 14).padding(.vertical, 8)
-                                    .background(b == bucket ? Theme.accent : Theme.card, in: Capsule())
-                                    .foregroundStyle(b == bucket ? Theme.onAccent : Color.primary)
-                            }
-                            .buttonStyle(.plain)
-                            .accessibilityAddTraits(b == bucket ? .isSelected : [])
-                        }
-                    }
-                }
+                bucketPicker
                 if bucket == .suggestions {
                     Text("\(model.openProposals.count) Vorschläge für \(members.count.formatted()) Fotos und Videos")
                         .font(.footnote).foregroundStyle(.secondary).monospacedDigit()
@@ -149,6 +136,43 @@ struct LibraryView: View {
             }
         }
         .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.tile, style: .continuous))
+    }
+
+    /// Area chips; at the largest text sizes a menu, so every area stays reachable.
+    @ViewBuilder
+    private var bucketPicker: some View {
+        if typeSize.isAccessibilitySize {
+            Picker(selection: Binding(get: { bucket }, set: { select($0) })) {
+                ForEach(Self.buckets, id: \.self) { Text($0.label).tag($0) }
+            } label: {
+                Text("Anzeigen")
+            }
+            .pickerStyle(.menu)
+            .tint(Theme.accent)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        } else {
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: Theme.Spacing.s) {
+                    ForEach(Self.buckets, id: \.self) { b in
+                        Button { select(b) } label: {
+                            Text(b.label)
+                                .font(.subheadline.weight(.semibold))
+                                .padding(.horizontal, 14).padding(.vertical, 8)
+                                .background(b == bucket ? Theme.accent : Theme.card, in: Capsule())
+                                .foregroundStyle(b == bucket ? Theme.onAccent : Color.primary)
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityAddTraits(b == bucket ? .isSelected : [])
+                    }
+                }
+            }
+        }
+    }
+
+    private func select(_ b: InboxBucket) {
+        bucket = b
+        selection = []
+        if b == .suggestions { selecting = false }
     }
 
     private var emptyTitle: LocalizedStringKey {
