@@ -10,6 +10,8 @@ struct CountryPhotosView: View {
     /// The year chosen in the atlas; nil = all years.
     var year: Int?
     @State private var detail: AssetFacts?
+    /// The photo zooms out of its thumbnail and back into it.
+    @Namespace private var zoom
     @State private var addingToAlbum: [AssetID]?
 
     var body: some View {
@@ -63,6 +65,7 @@ struct CountryPhotosView: View {
         }
         .sheet(item: $detail) { facts in
             AssetDetailView(facts: facts) { addingToAlbum = [facts.id] }
+                .navigationTransition(.zoom(sourceID: facts.id, in: zoom))
         }
         .sheet(isPresented: Binding(get: { addingToAlbum != nil }, set: { if !$0 { addingToAlbum = nil } })) {
             AddToAlbumSheet(assets: addingToAlbum ?? []) {}
@@ -117,6 +120,7 @@ struct CountryPhotosView: View {
                 } label: {
                     AssetThumbnail(id: facts.id, side: 110)
                         .aspectRatio(1, contentMode: .fill)
+                        .matchedTransitionSource(id: facts.id, in: zoom)
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)

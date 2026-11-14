@@ -9,6 +9,8 @@ struct LibraryView: View {
     @State private var selecting = false
     @State private var selection: Set<AssetID> = []
     @State private var detail: AssetFacts?
+    /// The photo zooms out of its thumbnail and back into it.
+    @Namespace private var zoom
     @State private var addingToAlbum: [AssetID]?
 
     private static let buckets: [InboxBucket] = [.unorganized, .suggestions, .uncertain, .organized, .ignored, .all]
@@ -80,6 +82,7 @@ struct LibraryView: View {
         .animation(.snappy, value: selection.isEmpty)
         .sheet(item: $detail) { facts in
             AssetDetailView(facts: facts) { addingToAlbum = [facts.id] }
+                .navigationTransition(.zoom(sourceID: facts.id, in: zoom))
         }
         .sheet(isPresented: Binding(get: { addingToAlbum != nil }, set: { if !$0 { addingToAlbum = nil } })) {
             AddToAlbumSheet(assets: addingToAlbum ?? []) {
@@ -129,6 +132,7 @@ struct LibraryView: View {
                 } label: {
                     AssetThumbnail(id: id, side: 110)
                         .aspectRatio(1, contentMode: .fill)
+                        .matchedTransitionSource(id: id, in: zoom)
                         .overlay(alignment: .bottomTrailing) {
                             if selecting {
                                 Image(systemName: selection.contains(id) ? "checkmark.circle.fill" : "circle")

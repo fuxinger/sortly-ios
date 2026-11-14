@@ -52,7 +52,8 @@ Quellen: **E1** Expertenrunde 14.11.2026 (Tempo, Oberfläche, Technik, Produkt) 
 | ✅ | Vorschau-Fotos über die ganze Zeitspanne verteilt, nach Datum; Antippen zeigt alle Fotos; einzelne Fotos aus dem Vorschlag entfernen. | M | E1 Oberfläche/Produkt |
 | 💡 | Schönstes Foto als Titelbild (Bildqualität aus der Analyse nutzen). | S | E1 Produkt |
 | 🔜 | Ein Fortschrittsbalken über alle Schritte statt Neustart bei jeder Stufe. | S | E1 Oberfläche |
-| 💡 | Zoom-Übergang vom Vorschaubild ins Foto, Kontextmenüs, Wischaktionen. | M | E1 Oberfläche, U |
+| ✅ | Zoom-Übergang vom Vorschaubild ins Foto. | S | E1 Oberfläche, U |
+| 💡 | Kontextmenüs und Wischaktionen. | M | E1 Oberfläche |
 | 💡 | Suche: Treffer antippbar, für VoiceOver lesbar, „Als Album anlegen“. | S | E1 Oberfläche |
 | 💡 | „Analyse aktuell“ nur anzeigen, wenn es stimmt; neue Fotos beim Öffnen erkennen. | M | E1 Oberfläche |
 | 💡 | Einheitliche Wörter: „Auswählen“ und „Alben anlegen“, überall „sortiert“. | S | E1 Oberfläche |
@@ -86,7 +87,7 @@ Quellen: **E1** Expertenrunde 14.11.2026 (Tempo, Oberfläche, Technik, Produkt) 
 | ✅ | Fotos fliegen in Alben. | M | U |
 | 🔜 | Erster Scan als Show: Mosaik aus eigenen Fotos, gefundene Reisen springen als Karten auf. | M | U |
 | ✅ | Farben aus den Fotos: jeder Vorschlag und jedes Land im Atlas mit eigenem weichen Farbverlauf aus dem Titelbild. | S | U |
-| 🔜 | Zoom-Übergang ins Foto. | S | U |
+| ✅ | Zoom-Übergang ins Foto (Mediathek und Atlas-Länder). | S | U |
 | 💡 | 3D-Globus im Atlas. | L | U |
 | 💡 | Zeitreise-Regler durch die Jahre. | M | U |
 | 💡 | Reise als Postkarte teilen (umdrehbar). | M | U |
