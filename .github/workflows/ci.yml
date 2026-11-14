@@ -147,6 +147,7 @@ jobs:
       - name: Build simulator app for browser testing
         run: |
           set -o pipefail
+          mkdir -p build
           cd App
           xcodebuild build \
             -project Sortly.xcodeproj \
@@ -155,7 +156,9 @@ jobs:
             -sdk iphonesimulator \
             -destination "generic/platform=iOS Simulator" \
             -derivedDataPath ../build/sim \
-            CODE_SIGNING_ALLOWED=NO | tail -5
+            CODE_SIGNING_ALLOWED=NO > ../build/sim-build.log 2>&1 \
+            || { grep -E "error:" -A3 ../build/sim-build.log | head -60; exit 1; }
+          tail -5 ../build/sim-build.log
           cd ../build/sim/Build/Products/Release-iphonesimulator
           ditto -c -k --sequesterRsrc --keepParent Sortly.app ../../../../Sortly-simulator.zip
           ls -la ../../../../Sortly-simulator.zip

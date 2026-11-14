@@ -190,15 +190,17 @@ struct OverviewView: View {
         let existing = proposals.filter { p in
             model.match(for: p).map { [MatchStatus.alreadyComplete, .extendable, .possibleMatch].contains($0.status) } ?? false
         }.count
+        // "0 Alben gefunden" read like an error: only mention albums that exist.
+        var parts = [String(localized: "\(proposals.count) Vorschläge")]
+        if existing > 0 { parts.append(String(localized: "\(existing) davon in deinen Alben")) }
+        let summary = Counted.join(parts)
         let text = VStack(alignment: .leading, spacing: 2) {
             Text(area.title).font(.body.weight(.medium))
             Group {
                 if proposals.isEmpty {
                     Text("Noch keine Vorschläge")
                 } else {
-                    // "0 Alben gefunden" read like an error: only mention albums that exist.
-                    Text(Counted.join([String(localized: "\(proposals.count) Vorschläge")]
-                                      + (existing > 0 ? [String(localized: "\(existing) davon in deinen Alben")] : [])))
+                    Text(summary)
                 }
             }
             .font(.footnote).foregroundStyle(.secondary)

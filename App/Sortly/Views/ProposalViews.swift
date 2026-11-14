@@ -73,7 +73,7 @@ struct ProposalListView: View {
     private func acceptRecommended() {
         let accepted = recommendable
         for p in accepted { model.setDecision(model.recommendedDecision(for: p), for: p) }
-        AccessibilityNotification.Announcement(Text("\(accepted.count) Vorschläge übernommen")).post()
+        AccessibilityNotification.Announcement(String(localized: "\(accepted.count) Vorschläge übernommen")).post()
     }
 }
 
