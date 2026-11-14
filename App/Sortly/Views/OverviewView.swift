@@ -28,6 +28,9 @@ struct OverviewView: View {
                     }
                     .buttonStyle(SecondaryButtonStyle())
                 }
+                #if targetEnvironment(simulator)
+                if !DemoLibrary.shared.isDone { DemoLibraryCard() }
+                #endif
                 AtlasTeaser()
                 areasSection
             }

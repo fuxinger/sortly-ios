@@ -1,4 +1,5 @@
 import Foundation
+import ImageIO
 import Photos
 import Testing
 import Vision
@@ -178,5 +179,22 @@ struct LocalizationTests {
 
     @Test func germanStaysSource() {
         #expect(Bundle.main.developmentLocalization == "de")
+    }
+}
+
+@Suite("Demo library")
+@MainActor
+struct DemoLibraryTests {
+    @Test func rendersPhotosScreenshotsAndDocuments() throws {
+        var rng = SeededRandom(seed: 1)
+        let photo = DemoLibrary.crop(AtlasRenderingTests.sampleCover(), rng: &rng)
+        #expect(photo.size.width * photo.size.height == 1600 * 1200)
+        let png = DemoLibrary.screenshotPNG(["Bordkarte", "MUC → FCO"])
+        let source = try #require(CGImageSourceCreateWithData(png as CFData, nil))
+        let properties = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any]
+        let exif = properties?[kCGImagePropertyExifDictionary] as? [CFString: Any]
+        print("DEMO_SCREENSHOT_EXIF \(String(describing: exif?[kCGImagePropertyExifUserComment]))")
+        #expect(DemoLibrary.documentPhoto(["Rechnung"]).size == CGSize(width: 1500, height: 2000))
+        #expect(DemoLibrary.shared.expectedCount > 200)
     }
 }

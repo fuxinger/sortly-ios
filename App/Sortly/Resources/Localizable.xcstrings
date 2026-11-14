@@ -901,6 +901,36 @@
         }
       }
     },
+    "Beispiel-Mediathek anlegen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create example library"
+          }
+        }
+      }
+    },
+    "Beispiel-Mediathek ist angelegt." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Example library created."
+          }
+        }
+      }
+    },
+    "Beispielfotos werden angelegt: %lld von %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Creating example photos: %1$lld of %2$lld"
+          }
+        }
+      }
+    },
     "BEREICHE" : {
       "localizations" : {
         "en" : {
@@ -1067,6 +1097,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Your photos, finally sorted."
+          }
+        }
+      }
+    },
+    "Demo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Demo"
           }
         }
       }
@@ -1717,6 +1757,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Empty folder"
+          }
+        }
+      }
+    },
+    "Legt etwa %lld Beispielfotos mit Reisen, Screenshots und Dokumenten an. Nur im Simulator." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Creates about %lld example photos with trips, screenshots and documents. Simulator only."
           }
         }
       }

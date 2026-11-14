@@ -88,6 +88,12 @@ struct SettingsView: View {
                 Task { await purchases.refreshEntitlements() }
             }
 
+            #if targetEnvironment(simulator)
+            Section {
+                DemoLibraryCard().listRowInsets(EdgeInsets())
+            }
+            #endif
+
             Section("Über") {
                 LabeledContent("Version", value: AppInfo.version)
                 Text("Kartendaten: Natural Earth (gemeinfrei). Ortsnamen online: Apple.")
