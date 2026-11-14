@@ -6,6 +6,7 @@ import SortlyEngine
 /// that hold mostly the same photos (prompt §3).
 struct AlbumsView: View {
     @Environment(AppModel.self) private var model
+    @Environment(\.openURL) private var openURL
     @State private var mergePlan: ChangePlan?
     @State private var showMerge = false
 
@@ -62,7 +63,19 @@ struct AlbumsView: View {
             }
 
             Section("Deine Alben") {
-                if topLevel.isEmpty {
+                if model.access == .limited {
+                    // iOS shows an app no albums at all while only some photos are shared.
+                    VStack(alignment: .leading, spacing: Theme.Spacing.s) {
+                        Text("Deine Alben sind nicht sichtbar, solange du Albumist nur ausgewählte Fotos freigibst. So regelt iOS das.")
+                            .font(.subheadline).foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                        if let url = URL(string: UIApplication.openSettingsURLString) {
+                            Button("Alle Fotos erlauben") { openURL(url) }
+                                .font(.subheadline.weight(.semibold))
+                        }
+                    }
+                    .padding(.vertical, 4)
+                } else if topLevel.isEmpty {
                     Text("Noch keine Alben").foregroundStyle(.secondary)
                 }
                 ForEach(topLevel) { collection in

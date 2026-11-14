@@ -18,6 +18,9 @@ struct SortlyApp: App {
                 .task {
                     purchases.start()
                     await model.bootstrap()
+                    if model.access.canRead { LibraryChangeWatcher.shared.start() }
+                    // Photos may have changed while Albumist was closed (albums made in Photos).
+                    if model.phase == .ready && model.access.canRead && !UITestSupport.isRunning { model.startAnalysis() }
                 }
         }
     }

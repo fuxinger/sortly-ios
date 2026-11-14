@@ -282,6 +282,7 @@ final class AppModel {
     func finishOnboarding(scope: OrganizationScope) {
         onboardingDone = true
         phase = .ready
+        if access.canRead { LibraryChangeWatcher.shared.start() }
         ContinuedAnalysis.requestNotificationPermission()
         startAnalysis(scope: scope, userInitiated: true)
     }

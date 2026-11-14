@@ -5692,6 +5692,16 @@
           }
         }
       }
+    },
+    "Deine Alben sind nicht sichtbar, solange du Albumist nur ausgewählte Fotos freigibst. So regelt iOS das." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your albums aren't visible while you share only selected photos with Albumist. That's how iOS handles it."
+          }
+        }
+      }
     }
   },
   "version" : "1.0"
