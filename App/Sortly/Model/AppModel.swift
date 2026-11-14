@@ -862,7 +862,7 @@ final class AppModel {
     private func run(_ plan: ChangePlan, resume: Bool = false) async {
         guard let store else { return }
         // The free albums are checked here too, not only on the review screen.
-        let wanted = plan.summary.newAlbums + plan.summary.extendedAlbums
+        let wanted = plan.freeAlbumUse(applied: false)
         if plan.reverts == nil, !resume, !Purchases.shared.allows(albums: wanted) {
             execution = ExecutionState(planID: plan.id, failure: String(localized: "Die Gratis-Alben reichen für diese Änderungen nicht. Schalte Albumist frei, um weiterzumachen."))
             return
@@ -920,8 +920,7 @@ final class AppModel {
                 }
                 // Counted before the store write: counting twice is impossible (per plan id),
                 // and a crash in between is completed at the next launch.
-                let applied2 = result.appliedSummary
-                Purchases.shared.recordUsage(plan: result.id, albums: applied2.newAlbums + applied2.extendedAlbums)
+                Purchases.shared.recordUsage(plan: result.id, albums: result.freeAlbumUse(applied: true))
             }
             var done = result
             done.finalizedAt = Date()
@@ -1111,6 +1110,81 @@ final class AppModel {
         }
     }
 
+    // MARK: Guided repair (I16)
+
+    /// "So lassen" for an interrupted plan: what already happened stays and is recorded like
+    /// a finished plan (Albumist's albums, history, undo later); the rest is dropped. If
+    /// nothing happened yet, the plan simply goes away.
+    func keepInterruptedPlanAsIs() async {
+        guard let store, let interrupted = interruptedPlan, claimExecution() else { return }
+        defer { releaseExecution() }
+        do {
+            // Steps the interruption left open are checked against the library first.
+            var settled = try await ChangeExecutor(library: library, store: store).reconcileInterrupted(interrupted)
+            for index in settled.steps.indices where !settled.steps[index].state.isFinished {
+                settled.steps[index].state = .skipped(reason: StepState.leftByUserReason)
+            }
+            let succeeded = settled.steps.filter { if case .succeeded = $0.state { true } else { false } }.count
+            if succeeded > 0 {
+                settled.status = succeeded == settled.steps.count ? .completed : .completedWithErrors
+                try await store.save(settled)
+                await finalize(settled)
+            } else {
+                settled.status = .cancelled
+                try await store.save(settled)
+                try? await setPendingFinalization(removing: [interrupted.id])
+            }
+            interruptedPlan = nil
+            await refreshDerived()
+        } catch {
+            message = error.localizedDescription
+        }
+    }
+
+    /// "Erneut versuchen" for a plan that did not finish everything: a plan with only the
+    /// steps that did not happen, for the normal review. Nil when nothing is left to do.
+    func retryPlan(for executed: ChangePlan) async -> ChangePlan? {
+        guard let store, await reconcileManagedAlbums() else { return nil }
+        do {
+            let current = try await library.currentInventory()
+            guard let retry = RetryPlanner().retryPlan(for: executed, current: current) else { return nil }
+            // Photos the user took out of an album since then are not added again.
+            return retry.respecting(OverrideSet(try await store.overrides()))
+        } catch {
+            message = error.localizedDescription
+            return nil
+        }
+    }
+
+    /// A text for support: app, device, photo access and the state of every recent plan, with
+    /// counts and reason codes only. No album names, places or photos (I16).
+    func diagnosticReport(device: String, system: String) async -> String {
+        let iso = ISO8601DateFormatter()
+        var lines = ["Albumist diagnostic report", "created \(iso.string(from: Date()))", ""]
+        lines.append("app \(AppInfo.version), \(system), \(device), language \(Locale.current.language.languageCode?.identifier ?? "?")")
+        lines.append("photo access \(access.rawValue), onboarding done \(onboardingDone)")
+        lines.append("photos \(progress.total), fully sorted \(progress.fully), partly \(progress.partially), unsorted \(progress.unorganized), pending \(progress.pending)")
+        if let report = analysis.lastReport {
+            let last = analysis.lastRun.map { iso.string(from: $0) } ?? "?"
+            lines.append("analysis last \(last), complete \(report.isComplete), paused \(report.pausedBecause?.rawValue ?? "no"), stages \(report.completedStages.count), content \(report.contentAnalyzed), text \(report.textRecognized), text waiting \(report.textWaitingForOriginal), places pending online \(report.placesPendingOnline)")
+        } else {
+            lines.append("analysis not run in this session")
+        }
+        lines.append("decisions copy \(lastSafetyBackup.map { iso.string(from: $0) } ?? "none"), albums waiting for access \(pendingLibraryRestore != nil)")
+        if let store {
+            let overrides = (try? await store.overrides().count) ?? -1
+            let rules = (try? await store.currentRules().count) ?? -1
+            lines.append("managed albums \(managedAlbums.count), overrides \(overrides), rules \(rules)")
+            lines.append("")
+            if let interrupted = interruptedPlan { lines.append("interrupted: " + PlanDiagnostics.describe(interrupted)) }
+            let plans = (try? await store.planHistory(limit: 20)) ?? []
+            lines.append("recent plans \(plans.count)")
+            lines += plans.map(PlanDiagnostics.describe)
+        }
+        if let failure = execution.failure { lines.append("last execution failure: \(PlanDiagnostics.reasonCode(failure))") }
+        return lines.joined(separator: "\n")
+    }
+
     func undo(_ executed: ChangePlan) async {
         // Taking back the same plan twice would find nothing to do (or remove what the user
         // added in the meantime), so a plan is undone once.
@@ -1128,8 +1202,7 @@ final class AppModel {
             if let result = execution.finished, result.reverts == executed.id, result.status == .completed {
                 undonePlans.insert(executed.id)
                 // Albums that are gone again do not count against the free albums.
-                let summary = executed.appliedSummary
-                Purchases.shared.returnUsage(plan: executed.id, albums: summary.newAlbums + summary.extendedAlbums)
+                Purchases.shared.returnUsage(plan: executed.id, albums: executed.freeAlbumUse(applied: true))
                 // A removal that is taken back lets its suggestions come back as well.
                 let sources = executed.removalSources
                 if !sources.isEmpty {

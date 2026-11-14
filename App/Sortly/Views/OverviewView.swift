@@ -325,16 +325,25 @@ struct InterruptedPlanCard: View {
         let done = plan.steps.filter { if case .succeeded = $0.state { true } else { false } }.count
         Card {
             Label("Umsetzen wurde unterbrochen", systemImage: "pause.circle").font(.headline)
-            Text("\(done) von \(plan.steps.count) Schritten sind erledigt. Albumist kann den Rest jetzt anlegen oder alles wieder zurücknehmen. Nichts wird doppelt angelegt.")
+            Text("\(done) von \(plan.steps.count) Schritten sind erledigt. Du entscheidest, wie es weitergeht. Nichts wird doppelt angelegt, deine Fotos bleiben in jedem Fall unverändert.")
                 .font(.subheadline).foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
             if model.execution.isRunning {
                 ProgressView(value: Double(model.execution.completedSteps), total: Double(max(1, model.execution.totalSteps)))
                     .tint(Theme.accent)
             } else {
+                // The three ways out (I16), each with what it does.
                 Button("Fortsetzen") { Task { await model.resumeInterruptedPlan() } }
                     .buttonStyle(PrimaryButtonStyle())
                 Button("Rückgängig machen") { confirmUndo = true }
                     .buttonStyle(SecondaryButtonStyle())
+                Button("So lassen") { Task { await model.keepInterruptedPlanAsIs() } }
+                    .font(.subheadline.weight(.semibold))
+                    .frame(maxWidth: .infinity, minHeight: 44)
+                    .accessibilityIdentifier("interrupted.keep")
+                Text("Fortsetzen legt den Rest an. Rückgängig nimmt das Erledigte zurück. So lassen behält das Erledigte und lässt den Rest weg; es steht dann im Verlauf und lässt sich später noch zurücknehmen.")
+                    .font(.footnote).foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             if let failure = model.execution.failure {
                 Text(failure).font(.footnote).foregroundStyle(.red)

@@ -291,6 +291,46 @@
         }
       }
     },
+    "%lld Schritte konnten nicht ausgeführt werden." : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld step could not be carried out."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld steps could not be carried out."
+                }
+              }
+            }
+          }
+        },
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Schritt konnte nicht ausgeführt werden."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Schritte konnten nicht ausgeführt werden."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld ausgewählt" : {
       "localizations" : {
         "en" : {
@@ -971,6 +1011,16 @@
         }
       }
     },
+    "%lld von %lld Schritten sind erledigt. Du entscheidest, wie es weitergeht. Nichts wird doppelt angelegt, deine Fotos bleiben in jedem Fall unverändert." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld of %2$lld steps are done. You decide how to go on. Nothing is created twice, and your photos stay unchanged either way."
+          }
+        }
+      }
+    },
     "%lld von 7 Kontinenten" : {
       "localizations" : {
         "en" : {
@@ -1321,6 +1371,16 @@
         }
       }
     },
+    "Albumist-Diagnose" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Albumist Diagnostics"
+          }
+        }
+      }
+    },
     "Alle" : {
       "localizations" : {
         "en" : {
@@ -1631,6 +1691,16 @@
         }
       }
     },
+    "Das Album wurde inzwischen gelöscht." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The album has been deleted since."
+          }
+        }
+      }
+    },
     "Das Album „%@“ gibt es nicht mehr." : {
       "localizations" : {
         "en" : {
@@ -1647,6 +1717,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "The photo has no location and matches no topic. You can add it to an album yourself."
+          }
+        }
+      }
+    },
+    "Das Umsetzen wurde unterbrochen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Applying was interrupted."
           }
         }
       }
@@ -1781,6 +1861,16 @@
         }
       }
     },
+    "Der Zielordner wurde inzwischen gelöscht." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The target folder has been deleted since."
+          }
+        }
+      }
+    },
     "Der Zugriff wurde abgelehnt." : {
       "localizations" : {
         "en" : {
@@ -1797,6 +1887,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "German"
+          }
+        }
+      }
+    },
+    "Diagnose teilen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Share Diagnostics"
           }
         }
       }
@@ -1837,6 +1937,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "The analysis will continue exactly where it left off."
+          }
+        }
+      }
+    },
+    "Die Diagnose hilft bei Problemen. Sie enthält nur Zustände und Zahlen, keine Fotos, Albumnamen oder Orte, und du siehst sie vor dem Senden." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diagnostics help with problems. They contain only states and numbers, no photos, album names or places, and you see them before sending."
+          }
+        }
+      }
+    },
+    "Die Diagnose nur, wenn du sie selbst teilst: Zustände und Zahlen, keine Fotos, Namen oder Orte." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diagnostics only when you share them yourself: states and numbers, no photos, names or places."
+          }
+        }
+      }
+    },
+    "Die Fotos-App hat einen Fehler gemeldet." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The Photos app reported an error."
           }
         }
       }
@@ -1931,6 +2061,16 @@
         }
       }
     },
+    "Du hast den Rest so gelassen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You left the rest as it was."
+          }
+        }
+      }
+    },
     "Du hast dieses Foto ignoriert." : {
       "localizations" : {
         "en" : {
@@ -1971,12 +2111,52 @@
         }
       }
     },
+    "Ein Album blieb, weil inzwischen eigene Fotos darin sind. Nur die Fotos von Albumist wurden herausgenommen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "An album was kept because it now holds your own photos. Only Albumist’s photos were taken out."
+          }
+        }
+      }
+    },
     "Ein Foto gilt als sortiert, wenn es in einem dieser Bereiche ein Album hat." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "A photo counts as sorted when it has an album in one of these areas."
+          }
+        }
+      }
+    },
+    "Ein Ordner blieb, weil noch andere Alben darin liegen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A folder was kept because other albums are still in it."
+          }
+        }
+      }
+    },
+    "Ein Ordner oder Album, das davor angelegt werden sollte, fehlte." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A folder or album that should have been created first was missing."
+          }
+        }
+      }
+    },
+    "Eine Änderung ließ sich in der Mediathek nicht nachprüfen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A change could not be verified in the library."
           }
         }
       }
@@ -2071,6 +2251,16 @@
         }
       }
     },
+    "Erneut versuchen legt nur an, was fehlt; nichts wird doppelt angelegt, und du siehst vorher, was passiert. Du kannst es auch so lassen: Das Erledigte bleibt, und die fehlenden Fotos schlägt Albumist bei der nächsten Analyse wieder vor." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trying again only creates what is missing; nothing is created twice, and you see beforehand what will happen. You can also leave it as is: what was done stays, and Albumist suggests the missing photos again after the next analysis."
+          }
+        }
+      }
+    },
     "Erst die markierten Punkte klären. Ändere dazu den Vorschlag unter „Anpassen“." : {
       "localizations" : {
         "en" : {
@@ -2161,6 +2351,16 @@
         }
       }
     },
+    "Fehlendes erneut versuchen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Try Missing Steps Again"
+          }
+        }
+      }
+    },
     "Fertig" : {
       "localizations" : {
         "en" : {
@@ -2177,6 +2377,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Resume"
+          }
+        }
+      }
+    },
+    "Fortsetzen legt den Rest an. Rückgängig nimmt das Erledigte zurück. So lassen behält das Erledigte und lässt den Rest weg; es steht dann im Verlauf und lässt sich später noch zurücknehmen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continue creates the rest. Undo takes back what was done. Leave as Is keeps what was done and drops the rest; it then appears in the history and can still be undone later."
           }
         }
       }
@@ -2437,6 +2647,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "There’s nothing in this area right now."
+          }
+        }
+      }
+    },
+    "Inzwischen gab es dort schon ein Album mit diesem Namen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "An album with this name already existed there by then."
           }
         }
       }
@@ -2881,6 +3101,16 @@
         }
       }
     },
+    "Nichts mehr zu tun" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing Left to Do"
+          }
+        }
+      }
+    },
     "Nichts zu tun" : {
       "localizations" : {
         "en" : {
@@ -3311,6 +3541,16 @@
         }
       }
     },
+    "So lassen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leave as Is"
+          }
+        }
+      }
+    },
     "Sortiert" : {
       "localizations" : {
         "en" : {
@@ -3627,6 +3867,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "What Albumist could not take back stays as it is."
+          }
+        }
+      }
+    },
+    "Was gefehlt hat, ist inzwischen erledigt oder das Album gibt es nicht mehr." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What was missing is done by now, or the album no longer exists."
           }
         }
       }
@@ -5429,16 +5679,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Applying Was Interrupted"
-          }
-        }
-      }
-    },
-    "%lld von %lld Schritten sind erledigt. Albumist kann den Rest jetzt anlegen oder alles wieder zurücknehmen. Nichts wird doppelt angelegt." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld of %lld steps are done. Albumist can finish the rest now or take everything back. Nothing is created twice."
           }
         }
       }

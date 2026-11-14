@@ -131,8 +131,33 @@ public struct ChangePlan: Hashable, Sendable, Codable, Identifiable {
     /// Set once everything that follows a run (managed albums, decisions, free albums) is
     /// stored. A finished plan without it is completed again at the next launch.
     public var finalizedAt: Date? = nil
+    /// Set on a retry plan ("Erneut versuchen"): the plan whose unfinished steps it runs.
+    public var retries: SortlyID? = nil
+    /// Albums the retried plan created. Adding to them now does not use another free album.
+    public var albumsFromRetriedPlan: Set<CollectionID>? = nil
 
     public var summary: PlanSummary { PlanSummary(self) }
+
+    /// Albums this plan uses from the free allowance: new albums and extended existing ones,
+    /// except albums an earlier run of the same changes created (counted with that run).
+    /// `applied` counts what really happened, otherwise what is planned.
+    public func freeAlbumUse(applied: Bool) -> Int {
+        var newAlbums = 0
+        var extended = Set<CollectionID>()
+        for step in steps {
+            let succeeded: Bool = if case .succeeded = step.state { true } else { false }
+            switch step.operation {
+            case .createAlbum:
+                if !applied || succeeded { newAlbums += 1 }
+            case .addAssets(.existing(let id), let assets):
+                let added = applied ? (record?.media[step.id] ?? (succeeded ? assets : [])) : assets
+                if !added.isEmpty { extended.insert(id) }
+            default:
+                break
+            }
+        }
+        return newAlbums + extended.subtracting(albumsFromRetriedPlan ?? []).count
+    }
     /// What really happened (planned counts for plans from older versions).
     public var appliedSummary: PlanSummary { PlanSummary(applied: self) }
 }

@@ -152,11 +152,16 @@ struct SettingsView: View {
             }
             #endif
 
-            Section("Über") {
+            Section {
                 NavigationLink("Datenschutz") { PrivacyView() }
                 LabeledContent("Version", value: AppInfo.version)
+                DiagnosticShareRow()
                 Text("Kartendaten: Natural Earth (gemeinfrei). Ortsnamen online: Apple.")
                     .font(.footnote).foregroundStyle(.secondary)
+            } header: {
+                Text("Über")
+            } footer: {
+                Text("Die Diagnose hilft bei Problemen. Sie enthält nur Zustände und Zahlen, keine Fotos, Albumnamen oder Orte, und du siehst sie vor dem Senden.")
             }
         }
         .navigationTitle("Einstellungen")
@@ -230,17 +235,11 @@ struct InterruptedHistoryRow: View {
                 Text("Unterbrochen: \(done) von \(plan.steps.count) Schritten erledigt")
                     .font(.footnote).foregroundStyle(.secondary)
             }
-            HStack {
-                Button("Fortsetzen") {
-                    Task {
-                        await model.resumeInterruptedPlan()
-                        await model.refreshDerived()
-                    }
-                }
-                Spacer()
-                Button("Rückgängig") { confirmUndo = true }
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: Theme.Spacing.l) { buttons }
+                VStack(alignment: .leading, spacing: Theme.Spacing.s) { buttons }
             }
-            .buttonStyle(.borderless) // two buttons in one list row, each tappable on its own
+            .buttonStyle(.borderless) // several buttons in one list row, each tappable on its own
             .font(.subheadline)
             .disabled(model.execution.isRunning)
         }
@@ -251,6 +250,18 @@ struct InterruptedHistoryRow: View {
         } message: {
             Text("Albumist entfernt die schon angelegten Alben und Zuordnungen. Deine Fotos bleiben unverändert.")
         }
+    }
+
+    @ViewBuilder
+    private var buttons: some View {
+        Button("Fortsetzen") {
+            Task {
+                await model.resumeInterruptedPlan()
+                await model.refreshDerived()
+            }
+        }
+        Button("Rückgängig") { confirmUndo = true }
+        Button("So lassen") { Task { await model.keepInterruptedPlanAsIs() } }
     }
 }
 
@@ -269,6 +280,7 @@ struct PrivacyView: View {
             Section("Was dein Gerät verlässt") {
                 Text("Nur wenn „Orte online genauer bestimmen“ eingeschaltet ist, schickt iOS Koordinaten an Apple, um Ortsnamen zu finden. Fotos verlassen dein Gerät nie.")
                 Text("Käufe laufen über Apple. Albumist sieht keine Zahlungsdaten.")
+                Text("Die Diagnose nur, wenn du sie selbst teilst: Zustände und Zahlen, keine Fotos, Namen oder Orte.")
             }
             Section("Löschen") {
                 Text("„Analyse neu aufbauen“ löscht alle Analysedaten, deine Entscheidungen bleiben. Wenn du die App löschst, ist alles weg, auch die Kopie. Deine Alben in Fotos bleiben.")

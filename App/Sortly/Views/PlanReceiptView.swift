@@ -11,6 +11,10 @@ struct PlanReceiptView: View {
     @State private var undo: PlanReceipt?
     @State private var showAllAlbums = false
     @State private var confirmUndo = false
+    /// "Erneut versuchen": the plan with what is missing, opened in the normal review.
+    @State private var retry: ChangePlan?
+    @State private var showRetry = false
+    @State private var nothingToRetry = false
     @ScaledMetric(relativeTo: .body) private var iconWidth: CGFloat = 28
     private let collapsedCount = 12
 
@@ -50,6 +54,15 @@ struct PlanReceiptView: View {
             }
         } message: {
             Text("Alben und Zuordnungen von Albumist werden entfernt. Deine Fotos bleiben unverändert.")
+        }
+        // On the list, not inside it: a destination inside a lazy list is ignored.
+        .navigationDestination(isPresented: $showRetry) {
+            if let retry { PlanReviewView(prebuilt: retry) }
+        }
+        .alert("Nichts mehr zu tun", isPresented: $nothingToRetry) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("Was gefehlt hat, ist inzwischen erledigt oder das Album gibt es nicht mehr.")
         }
     }
 
@@ -110,20 +123,51 @@ struct PlanReceiptView: View {
         }
     }
 
+    /// Guided repair (I16): what is missing and why, in plain words, and the ways out:
+    /// try the missing part again, take everything back (below), or leave it as it is.
     private func problems(_ receipt: PlanReceipt) -> some View {
-        Section("Nicht erledigt") {
+        Section {
             if receipt.failedSteps > 0 {
-                Text("\(receipt.failedSteps) Schritte konnten nicht ausgeführt werden. Die fehlenden Fotos schlägt Albumist bei der nächsten Analyse wieder vor.")
+                Text("\(receipt.failedSteps) Schritte konnten nicht ausgeführt werden.")
             }
-            ForEach(receipt.problems, id: \.self) { reason in
-                Label(reason, systemImage: "exclamationmark.triangle")
+            ForEach(StepProblemText.texts(receipt.problems), id: \.self) { text in
+                Label(text, systemImage: "exclamationmark.triangle")
                     .font(.subheadline).foregroundStyle(.secondary)
             }
             if receipt.unconfirmedSteps > 0 {
                 Text("\(receipt.unconfirmedSteps) Schritte konnte Albumist in der Mediathek nicht nachprüfen. Sie zählen hier nicht mit.")
                     .font(.subheadline).foregroundStyle(.secondary)
             }
+            if canRepair(receipt) {
+                Button {
+                    Task {
+                        if let missing = await model.retryPlan(for: plan) {
+                            retry = missing
+                            showRetry = true
+                        } else {
+                            nothingToRetry = true
+                        }
+                    }
+                } label: {
+                    Label("Fehlendes erneut versuchen", systemImage: "arrow.clockwise")
+                }
+                .disabled(model.execution.isRunning)
+                .accessibilityIdentifier("receipt.retry")
+            }
+            DiagnosticShareRow()
+        } header: {
+            Text("Nicht erledigt")
+        } footer: {
+            if canRepair(receipt) {
+                Text("Erneut versuchen legt nur an, was fehlt; nichts wird doppelt angelegt, und du siehst vorher, was passiert. Du kannst es auch so lassen: Das Erledigte bleibt, und die fehlenden Fotos schlägt Albumist bei der nächsten Analyse wieder vor.")
+            }
         }
+    }
+
+    /// Only plans that changed the library and were not taken back can be completed.
+    private func canRepair(_ receipt: PlanReceipt) -> Bool {
+        !receipt.isUndo && receipt.failedSteps > 0 && !model.undonePlans.contains(plan.id)
+            && plan.steps.contains { $0.state.canBeRetried }
     }
 
     private func albums(_ receipt: PlanReceipt) -> some View {

@@ -35,6 +35,10 @@
   Seite mit dem, was Albumist wirklich geändert hat (nur nachgeprüfte Schritte), jedem Album,
   „0 Originale gelöscht, bearbeitet, kopiert“, nicht Erledigtem und dem Rückgängigmachen.
   Als Text teilbar. Englisch „Verschoben“ heißt jetzt „Moved“ (war „Postponed“).
+- Geführte Reparatur (I16): ein unterbrochenes Umsetzen bietet „Fortsetzen“, „Rückgängig machen“
+  und „So lassen“; Fehler stehen im Änderungsbeleg in Klartext, mit „Fehlendes erneut versuchen“
+  (legt nur an, was fehlt). „Diagnose teilen“ in den Einstellungen und im Beleg: Zustände, Zahlen
+  und Fehlercodes, keine Fotos, Namen oder Orte.
 ### Korrigiert
 - Gegenprüfung 14.11.2026 (43 Befunde, `docs/review/AUDIT_2026-11-14.md`): Ausführungsjournal
   mit echten Änderungen, sicherer Wiederanlauf und Rückgängig, geschützte Löschungen, eine

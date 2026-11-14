@@ -60,6 +60,7 @@ abschaltbar). Das gerenderte Bild hat keine EXIF- oder GPS-Daten.
 | Bereich | Ergebnis |
 |---|---|
 | Netzwerk | Kein eigener Netzwerkcode (`URLSession` o. ä. kommt nicht vor). Nur Apple-Dienste: Geocoder (abschaltbar), iCloud-Fotos (Zustimmung), StoreKit. |
+| Diagnose | Nur auf Wunsch über das Teilen-Menü: App- und iOS-Version, Gerätemodell, Fotozugriff, Zahlen und Zustände der letzten Pläne mit Fehlercodes. Keine Fotos, Album- oder Ortsnamen, keine Foto-Kennungen. |
 | Speicherung | Datenbank verschlüsselt (Dateischutz), nicht im Backup, keine Bildkopien, sensible Texte nicht gespeichert, Kontonummern maskiert. Nur die Entscheidungen liegen als kleine Kopie im Geräte-Backup. |
 | SQL | Nur gebundene Parameter, keine zusammengesetzten SQL-Texte aus Nutzereingaben. |
 | Käufe | Nur von Apple signierte Transaktionen (`.verified`) schalten frei; Test-Freischaltung existiert nur in Debug-Builds. |

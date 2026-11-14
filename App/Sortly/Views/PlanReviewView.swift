@@ -124,7 +124,7 @@ struct PlanReviewView: View {
         }
 
         let blocking = plan.conflicts.contains(where: \.isBlocking)
-        let albums = summary.newAlbums + summary.extendedAlbums
+        let albums = plan.freeAlbumUse(applied: false)
         if model.access == .limited && !UITestSupport.isRunning {
             FullAccessCard()
         } else if !purchases.allows(albums: albums) {
