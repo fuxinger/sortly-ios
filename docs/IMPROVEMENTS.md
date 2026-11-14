@@ -14,8 +14,8 @@ Quellen: **E1** Expertenrunde 14.11.2026 (Tempo, Oberfläche, Technik, Produkt) 
 | ✅ | Rückgängig löscht nie einen Ordner, in dem noch Alben liegen (Fotos würde sie mitlöschen). Ausführung und PhotoKit verweigern das Löschen nicht leerer Ordner. | S | E1 Technik |
 | 🔜 | Abgebrochenes Umsetzen (App beendet) beim nächsten Start fortsetzen oder rückgängig machen; Verlauf zeigt auch halbe Pläne; bereits angelegte Alben werden gemerkt. | M | E1 Technik |
 | 🔜 | Umsetzen während einer laufenden Analyse: Albenliste vor dem Abgleich neu lesen, damit kein doppeltes Album entsteht. | M | E1 Technik |
-| 🔜 | „Ausgewählte Fotos“-Zugriff: vor dem Umsetzen klarer Hinweis „Voller Zugriff nötig“ mit Link zu Einstellungen statt Fehlermeldung. | S | E1 Technik |
-| 🔜 | Bereits rückgängig gemachte Pläne nicht nochmal rückgängig machen; Rückgängig-Läufe nicht als eigene Einträge zeigen. | S | E1 Technik |
+| ✅ | „Ausgewählte Fotos“-Zugriff: vor dem Umsetzen klarer Hinweis „Voller Zugriff nötig“ mit Link zu Einstellungen statt Fehlermeldung. | S | E1 Technik |
+| ✅ | Bereits rückgängig gemachte Pläne nicht nochmal rückgängig machen; Rückgängig-Läufe nicht als eigene Einträge zeigen. | S | E1 Technik |
 | 💡 | Fehlender Elternordner (zweites Gerät hat ihn gelöscht): nie oben auf der Mediathek-Ebene anlegen, sondern abbrechen. | S | E1 Technik |
 | 💡 | Fotos nur in iCloud: nicht als „erledigt“ markieren, später erneut versuchen. | M | E1 Technik |
 | 💡 | Ausgeblendete Fotos in Alben mitzählen, damit Rückgängig nichts Fremdes löscht. | S | E1 Technik |
@@ -26,8 +26,9 @@ Quellen: **E1** Expertenrunde 14.11.2026 (Tempo, Oberfläche, Technik, Produkt) 
 
 | Status | Punkt | Aufwand | Quelle |
 |---|---|---|---|
-| 🔜 | Ortsnamen beim ersten Durchgang begrenzt nachschlagen, Rest nachts; Pause wirkt sofort; Orte ohne Ergebnis merken. Erste Vorschläge bis zu einer Stunde früher. | S | E1 Tempo |
-| 🔜 | „Nächste 50 Fotos“-Abfrage mit Lesezeichen statt Suche von vorn (17,7 s → 0,3 s bei 100.000 Fotos). | S | E1 Tempo |
+| ✅ | Ortsnamen beim ersten Durchgang begrenzt nachschlagen (60), Rest nachts; Pause wirkt sofort. Erste Vorschläge bis zu einer Stunde früher. | S | E1 Tempo |
+| 💡 | Orte ohne Ergebnis merken, damit sie nicht jede Nacht erneut nachgeschlagen werden. | S | E1 Tempo |
+| ✅ | „Nächste 50 Fotos“-Abfrage mit Lesezeichen statt Suche von vorn (17,7 s → 0,3 s bei 100.000 Fotos). | S | E1 Tempo |
 | 🔜 | Beim Umsetzen nur das betroffene Album prüfen, nicht jedes Mal die ganze Albenliste (große Pläne: Minuten statt Viertelstunden). | M | E1 Tempo/Technik |
 | 💡 | Nach Analyse und Start nichts doppelt von der Platte lesen; Oberfläche sofort zeigen, Rest im Hintergrund. | M | E1 Tempo |
 | 💡 | Nur geänderte Fotos neu einlesen (PhotoKit-Änderungsverlauf). | M–L | E1 Tempo |
@@ -44,9 +45,9 @@ Quellen: **E1** Expertenrunde 14.11.2026 (Tempo, Oberfläche, Technik, Produkt) 
 |---|---|---|---|
 | ✅ | Vorschlag-Bildschirm kompakter, Knöpfe ohne Scrollen sichtbar. | S | U |
 | ✅ | „Fotos fliegen in Alben“ beim Umsetzen. | M | U |
-| 🔜 | „Nicht jetzt“ ist umkehrbar; ein abgelehnter Vorschlag lässt sich später doch anlegen; „Nicht mehr ignorieren“. | M | E1 Oberfläche |
-| 🔜 | Bibliothek und Atlas aktualisieren sich zuverlässig (Zwischenspeicher meldet Änderungen). | S | E1 Oberfläche |
-| 🔜 | Nach „Rückgängig“ eine passende Meldung statt „Fertig, 0 neue Alben“. | S | E1 Oberfläche |
+| ✅ | „Nicht jetzt“ ist umkehrbar: später doch anlegen geht; in den Einstellungen „Abgelehnte Vorschläge wieder zeigen“. | M | E1 Oberfläche |
+| ✅ | Bibliothek und Atlas aktualisieren sich zuverlässig (Zwischenspeicher meldet Änderungen). | S | E1 Oberfläche |
+| ✅ | Nach „Rückgängig“ eine passende Meldung statt „Fertig, 0 neue Alben“. | S | E1 Oberfläche |
 | 🔜 | Vorschau-Fotos nach Datum, schönstes Foto als Titelbild; alle Fotos ansehen und einzelne entfernen. | M | E1 Oberfläche/Produkt |
 | 🔜 | Ein Fortschrittsbalken über alle Schritte statt Neustart bei jeder Stufe. | S | E1 Oberfläche |
 | 💡 | Zoom-Übergang vom Vorschaubild ins Foto, Kontextmenüs, Wischaktionen. | M | E1 Oberfläche, U |
@@ -61,18 +62,19 @@ Quellen: **E1** Expertenrunde 14.11.2026 (Tempo, Oberfläche, Technik, Produkt) 
 | Status | Punkt | Aufwand | Quelle |
 |---|---|---|---|
 | ✅ | Name Albumist, neues Icon „Glass Stack“. | S | U |
-| ✅ | Berechtigungstext sagt „Gerät“ statt „iPhone“ (iPad). | S | E1 Produkt |
+| ✅ | Berechtigungstext und alle anderen Texte sagen „Gerät“ statt „iPhone“ (iPad). | S | E1 Produkt |
 | ✅ | Builds und Tests mit Xcode 27 auf iOS 27 (aktuelles iOS). | S | U |
 | 🔜 | Erstes Ergebnis nach etwa einer Minute: Reisen, Länder und Atlas sofort nach den Offline-Schritten zeigen. | M | E1 Produkt/Oberfläche |
 | 🔜 | Startpaket: „Deine 10 besten Alben“ vorausgewählt, ein Knopf „10 Alben anlegen, kostenlos“; bei großen Plänen „Die ersten N jetzt anlegen“. | M | E1 Produkt |
-| 🔜 | Kauf-Knopf in den Einstellungen; Gratis-Zähler gibt nach Rückgängig zurück. | S | E1 Produkt |
-| 🔜 | Datenschutz-Link in der App und in App Store Connect. | S | E1 Produkt |
-| 🔜 | Namensvorschläge für Reisen in der eingestellten Sprache (bisher immer Deutsch). | S | E1 Produkt |
+| ✅ | Kauf-Knopf in den Einstellungen; Gratis-Zähler gibt nach Rückgängig zurück. | S | E1 Produkt |
+| ✅ | Datenschutz-Seite in der App (offline lesbar). Für App Store Connect fehlt noch eine öffentliche Adresse. | S | E1 Produkt |
+| ✅ | Namensvorschläge für Reisen in der eingestellten Sprache (bisher immer Deutsch). | S | E1 Produkt |
 | 💡 | „Album aktuell halten“: neue Fotos nachts automatisch in bestätigte Alben. Hauptthema für Update 1.1. | M | E1 Produkt |
 | 💡 | Entscheidungen ins Backup, damit sie einen Gerätewechsel überstehen. | S–M | E1 Produkt |
 | 💡 | Atlas-Widget und In-App-Event „Dein Reisejahr“ im Dezember/Januar. | M | E1 Produkt |
 | 💡 | Siri-Antwort mit Knöpfen „Anlegen / Nicht jetzt“ statt App öffnen. | M | E1 Produkt |
 | 💡 | Familienfreigabe für den Kauf, Small Business Program (15 % statt 30 %). | S | E1 Produkt |
+| 💡 | „Alle Fotos dieses Albums verbessern“: Apples automatische Verbesserung (Core Image) für viele Fotos auf einmal, mit Vorher/Nachher, in Fotos jederzeit umkehrbar. Erst nach dem Start (Update 1.2), weil es das Versprechen „Fotos bleiben unverändert“ aufweicht; Apples KI-Bereinigen ist für Apps nicht verfügbar. | M | U |
 | 💡 | Produktseite: Bildschirmfoto 1 beantwortet „Warum nicht einfach Fotos?“ (echte Alben überall); keine Zahl zeigen, die nicht stimmt. | S | E1 Produkt |
 
 ## Wow-Ideen

@@ -116,7 +116,7 @@ extension PauseReason {
     var label: LocalizedStringKey {
         switch self {
         case .userPaused: "Pausiert"
-        case .thermal: "Pausiert, weil das iPhone warm ist"
+        case .thermal: "Pausiert, weil das Gerät warm ist"
         case .lowPower: "Pausiert im Stromsparmodus"
         case .batteryLow: "Pausiert bei niedrigem Akku"
         case .timeBudget: "Wird später fortgesetzt"

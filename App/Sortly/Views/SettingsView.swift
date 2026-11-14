@@ -9,6 +9,7 @@ struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var confirmReset = false
     @State private var redeeming = false
+    @State private var rejectedCount = 0
 
     var body: some View {
         @Bindable var model = model
@@ -63,6 +64,19 @@ struct SettingsView: View {
                 Text("Datenschutz")
             } footer: {
                 Text("Die Analyse läuft immer auf deinem Gerät. Für genauere Orte sendet iOS nur Koordinaten an Apple, keine Fotos. Aus iCloud werden nur Screenshots und Dokumente geladen, nie Videos, und nur im WLAN, wenn du nichts anderes einstellst.")
+            }
+
+            if rejectedCount > 0 {
+                Section {
+                    Button("Abgelehnte Vorschläge wieder zeigen") {
+                        Task {
+                            await model.restoreRejectedProposals()
+                            rejectedCount = 0
+                        }
+                    }
+                } footer: {
+                    Text("\(rejectedCount) Vorschläge hast du mit „Nicht jetzt“ beiseitegelegt. Sie erscheinen nach der nächsten Analyse wieder.")
+                }
             }
 
             Section("Verlauf") {
@@ -125,6 +139,7 @@ struct SettingsView: View {
             ToolbarItem(placement: .confirmationAction) { Button("Fertig") { dismiss() } }
         }
         .onChange(of: model.settings) { model.saveSettings() }
+        .task { rejectedCount = await model.rejectedProposalCount() }
         .confirmationDialog("Analyse neu aufbauen?", isPresented: $confirmReset, titleVisibility: .visible) {
             Button("Neu aufbauen", role: .destructive) {
                 Task {

@@ -118,7 +118,7 @@ struct ProposalDetailView: View {
         suggesting = true
         defer { suggesting = false }
         let details = proposal.reasons.map { ReasonText.text($0) }
-        guard let title = await SmartAssistant.tripTitle(currentTitle: proposal.title, details: details) else { return }
+        guard let title = await SmartAssistant.tripTitle(currentTitle: proposal.title, details: details, language: model.settings.titleLanguage) else { return }
         let year = proposal.dateRange.map { String(Calendar.current.component(.year, from: $0.start)) }
         model.setUserTitle([title, year].compactMap { $0 }.joined(separator: " "), for: proposal)
     }

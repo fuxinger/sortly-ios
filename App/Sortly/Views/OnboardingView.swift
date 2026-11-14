@@ -59,7 +59,7 @@ struct OnboardingView: View {
                 .fixedSize(horizontal: false, vertical: true)
                 .padding(.bottom, Theme.Spacing.s)
             VStack(alignment: .leading, spacing: Theme.Spacing.l) {
-                promise("iphone", "Alles bleibt auf deinem iPhone. Nichts wird hochgeladen.")
+                promise("iphone", "Alles bleibt auf deinem Gerät. Nichts wird hochgeladen.")
                 promise("lock.shield", "Originale werden nie gelöscht, verändert oder kopiert.")
                 promise("checklist", "Du siehst jeden Vorschlag, bevor etwas passiert, und kannst alles rückgängig machen.")
                 promise("rectangle.stack", "Vorhandene Alben werden erkannt und ergänzt statt doppelt angelegt.")
@@ -118,7 +118,7 @@ struct OnboardingView: View {
             IconTile(systemName: "photo.on.rectangle", tint: Theme.accent).scaleEffect(1.4).padding(.bottom, Theme.Spacing.s)
             Text("Zugriff auf deine Fotos").font(.title.weight(.bold))
                 .fixedSize(horizontal: false, vertical: true)
-            Text("Albumist braucht vollen Zugriff, um deine Mediathek zu analysieren und Alben anzulegen. Die Analyse passiert nur auf diesem iPhone.")
+            Text("Albumist braucht vollen Zugriff, um deine Mediathek zu analysieren und Alben anzulegen. Die Analyse passiert nur auf diesem Gerät.")
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
             switch model.access {

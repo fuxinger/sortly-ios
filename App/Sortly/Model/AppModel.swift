@@ -57,6 +57,8 @@ final class AppModel {
 
     /// Travel atlas for all years (`nil`) or one calendar year; computed once per facts change.
     func travelAtlas(year: Int? = nil) -> TravelAtlas {
+        // Cache hits must still register the dependency, or views would never see new facts.
+        access(keyPath: \.facts)
         if let cached = atlasCache[year ?? 0] { return cached }
         let atlas = TravelAtlas.compute(facts: facts, year: year)
         atlasCache[year ?? 0] = atlas
@@ -64,6 +66,7 @@ final class AppModel {
     }
 
     var atlasYears: [Int] {
+        access(keyPath: \.facts)
         if let cached = atlasYearsCache { return cached }
         let years = TravelAtlas.years(facts: facts)
         atlasYearsCache = years
@@ -75,6 +78,7 @@ final class AppModel {
     /// The photos of one atlas country (all years or one year), newest first.
     func countryPhotos(_ code: String, year: Int? = nil) -> CountryPhotos {
         let key = "\(code)|\(year ?? 0)"
+        access(keyPath: \.facts)
         if let cached = countryCache[key] { return cached }
         let photos = CountryPhotos.collect(countryCode: code, facts: facts, year: year)
         countryCache[key] = photos
@@ -197,6 +201,11 @@ final class AppModel {
 
     func requestAccess() async {
         access = await library.requestAccess()
+    }
+
+    /// Reads the access again, e.g. after the user came back from the Settings app.
+    func refreshAccess() async {
+        access = await library.access()
     }
 
     func finishOnboarding(scope: OrganizationScope) {
@@ -324,12 +333,53 @@ final class AppModel {
     }
 
     func setDecision(_ decision: ProposalDecision, for proposal: AlbumProposal) {
+        let wasRejected = decisions[proposal.id] == .reject
         decisions[proposal.id] = decision
         persistDecisions()
         if decision == .reject {
             let override = UserOverride(scope: .source(proposal.id), decision: .rejectProposal)
             Task { try? await store?.addOverride(override) }
+        } else if wasRejected || decision.isAccepted {
+            // "Nicht jetzt" is reversible: accepting later lifts the stored rejection.
+            Task { await removeRejection(of: [proposal.id]) }
         }
+    }
+
+    /// Removes stored "Nicht jetzt" rejections, so the suggestions can be offered and applied again.
+    private func removeRejection(of sources: Set<SortlyID>?) async {
+        guard let store, let all = try? await store.overrides() else { return }
+        for o in all where o.decision == .rejectProposal {
+            guard case .source(let s) = o.scope, sources?.contains(s) ?? true else { continue }
+            try? await store.removeOverride(o.id)
+        }
+    }
+
+    /// Number of suggestions the user put aside with "Nicht jetzt".
+    func rejectedProposalCount() async -> Int {
+        guard let all = try? await store?.overrides() else { return 0 }
+        return all.filter { o in
+            if o.decision == .rejectProposal, case .source = o.scope { return true }
+            return false
+        }.count
+    }
+
+    /// "Abgelehnte Vorschläge wieder zeigen": every rejection is lifted and the suggestions
+    /// are built again.
+    func restoreRejectedProposals() async {
+        await removeRejection(of: nil)
+        for (id, decision) in decisions where decision == .reject { decisions[id] = nil }
+        persistDecisions()
+        startAnalysis(userInitiated: true)
+    }
+
+    /// Overrides for planning. A suggestion the user accepted after "Nicht jetzt" is not
+    /// skipped, even if its stored rejection has not been removed yet.
+    private func planningOverrides(_ store: SortlyStore) async throws -> OverrideSet {
+        let accepted = Set(decisions.filter { $0.value.isAccepted }.map(\.key))
+        return OverrideSet(try await store.overrides().filter { o in
+            if o.decision == .rejectProposal, case .source(let s) = o.scope, accepted.contains(s) { return false }
+            return true
+        })
     }
 
     /// "Passt nicht": this album is never offered for this suggestion again. A decision that
@@ -374,7 +424,7 @@ final class AppModel {
         guard let store else { return }
         do {
             let current = try await library.currentInventory()
-            let overrides = OverrideSet(try await store.overrides())
+            let overrides = try await planningOverrides(store)
             let confirmed = acceptedProposals.map { proposal in
                 var decision = decisions[proposal.id] ?? .undecided
                 if case .createNew(nil, let path) = decision, let title = userTitles[proposal.id], !title.isEmpty {
@@ -394,7 +444,7 @@ final class AppModel {
         guard let store else { return nil }
         do {
             let current = try await library.currentInventory()
-            let overrides = OverrideSet(try await store.overrides())
+            let overrides = try await planningOverrides(store)
             var decision = decisions[proposal.id] ?? .undecided
             if case .createNew(nil, let path) = decision, let title = userTitles[proposal.id], !title.isEmpty {
                 decision = .createNew(title: title, folderPath: path)
@@ -553,6 +603,9 @@ final class AppModel {
     // MARK: Library and search
 
     func bucketMembers(_ bucket: InboxBucket) -> [AssetFacts] {
+        access(keyPath: \.facts)
+        access(keyPath: \.states)
+        access(keyPath: \.settings)
         if let cached = bucketCache[bucket] { return cached }
         let resolver = resolver
         let members = facts.filter { f in

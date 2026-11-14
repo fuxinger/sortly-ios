@@ -61,16 +61,6 @@
         }
       }
     },
-    "%@ · Fotos sortiert, alles auf dem iPhone" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ · Photos sorted, all on iPhone"
-          }
-        }
-      }
-    },
     "%lld %% der Welt" : {
       "localizations" : {
         "en" : {
@@ -1151,16 +1141,6 @@
         }
       }
     },
-    "Alles bleibt auf deinem iPhone. Nichts wird hochgeladen." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Everything stays on your iPhone. Nothing is uploaded."
-          }
-        }
-      }
-    },
     "Alles sortiert" : {
       "localizations" : {
         "en" : {
@@ -2031,16 +2011,6 @@
         }
       }
     },
-    "Geschrieben von Apple Intelligence auf deinem iPhone, nur aus Zahlen, Orten und Themen." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Written by Apple Intelligence on your iPhone, using only numbers, places and topics."
-          }
-        }
-      }
-    },
     "Gezählt werden deine Hauptbereiche: %@." : {
       "localizations" : {
         "en" : {
@@ -2811,16 +2781,6 @@
         }
       }
     },
-    "Pausiert, weil das iPhone warm ist" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Paused because the iPhone is warm"
-          }
-        }
-      }
-    },
     "Personen und Tiere" : {
       "localizations" : {
         "en" : {
@@ -3007,16 +2967,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Albumist is analyzing your photos"
-          }
-        }
-      }
-    },
-    "Albumist braucht vollen Zugriff, um deine Mediathek zu analysieren und Alben anzulegen. Die Analyse passiert nur auf diesem iPhone." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Albumist needs full access to analyze your library and create albums. The analysis happens only on this iPhone."
           }
         }
       }
@@ -4857,6 +4807,136 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "“Rebuild analysis” deletes all analysis data. Deleting the app removes everything. Your albums in Photos stay."
+          }
+        }
+      }
+    },
+    "Abgelehnte Vorschläge wieder zeigen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show Dismissed Suggestions Again"
+          }
+        }
+      }
+    },
+    "%lld Vorschläge hast du mit „Nicht jetzt“ beiseitegelegt. Sie erscheinen nach der nächsten Analyse wieder." : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "You put %lld suggestion aside with “Not now”. It comes back after the next analysis."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "You put %lld suggestions aside with “Not now”. They come back after the next analysis."
+                }
+              }
+            }
+          }
+        },
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Vorschlag hast du mit „Nicht jetzt“ beiseitegelegt. Er erscheint nach der nächsten Analyse wieder."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Vorschläge hast du mit „Nicht jetzt“ beiseitegelegt. Sie erscheinen nach der nächsten Analyse wieder."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%@ · Fotos sortiert, alles auf dem Gerät" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · Photos sorted, all on device"
+          }
+        }
+      }
+    },
+    "Alles bleibt auf deinem Gerät. Nichts wird hochgeladen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Everything stays on your device. Nothing is uploaded."
+          }
+        }
+      }
+    },
+    "Geschrieben von Apple Intelligence auf deinem Gerät, nur aus Zahlen, Orten und Themen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Written by Apple Intelligence on your device, using only numbers, places and topics."
+          }
+        }
+      }
+    },
+    "Pausiert, weil das Gerät warm ist" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paused because the device is warm"
+          }
+        }
+      }
+    },
+    "Albumist braucht vollen Zugriff, um deine Mediathek zu analysieren und Alben anzulegen. Die Analyse passiert nur auf diesem Gerät." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Albumist needs full access to analyze your library and create albums. The analysis happens only on this device."
+          }
+        }
+      }
+    },
+    "Voller Zugriff nötig" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Full Access Needed"
+          }
+        }
+      }
+    },
+    "Albumist kann Alben nur anlegen, wenn du alle Fotos freigibst. Gerade sind nur ausgewählte Fotos freigegeben." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Albumist can only create albums when you share all photos. Right now only selected photos are shared."
+          }
+        }
+      }
+    },
+    "Einstellungen › Apps › Albumist › Fotos › Voller Zugriff" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Settings › Apps › Albumist › Photos › Full Access"
           }
         }
       }

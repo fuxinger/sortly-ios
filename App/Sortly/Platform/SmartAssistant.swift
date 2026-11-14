@@ -1,4 +1,5 @@
 import Foundation
+import SortlyCore
 #if canImport(FoundationModels)
 import FoundationModels
 #endif
@@ -63,15 +64,26 @@ enum SmartAssistant {
     }
 
     /// Suggests a short, natural album title for a trip ("Toskana-Rundreise"), without date.
-    static func tripTitle(currentTitle: String, details: [String]) async -> String? {
+    static func tripTitle(currentTitle: String, details: [String], language: TitleLanguage) async -> String? {
         #if canImport(FoundationModels)
         guard isAvailable else { return nil }
-        let session = LanguageModelSession(instructions: """
-        Du schlägst kurze, natürliche deutsche Albumtitel für Reisefotos vor.
-        Höchstens vier Wörter, ohne Datum, ohne Emojis, ohne Anführungszeichen.
-        Verwende nur Orte, die in den Angaben vorkommen.
-        """)
-        let prompt = "Bisheriger Titel: \(currentTitle)\nAngaben:\n" + details.joined(separator: "\n")
+        // Album names follow the language chosen in Settings, not the system language.
+        let instructions = switch language {
+        case .german: """
+            Du schlägst kurze, natürliche deutsche Albumtitel für Reisefotos vor.
+            Höchstens vier Wörter, ohne Datum, ohne Emojis, ohne Anführungszeichen.
+            Verwende nur Orte, die in den Angaben vorkommen.
+            """
+        case .english: """
+            You suggest short, natural English album titles for travel photos.
+            At most four words, no dates, no emojis, no quotation marks.
+            Only use places that appear in the details.
+            """
+        }
+        let session = LanguageModelSession(instructions: instructions)
+        let prompt = language == .german
+            ? "Bisheriger Titel: \(currentTitle)\nAngaben:\n" + details.joined(separator: "\n")
+            : "Current title: \(currentTitle)\nDetails:\n" + details.joined(separator: "\n")
         do {
             let response = try await session.respond(to: prompt, generating: TitleSuggestion.self)
             let title = response.content.title.trimmingCharacters(in: .whitespacesAndNewlines.union(.init(charactersIn: "\"„“")))
@@ -102,7 +114,7 @@ struct SearchKeywords {
 
 @Generable
 struct TitleSuggestion {
-    @Guide(description: "Kurzer Albumtitel, höchstens vier Wörter, ohne Datum")
+    @Guide(description: "Short album title in the language of the instructions, at most four words, no date")
     var title: String
 }
 #endif

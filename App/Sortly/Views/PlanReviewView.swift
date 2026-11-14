@@ -14,6 +14,7 @@ struct PlanReviewView: View {
     /// Albums of the plan that is running, for the "photos fly into albums" show.
     @State private var show: [SortingShow.Album]?
     @ScaledMetric(relativeTo: .body) private var iconWidth: CGFloat = 28
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         ScrollView {
@@ -50,10 +51,15 @@ struct PlanReviewView: View {
         .navigationBarTitleDisplayMode(.inline)
         .modifier(ExecutionHaptics(execution: model.execution, holdSuccess: show != nil))
         .task {
+            await model.refreshAccess()
             if !model.execution.isRunning {
                 if let prebuilt { model.plan = prebuilt } else { await model.buildPlan() }
             }
             loading = false
+        }
+        .onChange(of: scenePhase) { _, phase in
+            // Back from the Settings app: the full-access card disappears by itself.
+            if phase == .active { Task { await model.refreshAccess() } }
         }
         .onDisappear {
             guard !model.execution.isRunning else { return }
@@ -109,7 +115,9 @@ struct PlanReviewView: View {
 
         let blocking = plan.conflicts.contains(where: \.isBlocking)
         let albums = summary.newAlbums + summary.extendedAlbums
-        if !purchases.allows(albums: albums) {
+        if model.access == .limited && !UITestSupport.isRunning {
+            FullAccessCard()
+        } else if !purchases.allows(albums: albums) {
             UnlockCard(albumsInPlan: albums)
         } else {
             Button {
@@ -268,6 +276,26 @@ enum ConflictText {
             return String(localized: "\(count) Fotos sind nicht mehr in der Mediathek.")
         case .writeAccessMissing:
             return String(localized: "Albumist hat keinen vollen Zugriff auf deine Fotos.")
+        }
+    }
+}
+
+/// Shown instead of "Jetzt umsetzen" when only selected photos are shared: Photos lets an
+/// app create albums only with full access, so the plan would fail half way.
+struct FullAccessCard: View {
+    @Environment(\.openURL) private var openURL
+
+    var body: some View {
+        Card {
+            Label("Voller Zugriff nötig", systemImage: "photo.on.rectangle.angled").font(.headline)
+            Text("Albumist kann Alben nur anlegen, wenn du alle Fotos freigibst. Gerade sind nur ausgewählte Fotos freigegeben.")
+                .font(.subheadline).foregroundStyle(.secondary)
+            Text("Einstellungen › Apps › Albumist › Fotos › Voller Zugriff")
+                .font(.footnote).foregroundStyle(.secondary)
+            if let url = URL(string: UIApplication.openSettingsURLString) {
+                Button("Einstellungen öffnen") { openURL(url) }
+                    .buttonStyle(PrimaryButtonStyle())
+            }
         }
     }
 }

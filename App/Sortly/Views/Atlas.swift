@@ -238,7 +238,7 @@ extension AtlasView {
             .buttonStyle(.bordered)
             .controlSize(.large)
             .disabled(writing)
-            Text("Geschrieben von Apple Intelligence auf deinem iPhone, nur aus Zahlen, Orten und Themen.")
+            Text("Geschrieben von Apple Intelligence auf deinem Gerät, nur aus Zahlen, Orten und Themen.")
                 .font(.footnote).foregroundStyle(.secondary)
         }
     }
@@ -465,7 +465,7 @@ struct ShareCard: View {
                 Spacer(minLength: 0)
                 HStack(spacing: 10) {
                     Image(systemName: "rectangle.stack.fill").foregroundStyle(AtlasStyle.visited)
-                    Text("\(AppInfo.name) · Fotos sortiert, alles auf dem iPhone")
+                    Text("\(AppInfo.name) · Fotos sortiert, alles auf dem Gerät")
                 }
                 .font(.system(size: 20, weight: .medium))
                 .foregroundStyle(.secondary)
