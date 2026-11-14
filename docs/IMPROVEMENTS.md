@@ -64,6 +64,8 @@ Quellen: **E1** Expertenrunde 14.11.2026 (Tempo, Oberfläche, Technik, Produkt) 
 | ✅ | Übersicht zeigte vor dem ersten Schritt „13 von 246 sortiert“ (Screenshots ohne Ort zählten als sortiert). Fotos, für die kein Hauptbereich gilt, zählen jetzt weder als sortiert noch in der Gesamtzahl. | S | Erstnutzer-Durchgang 14.11. |
 | ✅ | Vorhandene Alben fehlten im Tab „Alben“: (1) bei „Nur ausgewählte Fotos“ zeigt iOS einer App keine Alben, das steht jetzt dort mit „Alle Fotos erlauben“; (2) in Fotos neu angelegte Alben kamen erst nach „Neu prüfen“. Albumist bemerkt Änderungen in Fotos jetzt selbst und prüft beim Start nach. | M | Fuchs 14.11. |
 | ✅ | Städte schon beim Einrichten wählbar: Schalter „Städte als eigene Alben“ unter „Länder und Orte“ (vorher nur in den Einstellungen). | S | Fuchs 14.11. |
+| 💡 | Zahlen passen nicht ganz zusammen: Übersicht „0 von 233 sortiert“ (nur Hauptbereiche), Fertig-Bildschirm „236 Fotos einsortiert“ (auch Screenshots und Dokumente). Fertig-Bildschirm nach Bereichen aufteilen oder die Hauptbereichs-Zahl zeigen. | S | Erstnutzer-Durchgang 14.11. |
+| 💡 | Startpaket-Karte nennt „Island, Rom und Kyoto …“, die Vorschau listet in anderer Reihenfolge (Lissabon, Kyoto …). Gleiche Reihenfolge an beiden Stellen. | S | Erstnutzer-Durchgang 14.11. |
 | 💡 | Bereich „Kinder und Familie“ (Gesichter). Mit Personen-Erkennung in Update 1.1. | L | B |
 | 💡 | Fertig-Bildschirm mit Collage der neuen Alben statt nur Zahlen. | M | B |
 | 💡 | Länderseite im Atlas mit kleiner Karte der Orte. | M | B |

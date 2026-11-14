@@ -59,7 +59,17 @@ Was dort als bewusste Entscheidung oder bekannte Grenze steht, ist kein Fehler.
   Album („Rom · 2024“ in Italien) oder mit dem Album eines anderen Vorschlags abgeglichen
   (`AlbumMatcher.isPart`, `claimedByOthers`). Bei mehreren passenden Alben wählt der Nutzer.
 - **Eingeschränkter Fotozugriff:** Karte in der Übersicht mit Anzahl der sichtbaren Fotos und
-  „Auswahl ändern“ (`LimitedAccessCard` in `OverviewView.swift`).
+  „Auswahl ändern“ (`LimitedAccessCard` in `OverviewView.swift`); der Tab „Alben“ erklärt,
+  dass iOS dann keine Alben zeigt.
+- **Keine heimliche Auswahl:** „Dein Startpaket“ und „Album anlegen“ wählen Vorschläge nur
+  für die Vorschau aus; wer zurückgeht, hat nichts ausgewählt
+  (`AppModel.selectForPreview` / `endPreview`). Die Vorschau listet jedes Album
+  (`ChangePlan.albumPreview`).
+- **Änderungen in Fotos:** `LibraryChangeWatcher` startet nach Änderungen außerhalb der App
+  eine Analyse, dazu eine beim Start. Bitte auf Schleifen, doppelte Läufe und Last bei großen
+  Mediatheken prüfen.
+- **Fortschritt:** Fotos, für die kein Hauptbereich gilt, zählen nicht mehr als sortiert
+  (`OrganizationStatusResolver.progress`).
 
 ## Prüfauftrag, in dieser Reihenfolge
 
