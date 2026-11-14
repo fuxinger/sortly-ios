@@ -80,7 +80,10 @@ struct SettingsView: View {
             }
 
             Section("Verlauf") {
-                if model.history.isEmpty {
+                if let interrupted = model.interruptedPlan {
+                    InterruptedHistoryRow(plan: interrupted)
+                }
+                if model.history.isEmpty && model.interruptedPlan == nil {
                     Text("Noch keine Änderungen").foregroundStyle(.secondary)
                 }
                 ForEach(model.history) { plan in
@@ -196,6 +199,45 @@ struct HistoryRow: View {
             }
         } message: {
             Text("Alben und Zuordnungen von Albumist werden entfernt. Deine Fotos bleiben unverändert.")
+        }
+    }
+}
+
+/// An apply that was cut off (app closed). It can be finished or taken back here as well
+/// as on the overview.
+struct InterruptedHistoryRow: View {
+    @Environment(AppModel.self) private var model
+    var plan: ChangePlan
+    @State private var confirmUndo = false
+
+    var body: some View {
+        let done = plan.steps.filter { if case .succeeded = $0.state { true } else { false } }.count
+        VStack(alignment: .leading, spacing: Theme.Spacing.s) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text((plan.confirmedAt ?? plan.createdAt).formatted(date: .abbreviated, time: .shortened))
+                Text("Unterbrochen: \(done) von \(plan.steps.count) Schritten erledigt")
+                    .font(.footnote).foregroundStyle(.secondary)
+            }
+            HStack {
+                Button("Fortsetzen") {
+                    Task {
+                        await model.resumeInterruptedPlan()
+                        await model.refreshDerived()
+                    }
+                }
+                Spacer()
+                Button("Rückgängig") { confirmUndo = true }
+            }
+            .buttonStyle(.borderless) // two buttons in one list row, each tappable on its own
+            .font(.subheadline)
+            .disabled(model.execution.isRunning)
+        }
+        .confirmationDialog("Bisherige Änderungen rückgängig machen?", isPresented: $confirmUndo, titleVisibility: .visible) {
+            Button("Rückgängig machen", role: .destructive) {
+                Task { await model.undoInterruptedPlan() }
+            }
+        } message: {
+            Text("Albumist entfernt die schon angelegten Alben und Zuordnungen. Deine Fotos bleiben unverändert.")
         }
     }
 }
