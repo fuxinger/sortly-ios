@@ -1,7 +1,7 @@
 # App Store – Deutsch (Entwurf)
 
-> Der Name „SORTLY“ ist im App Store vergeben und muss vor dem Start ersetzt werden.
-> Platzhalter unten: **[NAME]**.
+> Der Name „Albumist“ ist im App Store vergeben und muss vor dem Start ersetzt werden.
+> Platzhalter unten: **Albumist**.
 
 **Untertitel (max. 30 Zeichen):** Fotos automatisch in Alben
 
@@ -9,16 +9,16 @@
 Deine Reisen, Orte und Screenshots endlich in echten Alben – sortiert auf deinem iPhone, ohne Upload, ohne Abo. Und dein persönlicher Reise-Atlas zum Teilen.
 
 **Beschreibung:**
-Tausende Fotos, aber nichts wiederfinden? [NAME] sortiert deine Mediathek in echte Alben und Ordner – direkt in der Fotos-App, auf all deinen Geräten.
+Tausende Fotos, aber nichts wiederfinden? Albumist sortiert deine Mediathek in echte Alben und Ordner – direkt in der Fotos-App, auf all deinen Geräten.
 
 REISEN MIT DATUM
-[NAME] erkennt deine Reisen und legt Alben wie „Toskana 03.08.–14.08.2024“ an. Wiederkehrende Ziele bekommen zusätzlich ein Sammelalbum.
+Albumist erkennt deine Reisen und legt Alben wie „Toskana 03.08.–14.08.2024“ an. Wiederkehrende Ziele bekommen zusätzlich ein Sammelalbum.
 
 LÄNDER, STÄDTE UND DEINE ORTE
-Fotos landen automatisch in Ländern und Städten. Orte, an denen du oft bist, schlägt [NAME] vor – den Namen gibst du selbst.
+Fotos landen automatisch in Ländern und Städten. Orte, an denen du oft bist, schlägt Albumist vor – den Namen gibst du selbst.
 
 SCREENSHOTS, DOKUMENTE, THEMEN
-Bestellungen, Tickets, Rezepte, Rechnungen, Hunde, Strand oder Essen: [NAME] erkennt Inhalte und Text auf dem Gerät.
+Bestellungen, Tickets, Rezepte, Rechnungen, Hunde, Strand oder Essen: Albumist erkennt Inhalte und Text auf dem Gerät.
 
 DEINE ALBEN BLEIBEN DEINE ALBEN
 Vorhandene Alben werden erkannt und ergänzt statt doppelt angelegt. Du siehst jeden Vorschlag mit Begründung, bevor etwas passiert – und kannst alles rückgängig machen.

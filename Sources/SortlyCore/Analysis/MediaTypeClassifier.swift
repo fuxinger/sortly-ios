@@ -22,7 +22,7 @@ public struct MediaTypeClassifier: Sendable {
         switch asset.kind {
         case .image:
             if s.contains(.screenshot) { result.insert(.screenshots) } else { result.insert(.photos) }
-            // A Live Photo stays one asset; SORTLY never splits its components.
+            // A Live Photo stays one asset; Albumist never splits its components.
             if s.contains(.livePhoto) { result.insert(.livePhotos) }
             if s.contains(.panorama) { result.insert(.panoramas) }
             if s.contains(.burst) { result.insert(.bursts) }

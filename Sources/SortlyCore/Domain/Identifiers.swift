@@ -34,7 +34,7 @@ public struct CollectionID: Hashable, Comparable, Sendable, Codable, CustomStrin
     }
 }
 
-/// Internal SORTLY identity (proposals, rules, plans, clusters ...).
+/// Internal Albumist identity (proposals, rules, plans, clusters ...).
 public struct SortlyID: Hashable, Sendable, Codable, CustomStringConvertible {
     public let rawValue: String
     public init(_ rawValue: String) { self.rawValue = rawValue }

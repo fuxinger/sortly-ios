@@ -21,9 +21,9 @@ public struct AreaFacts: Hashable, Sendable {
     public var analyzed: Bool
     /// Analysis cannot run (no GPS for places, original unavailable, ...).
     public var analysisImpossible: Bool
-    /// A user album that SORTLY matched to the asset's proposal already holds it.
+    /// A user album that Albumist matched to the asset's proposal already holds it.
     public var inMatchingExistingAlbum: Bool
-    /// A SORTLY-applied, verified assignment exists.
+    /// A Albumist-applied, verified assignment exists.
     public var organizedBySortly: Bool
     /// An open proposal includes the asset.
     public var proposed: Bool

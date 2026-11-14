@@ -41,12 +41,12 @@ public struct ConfirmedProposal: Hashable, Sendable, Codable {
 /// Turns confirmed decisions into a concrete `ChangePlan`. Pure function of its inputs:
 /// planning never touches the photo library (prompt §16).
 public struct OrganizationPlanner: Sendable {
-    /// Root folder for everything SORTLY creates ("SORTLY"). Empty = top level.
+    /// Root folder for everything Albumist creates ("Albumist"). Empty = top level.
     public var rootFolderTitle: String
     /// Maximum assets per add step – keeps each PhotoKit transaction small and resumable.
     public var chunkSize: Int
 
-    public init(rootFolderTitle: String = "SORTLY", chunkSize: Int = 500) {
+    public init(rootFolderTitle: String = "Albumist", chunkSize: Int = 500) {
         self.rootFolderTitle = rootFolderTitle
         self.chunkSize = max(1, chunkSize)
     }

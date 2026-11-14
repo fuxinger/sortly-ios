@@ -1,6 +1,6 @@
-# SORTLY – Fotos automatisch in Alben sortieren
+# Albumist – Fotos automatisch in Alben sortieren
 
-SORTLY ist eine native iOS-App, die die Apple-Fotomediathek **vollständig auf dem iPhone**
+Albumist ist eine native iOS-App, die die Apple-Fotomediathek **vollständig auf dem iPhone**
 analysiert und daraus Alben und Ordner vorschlägt: Reisen mit Datum, Länder und Städte,
 häufige Orte, Jahre und Monate, Medientypen, Screenshots, Themen und Dokumente.
 Vorhandene Alben werden erkannt und ergänzt statt doppelt angelegt. Jede Änderung wird

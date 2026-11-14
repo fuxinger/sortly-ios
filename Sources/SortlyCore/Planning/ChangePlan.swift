@@ -13,7 +13,7 @@ public enum AlbumRef: Hashable, Sendable, Codable {
     case planned(String)
 }
 
-/// The complete, closed set of operations SORTLY can perform (prompt §16.1).
+/// The complete, closed set of operations Albumist can perform (prompt §16.1).
 /// There is deliberately no operation that deletes, modifies or copies original media.
 public enum PlannedOperation: Hashable, Sendable, Codable {
     case createFolder(key: String, title: String, parent: FolderRef)

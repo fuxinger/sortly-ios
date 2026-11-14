@@ -1,6 +1,6 @@
 import Foundation
 
-/// What SORTLY remembers about an album it created or extended (prompt §5.6).
+/// What Albumist remembers about an album it created or extended (prompt §5.6).
 public struct ManagedAlbumState: Hashable, Sendable, Codable {
     public var albumID: CollectionID
     /// Internal proposal/rule identity the album belongs to.
@@ -9,9 +9,9 @@ public struct ManagedAlbumState: Hashable, Sendable, Codable {
     public var lastKnownParentID: CollectionID?
     /// Members as of the last reconciliation.
     public var lastKnownMembers: Set<AssetID>
-    /// Members SORTLY added itself (needed for safe undo).
+    /// Members Albumist added itself (needed for safe undo).
     public var addedBySortly: Set<AssetID>
-    /// True if SORTLY created the album (vs. extended an existing user album).
+    /// True if Albumist created the album (vs. extended an existing user album).
     public var createdBySortly: Bool
     /// Further suggestions that were applied to this album (two suggestions put into one album).
     public var otherSourceIDs: Set<SortlyID> = []
@@ -212,8 +212,8 @@ public struct OverrideSet: Sendable {
 // MARK: - Recording executed plans
 
 extension ManagedAlbumTracker {
-    /// Updates the managed-album states after a plan ran: albums SORTLY created or extended
-    /// are remembered together with exactly the media SORTLY added, so they can be listed,
+    /// Updates the managed-album states after a plan ran: albums Albumist created or extended
+    /// are remembered together with exactly the media Albumist added, so they can be listed,
     /// removed again and checked for manual changes later. `inventory` is read after the run.
     public func record(_ plan: ChangePlan, into states: [ManagedAlbumState], inventory: CollectionInventory) -> [ManagedAlbumState] {
         var byID: [CollectionID: ManagedAlbumState] = [:]
@@ -269,8 +269,8 @@ extension ManagedAlbumTracker {
         return result.sorted { ($0.lastKnownTitle, $0.albumID.rawValue) < ($1.lastKnownTitle, $1.albumID.rawValue) }
     }
 
-    /// Plan that takes back what SORTLY did to one album: an album SORTLY created is deleted
-    /// if it only holds media SORTLY added, otherwise only SORTLY's additions leave the album.
+    /// Plan that takes back what Albumist did to one album: an album Albumist created is deleted
+    /// if it only holds media Albumist added, otherwise only Albumist's additions leave the album.
     /// Media the user added by hand always stay. Originals are never touched.
     public func removalPlan(for state: ManagedAlbumState, current: CollectionInventory, id: SortlyID = SortlyID(), now: Date = Date()) -> ChangePlan {
         var steps: [PlanStep] = []

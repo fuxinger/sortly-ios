@@ -1,6 +1,6 @@
 import Foundation
 
-/// Everything SORTLY knows about one asset after analysis. Input for rules, search,
+/// Everything Albumist knows about one asset after analysis. Input for rules, search,
 /// status and proposals. Built from persisted analysis results.
 public struct AssetFacts: Hashable, Sendable, Identifiable {
     public var asset: AssetSnapshot

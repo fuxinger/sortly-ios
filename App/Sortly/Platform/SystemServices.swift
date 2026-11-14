@@ -27,7 +27,7 @@ final class NetworkStatus: @unchecked Sendable {
 /// core, so this is called once per area, not once per photo.
 ///
 /// Note: `CLGeocoder` is deprecated in iOS 26 in favour of `MKReverseGeocodingRequest`.
-/// It still works and returns the structured address fields SORTLY needs; the migration
+/// It still works and returns the structured address fields Albumist needs; the migration
 /// is tracked in docs/STATUS.md.
 struct SystemGeocoder: ReverseGeocoding {
     var locale: Locale
@@ -65,7 +65,7 @@ struct SystemGeocoder: ReverseGeocoding {
 
 /// Thermal state, Low Power Mode and battery decide whether analysis may continue.
 final class DeviceConditions: AnalysisConditions, @unchecked Sendable {
-    /// In the background SORTLY only works while charging (speed-up 7).
+    /// In the background Albumist only works while charging (speed-up 7).
     let isBackgroundRun: Bool
 
     init(isBackgroundRun: Bool = false) {

@@ -1,7 +1,7 @@
 import SwiftUI
 import SortlyCore
 
-/// Albums SORTLY created or extended. Each one can be taken back: SORTLY removes only the
+/// Albums Albumist created or extended. Each one can be taken back: Albumist removes only the
 /// photos it added itself and deletes an album only if it created it and nothing else is in it.
 struct ManagedAlbumsView: View {
     @Environment(AppModel.self) private var model
@@ -16,7 +16,7 @@ struct ManagedAlbumsView: View {
         List {
             if model.managedAlbums.isEmpty {
                 ContentUnavailableView("Noch keine Alben", systemImage: "rectangle.stack",
-                                       description: Text("Hier erscheinen Alben, die SORTLY angelegt oder ergänzt hat."))
+                                       description: Text("Hier erscheinen Alben, die Albumist angelegt oder ergänzt hat."))
             } else {
                 Section {
                     ForEach(model.managedAlbums, id: \.albumID) { state in
@@ -24,11 +24,11 @@ struct ManagedAlbumsView: View {
                             .foregroundStyle(.primary)
                     }
                 } footer: {
-                    Text("Tippe auf ein Album, um SORTLYs Änderungen daran zurückzunehmen. Fotos, die du selbst hinzugefügt hast, bleiben drin. Deine Originale bleiben immer in der Mediathek.")
+                    Text("Tippe auf ein Album, um Albumists Änderungen daran zurückzunehmen. Fotos, die du selbst hinzugefügt hast, bleiben drin. Deine Originale bleiben immer in der Mediathek.")
                 }
             }
         }
-        .navigationTitle("Von SORTLY angelegt")
+        .navigationTitle("Von Albumist angelegt")
         .navigationBarTitleDisplayMode(.inline)
         .confirmationDialog(
             pending.map { Text("„\($0.lastKnownTitle)“ zurücknehmen?") } ?? Text(""),
@@ -36,20 +36,20 @@ struct ManagedAlbumsView: View {
             titleVisibility: .visible,
             presenting: pending
         ) { state in
-            Button(state.createdBySortly ? "Album entfernen" : "SORTLYs Fotos herausnehmen", role: .destructive) {
+            Button(state.createdBySortly ? "Album entfernen" : "Albumists Fotos herausnehmen", role: .destructive) {
                 Task { await prepare(state) }
             }
         } message: { state in
             if state.createdBySortly {
-                Text("SORTLY hat dieses Album angelegt. Es wird gelöscht, die Fotos bleiben in deiner Mediathek. Hast du selbst Fotos hineingelegt, bleibt das Album mit diesen Fotos bestehen.")
+                Text("Albumist hat dieses Album angelegt. Es wird gelöscht, die Fotos bleiben in deiner Mediathek. Hast du selbst Fotos hineingelegt, bleibt das Album mit diesen Fotos bestehen.")
             } else {
-                Text("Die \(state.addedBySortly.count) Fotos, die SORTLY hinzugefügt hat, werden aus dem Album genommen. Alles andere bleibt, wie es ist.")
+                Text("Die \(state.addedBySortly.count) Fotos, die Albumist hinzugefügt hat, werden aus dem Album genommen. Alles andere bleibt, wie es ist.")
             }
         }
         .alert("Nichts zu tun", isPresented: $nothingToDo) {
             Button("OK", role: .cancel) {}
         } message: {
-            Text("Die Fotos von SORTLY sind schon nicht mehr in diesem Album.")
+            Text("Die Fotos von Albumist sind schon nicht mehr in diesem Album.")
         }
         .navigationDestination(isPresented: $showPlan) {
             PlanReviewView(prebuilt: plan)
@@ -69,9 +69,9 @@ struct ManagedAlbumsView: View {
                 Text(state.lastKnownTitle).font(.body.weight(.medium))
                 Group {
                     if state.createdBySortly {
-                        Text("Neu angelegt · \(state.addedBySortly.count) Fotos von SORTLY")
+                        Text("Neu angelegt · \(state.addedBySortly.count) Fotos von Albumist")
                     } else {
-                        Text("Ergänzt · \(state.addedBySortly.count) Fotos von SORTLY")
+                        Text("Ergänzt · \(state.addedBySortly.count) Fotos von Albumist")
                     }
                 }
                 .font(.footnote).foregroundStyle(.secondary)
@@ -79,7 +79,7 @@ struct ManagedAlbumsView: View {
             Spacer(minLength: 0)
         }
         .accessibilityElement(children: .combine)
-        .accessibilityHint(Text("Änderungen von SORTLY zurücknehmen"))
+        .accessibilityHint(Text("Änderungen von Albumist zurücknehmen"))
     }
 
     private func prepare(_ state: ManagedAlbumState) async {

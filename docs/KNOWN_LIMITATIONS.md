@@ -4,7 +4,7 @@
 - Fotos-Apps dürfen keine Smart-Alben, geteilten oder synchronisierten Alben verändern.
 - Hintergrundarbeit ist nicht garantiert; iOS entscheidet über `BGProcessingTask`. Die
   erste Analyse läuft deshalb im Vordergrund und setzt nach Unterbrechung fort.
-- Bei „Ausgewählte Fotos“ sieht SORTLY nur diese Auswahl.
+- Bei „Ausgewählte Fotos“ sieht Albumist nur diese Auswahl.
 - Ortsnamen über `CLGeocoder` sind von Apple begrenzt (Drosselung, gelegentliche Fehler);
   Länder und Regionen kommen immer aus der Offline-Karte.
 - `CLGeocoder` ist in iOS 26 als veraltet markiert; der Nachfolger in MapKit ist geplant.
@@ -15,7 +15,7 @@
 - Personen- und Haustiergruppen sind noch nicht umgesetzt (Bereich ausgeblendet).
 
 ## Messenger-Herkunft
-iOS speichert keine verlässliche Quell-App. SORTLY nutzt nur klare Hinweise (Messenger-
+iOS speichert keine verlässliche Quell-App. Albumist nutzt nur klare Hinweise (Messenger-
 Screenshots, vorhandene Alben, optional Dateinamen-Muster) und markiert alles andere als
 unbekannt.
 

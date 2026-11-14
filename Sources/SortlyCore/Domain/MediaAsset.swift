@@ -11,7 +11,7 @@ public struct GeoCoordinate: Hashable, Sendable, Codable {
     }
 
     /// PhotoKit occasionally reports (0,0) or out-of-range values for broken EXIF data.
-    /// Those are treated as "no location" – SORTLY never invents a place.
+    /// Those are treated as "no location" – Albumist never invents a place.
     public var isPlausible: Bool {
         latitude.isFinite && longitude.isFinite
             && (-90...90).contains(latitude) && (-180...180).contains(longitude)
@@ -24,7 +24,7 @@ public enum MediaKind: String, Sendable, Codable, CaseIterable {
     case image, video, audio, unknown
 }
 
-/// Mirrors the public `PHAssetMediaSubtype` values plus facts SORTLY derives from public
+/// Mirrors the public `PHAssetMediaSubtype` values plus facts Albumist derives from public
 /// resource information (RAW, burst). Every flag here must be backed by a public API.
 public struct MediaSubtypes: OptionSet, Hashable, Sendable, Codable {
     public let rawValue: UInt32

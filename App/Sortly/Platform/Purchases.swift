@@ -9,7 +9,7 @@ import StoreKit
 final class Purchases {
     static let shared = Purchases()
 
-    /// Albums SORTLY may create or extend before the unlock is needed. Change here only.
+    /// Albums Albumist may create or extend before the unlock is needed. Change here only.
     static let freeAlbumLimit = 10
     static let unlockProductID = "app.sortly.ios.unlock"
     private static let usedKey = "purchases.albumsUsed"

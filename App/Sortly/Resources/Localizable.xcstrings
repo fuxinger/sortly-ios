@@ -1031,12 +1031,12 @@
         }
       }
     },
-    "Alben und Zuordnungen von SORTLY werden entfernt. Deine Fotos bleiben unverändert." : {
+    "Alben und Zuordnungen von Albumist werden entfernt. Deine Fotos bleiben unverändert." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Albums and assignments made by SORTLY will be removed. Your photos stay unchanged."
+            "value" : "Albums and assignments made by Albumist will be removed. Your photos stay unchanged."
           }
         }
       }
@@ -1601,12 +1601,12 @@
         }
       }
     },
-    "Die Analyse läuft immer über die ganze Mediathek. Für den ersten Durchgang kann SORTLY die Vorschläge aber auf ein Jahr beschränken, damit du das Ergebnis in Ruhe prüfen kannst." : {
+    "Die Analyse läuft immer über die ganze Mediathek. Für den ersten Durchgang kann Albumist die Vorschläge aber auf ein Jahr beschränken, damit du das Ergebnis in Ruhe prüfen kannst." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The analysis always covers your whole library. For the first round, SORTLY can limit suggestions to one year so you can review the result at your own pace."
+            "value" : "The analysis always covers your whole library. For the first round, Albumist can limit suggestions to one year so you can review the result at your own pace."
           }
         }
       }
@@ -1621,12 +1621,12 @@
         }
       }
     },
-    "Die erste Analyse kann bei großen Mediatheken eine Weile dauern. Sie läuft weiter, auch wenn du die App verlässt, und zeigt den Fortschritt auf dem Sperrbildschirm. Wenn du magst, sagt SORTLY dir Bescheid, sobald sie fertig ist." : {
+    "Die erste Analyse kann bei großen Mediatheken eine Weile dauern. Sie läuft weiter, auch wenn du die App verlässt, und zeigt den Fortschritt auf dem Sperrbildschirm. Wenn du magst, sagt Albumist dir Bescheid, sobald sie fertig ist." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The first analysis can take a while for large libraries. It keeps running even when you leave the app and shows its progress on the Lock Screen. If you like, SORTLY lets you know as soon as it’s done."
+            "value" : "The first analysis can take a while for large libraries. It keeps running even when you leave the app and shows its progress on the Lock Screen. If you like, Albumist lets you know as soon as it’s done."
           }
         }
       }
@@ -1681,12 +1681,12 @@
         }
       }
     },
-    "Dieses Album kann SORTLY nicht verändern." : {
+    "Dieses Album kann Albumist nicht verändern." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "SORTLY can’t change this album."
+            "value" : "Albumist can’t change this album."
           }
         }
       }
@@ -1721,12 +1721,12 @@
         }
       }
     },
-    "Du kannst die App dabei offen lassen. Bricht etwas ab, setzt SORTLY beim nächsten Start sicher fort." : {
+    "Du kannst die App dabei offen lassen. Bricht etwas ab, setzt Albumist beim nächsten Start sicher fort." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "You can keep the app open. If something is interrupted, SORTLY safely continues on the next launch."
+            "value" : "You can keep the app open. If something is interrupted, Albumist safely continues on the next launch."
           }
         }
       }
@@ -2061,12 +2061,12 @@
         }
       }
     },
-    "Gib diesem Ort oder dieser Gruppe einen Namen. SORTLY benennt persönliche Orte nie selbst." : {
+    "Gib diesem Ort oder dieser Gruppe einen Namen. Albumist benennt persönliche Orte nie selbst." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Give this place or group a name. SORTLY never names personal places on its own."
+            "value" : "Give this place or group a name. Albumist never names personal places on its own."
           }
         }
       }
@@ -2161,12 +2161,12 @@
         }
       }
     },
-    "Ignorierte Fotos schlägt SORTLY nicht mehr vor. Am Foto selbst ändert sich nichts." : {
+    "Ignorierte Fotos schlägt Albumist nicht mehr vor. Am Foto selbst ändert sich nichts." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "SORTLY no longer suggests ignored photos. The photo itself stays unchanged."
+            "value" : "Albumist no longer suggests ignored photos. The photo itself stays unchanged."
           }
         }
       }
@@ -2341,12 +2341,12 @@
         }
       }
     },
-    "Löscht nur SORTLYs eigene Analyse. Deine Fotos und Alben bleiben, wie sie sind." : {
+    "Löscht nur Albumists eigene Analyse. Deine Fotos und Alben bleiben, wie sie sind." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Deletes only SORTLY’s own analysis. Your photos and albums stay as they are."
+            "value" : "Deletes only Albumist’s own analysis. Your photos and albums stay as they are."
           }
         }
       }
@@ -2911,12 +2911,12 @@
         }
       }
     },
-    "Richte SORTLY zuerst in der App ein." : {
+    "Richte Albumist zuerst in der App ein." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Set up SORTLY in the app first."
+            "value" : "Set up Albumist in the app first."
           }
         }
       }
@@ -3001,102 +3001,102 @@
         }
       }
     },
-    "SORTLY" : {
+    "Albumist" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "SORTLY"
+            "value" : "Albumist"
           }
         }
       }
     },
-    "SORTLY analysiert deine Fotos" : {
+    "Albumist analysiert deine Fotos" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "SORTLY is analyzing your photos"
+            "value" : "Albumist is analyzing your photos"
           }
         }
       }
     },
-    "SORTLY braucht vollen Zugriff, um deine Mediathek zu analysieren und Alben anzulegen. Die Analyse passiert nur auf diesem iPhone." : {
+    "Albumist braucht vollen Zugriff, um deine Mediathek zu analysieren und Alben anzulegen. Die Analyse passiert nur auf diesem iPhone." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "SORTLY needs full access to analyze your library and create albums. The analysis happens only on this iPhone."
+            "value" : "Albumist needs full access to analyze your library and create albums. The analysis happens only on this iPhone."
           }
         }
       }
     },
-    "SORTLY entfernt die angelegten Alben und Zuordnungen wieder. Deine Fotos bleiben unverändert." : {
+    "Albumist entfernt die angelegten Alben und Zuordnungen wieder. Deine Fotos bleiben unverändert." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "SORTLY removes the albums and assignments it created. Your photos stay unchanged."
+            "value" : "Albumist removes the albums and assignments it created. Your photos stay unchanged."
           }
         }
       }
     },
-    "SORTLY ergänzt das größte Album um die fehlenden Fotos. Die anderen Alben bleiben erhalten." : {
+    "Albumist ergänzt das größte Album um die fehlenden Fotos. Die anderen Alben bleiben erhalten." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "SORTLY adds the missing photos to the largest album. The other albums are kept."
+            "value" : "Albumist adds the missing photos to the largest album. The other albums are kept."
           }
         }
       }
     },
-    "SORTLY freischalten" : {
+    "Albumist freischalten" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Unlock SORTLY"
+            "value" : "Unlock Albumist"
           }
         }
       }
     },
-    "SORTLY hat keinen vollen Zugriff auf deine Fotos." : {
+    "Albumist hat keinen vollen Zugriff auf deine Fotos." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "SORTLY doesn’t have full access to your photos."
+            "value" : "Albumist doesn’t have full access to your photos."
           }
         }
       }
     },
-    "SORTLY konnte nicht starten" : {
+    "Albumist konnte nicht starten" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "SORTLY couldn’t start"
+            "value" : "Albumist couldn’t start"
           }
         }
       }
     },
-    "SORTLY sortiert dann nur die Fotos, die du freigegeben hast. Für die ganze Mediathek kannst du später vollen Zugriff erlauben." : {
+    "Albumist sortiert dann nur die Fotos, die du freigegeben hast. Für die ganze Mediathek kannst du später vollen Zugriff erlauben." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "SORTLY then sorts only the photos you shared. You can allow full access later for the whole library."
+            "value" : "Albumist then sorts only the photos you shared. You can allow full access later for the whole library."
           }
         }
       }
     },
-    "SORTLY sucht nach neuen Fotos. Die Vorschläge findest du in der Übersicht." : {
+    "Albumist sucht nach neuen Fotos. Die Vorschläge findest du in der Übersicht." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "SORTLY is looking for new photos. You’ll find the suggestions in the overview."
+            "value" : "Albumist is looking for new photos. You’ll find the suggestions in the overview."
           }
         }
       }
@@ -3481,12 +3481,12 @@
         }
       }
     },
-    "Was soll SORTLY sortieren?" : {
+    "Was soll Albumist sortieren?" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "What should SORTLY sort?"
+            "value" : "What should Albumist sort?"
           }
         }
       }
@@ -3611,12 +3611,12 @@
         }
       }
     },
-    "Öffnet SORTLY und sucht nach neuen Fotos, für die es Vorschläge gibt." : {
+    "Öffnet Albumist und sucht nach neuen Fotos, für die es Vorschläge gibt." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Opens SORTLY and looks for new photos that have suggestions."
+            "value" : "Opens Albumist and looks for new photos that have suggestions."
           }
         }
       }
@@ -3741,7 +3741,7 @@
         }
       }
     },
-    "Die %lld Fotos, die SORTLY hinzugefügt hat, werden aus dem Album genommen. Alles andere bleibt, wie es ist." : {
+    "Die %lld Fotos, die Albumist hinzugefügt hat, werden aus dem Album genommen. Alles andere bleibt, wie es ist." : {
       "localizations" : {
         "en" : {
           "variations" : {
@@ -3749,13 +3749,13 @@
               "one" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "The %lld photo SORTLY added is taken out of the album. Everything else stays as it is."
+                  "value" : "The %lld photo Albumist added is taken out of the album. Everything else stays as it is."
                 }
               },
               "other" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "The %lld photos SORTLY added are taken out of the album. Everything else stays as it is."
+                  "value" : "The %lld photos Albumist added are taken out of the album. Everything else stays as it is."
                 }
               }
             }
@@ -3767,13 +3767,13 @@
               "one" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "Das %lld Foto, das SORTLY hinzugefügt hat, wird aus dem Album genommen. Alles andere bleibt, wie es ist."
+                  "value" : "Das %lld Foto, das Albumist hinzugefügt hat, wird aus dem Album genommen. Alles andere bleibt, wie es ist."
                 }
               },
               "other" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "Die %lld Fotos, die SORTLY hinzugefügt hat, werden aus dem Album genommen. Alles andere bleibt, wie es ist."
+                  "value" : "Die %lld Fotos, die Albumist hinzugefügt hat, werden aus dem Album genommen. Alles andere bleibt, wie es ist."
                 }
               }
             }
@@ -3781,12 +3781,12 @@
         }
       }
     },
-    "Die Fotos von SORTLY sind schon nicht mehr in diesem Album." : {
+    "Die Fotos von Albumist sind schon nicht mehr in diesem Album." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "SORTLY's photos are no longer in this album."
+            "value" : "Albumist's photos are no longer in this album."
           }
         }
       }
@@ -3801,7 +3801,7 @@
         }
       }
     },
-    "Ergänzt · %lld Fotos von SORTLY" : {
+    "Ergänzt · %lld Fotos von Albumist" : {
       "localizations" : {
         "en" : {
           "variations" : {
@@ -3809,13 +3809,13 @@
               "one" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "Extended · %lld photo from SORTLY"
+                  "value" : "Extended · %lld photo from Albumist"
                 }
               },
               "other" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "Extended · %lld photos from SORTLY"
+                  "value" : "Extended · %lld photos from Albumist"
                 }
               }
             }
@@ -3827,13 +3827,13 @@
               "one" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "Ergänzt · %lld Foto von SORTLY"
+                  "value" : "Ergänzt · %lld Foto von Albumist"
                 }
               },
               "other" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "Ergänzt · %lld Fotos von SORTLY"
+                  "value" : "Ergänzt · %lld Fotos von Albumist"
                 }
               }
             }
@@ -3841,17 +3841,17 @@
         }
       }
     },
-    "Hier erscheinen Alben, die SORTLY angelegt oder ergänzt hat." : {
+    "Hier erscheinen Alben, die Albumist angelegt oder ergänzt hat." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Albums SORTLY created or added photos to appear here."
+            "value" : "Albums Albumist created or added photos to appear here."
           }
         }
       }
     },
-    "Neu angelegt · %lld Fotos von SORTLY" : {
+    "Neu angelegt · %lld Fotos von Albumist" : {
       "localizations" : {
         "en" : {
           "variations" : {
@@ -3859,13 +3859,13 @@
               "one" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "Created · %lld photo from SORTLY"
+                  "value" : "Created · %lld photo from Albumist"
                 }
               },
               "other" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "Created · %lld photos from SORTLY"
+                  "value" : "Created · %lld photos from Albumist"
                 }
               }
             }
@@ -3877,13 +3877,13 @@
               "one" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "Neu angelegt · %lld Foto von SORTLY"
+                  "value" : "Neu angelegt · %lld Foto von Albumist"
                 }
               },
               "other" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "Neu angelegt · %lld Fotos von SORTLY"
+                  "value" : "Neu angelegt · %lld Fotos von Albumist"
                 }
               }
             }
@@ -3891,52 +3891,52 @@
         }
       }
     },
-    "SORTLY hat dieses Album angelegt. Es wird gelöscht, die Fotos bleiben in deiner Mediathek. Hast du selbst Fotos hineingelegt, bleibt das Album mit diesen Fotos bestehen." : {
+    "Albumist hat dieses Album angelegt. Es wird gelöscht, die Fotos bleiben in deiner Mediathek. Hast du selbst Fotos hineingelegt, bleibt das Album mit diesen Fotos bestehen." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "SORTLY created this album. It will be deleted; the photos stay in your library. If you added photos yourself, the album stays with those photos."
+            "value" : "Albumist created this album. It will be deleted; the photos stay in your library. If you added photos yourself, the album stays with those photos."
           }
         }
       }
     },
-    "SORTLYs Fotos herausnehmen" : {
+    "Albumists Fotos herausnehmen" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Remove SORTLY's Photos"
+            "value" : "Remove Albumist's Photos"
           }
         }
       }
     },
-    "Tippe auf ein Album, um SORTLYs Änderungen daran zurückzunehmen. Fotos, die du selbst hinzugefügt hast, bleiben drin. Deine Originale bleiben immer in der Mediathek." : {
+    "Tippe auf ein Album, um Albumists Änderungen daran zurückzunehmen. Fotos, die du selbst hinzugefügt hast, bleiben drin. Deine Originale bleiben immer in der Mediathek." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tap an album to take back SORTLY's changes. Photos you added yourself stay in it. Your originals always stay in your library."
+            "value" : "Tap an album to take back Albumist's changes. Photos you added yourself stay in it. Your originals always stay in your library."
           }
         }
       }
     },
-    "Von SORTLY angelegt" : {
+    "Von Albumist angelegt" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Created by SORTLY"
+            "value" : "Created by Albumist"
           }
         }
       }
     },
-    "Änderungen von SORTLY zurücknehmen" : {
+    "Änderungen von Albumist zurücknehmen" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Take back SORTLY's changes"
+            "value" : "Take back Albumist's changes"
           }
         }
       }
@@ -4051,12 +4051,12 @@
         }
       }
     },
-    "Von SORTLY angelegt oder ergänzt" : {
+    "Von Albumist angelegt oder ergänzt" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Created or Extended by SORTLY"
+            "value" : "Created or Extended by Albumist"
           }
         }
       }
@@ -4501,12 +4501,12 @@
         }
       }
     },
-    "SORTLY merkt sich das und schlägt stattdessen ein neues oder ein anderes passendes Album vor. Am Album selbst ändert sich nichts." : {
+    "Albumist merkt sich das und schlägt stattdessen ein neues oder ein anderes passendes Album vor. Am Album selbst ändert sich nichts." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "SORTLY remembers this and suggests a new or another matching album instead. Nothing changes in the album itself."
+            "value" : "Albumist remembers this and suggests a new or another matching album instead. Nothing changes in the album itself."
           }
         }
       }
@@ -4591,12 +4591,12 @@
         }
       }
     },
-    "Öffnet einen Albumvorschlag in SORTLY." : {
+    "Öffnet einen Albumvorschlag in Albumist." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Opens an album suggestion in SORTLY."
+            "value" : "Opens an album suggestion in Albumist."
           }
         }
       }
@@ -4611,12 +4611,12 @@
         }
       }
     },
-    "Zeigt in SORTLY alle Fotos, die in einem Land aufgenommen wurden." : {
+    "Zeigt in Albumist alle Fotos, die in einem Land aufgenommen wurden." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Shows all photos taken in one country in SORTLY."
+            "value" : "Shows all photos taken in one country in Albumist."
           }
         }
       }

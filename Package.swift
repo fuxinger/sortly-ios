@@ -1,5 +1,5 @@
 // swift-tools-version: 6.0
-// SORTLY – platform-independent core.
+// Albumist – platform-independent core.
 // The iOS app (App/) links these libraries. Everything in here builds and tests on
 // macOS, iOS and Linux so the business logic is verifiable without a Mac.
 import PackageDescription

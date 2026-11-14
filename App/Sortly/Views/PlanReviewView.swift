@@ -143,7 +143,7 @@ struct PlanReviewView: View {
                 .tint(Theme.accent)
             Text("\(model.execution.completedSteps.formatted()) von \(model.execution.totalSteps.formatted()) Schritten")
                 .font(.footnote).foregroundStyle(.secondary).monospacedDigit()
-            Text("Du kannst die App dabei offen lassen. Bricht etwas ab, setzt SORTLY beim nächsten Start sicher fort.")
+            Text("Du kannst die App dabei offen lassen. Bricht etwas ab, setzt Albumist beim nächsten Start sicher fort.")
                 .font(.footnote).foregroundStyle(.secondary)
         }
     }
@@ -222,7 +222,7 @@ struct ResultCard: View {
                 Task { await model.undo(plan) }
             }
         } message: {
-            Text("SORTLY entfernt die angelegten Alben und Zuordnungen wieder. Deine Fotos bleiben unverändert.")
+            Text("Albumist entfernt die angelegten Alben und Zuordnungen wieder. Deine Fotos bleiben unverändert.")
         }
     }
 }
@@ -244,7 +244,7 @@ enum ConflictText {
         case .assetsUnavailable(let count):
             return String(localized: "\(count) Fotos sind nicht mehr in der Mediathek.")
         case .writeAccessMissing:
-            return String(localized: "SORTLY hat keinen vollen Zugriff auf deine Fotos.")
+            return String(localized: "Albumist hat keinen vollen Zugriff auf deine Fotos.")
         }
     }
 }
@@ -257,7 +257,7 @@ struct UnlockCard: View {
 
     var body: some View {
         Card {
-            Label("SORTLY freischalten", systemImage: "lock.open").font(.headline)
+            Label("Albumist freischalten", systemImage: "lock.open").font(.headline)
             Text("Dieser Plan ordnet \(albumsInPlan) Alben. Kostenlos sind noch \(purchases.remainingFreeAlbums). Mit einem einmaligen Kauf kannst du unbegrenzt sortieren, ohne Abo.")
                 .font(.subheadline).foregroundStyle(.secondary)
             Button {

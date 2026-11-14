@@ -197,7 +197,7 @@ struct SelectionBar: View {
     }
 }
 
-/// One photo, large, with what SORTLY knows about it and why it is (not) sorted.
+/// One photo, large, with what Albumist knows about it and why it is (not) sorted.
 struct AssetDetailView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
@@ -269,7 +269,7 @@ struct AssetDetailView: View {
                         Label("Ignorieren", systemImage: "eye.slash")
                     }
                 } footer: {
-                    Text("Ignorierte Fotos schlägt SORTLY nicht mehr vor. Am Foto selbst ändert sich nichts.")
+                    Text("Ignorierte Fotos schlägt Albumist nicht mehr vor. Am Foto selbst ändert sich nichts.")
                 }
             }
             .navigationTitle("Foto")

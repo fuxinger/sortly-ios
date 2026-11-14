@@ -6,7 +6,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "SORTLY"
+            "value" : "Albumist"
           }
         }
       }
@@ -26,7 +26,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "SORTLY reads your photos only on this iPhone to suggest albums. Nothing is uploaded, and originals are never changed."
+            "value" : "Albumist reads your photos only on this device to suggest albums. Nothing is uploaded, and originals are never changed."
           }
         }
       }

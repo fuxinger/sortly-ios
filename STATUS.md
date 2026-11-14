@@ -1,4 +1,4 @@
-# SORTLY – Arbeitsstand (Übergabe-Notiz)
+# Albumist – Arbeitsstand (Übergabe-Notiz)
 
 Übergabe-Notiz für eine Fortsetzung nach einer Unterbrechung.
 Repository: github.com/fuxinger/sortly-ios, Branch `claude/sortly-app`, Draft-PR #1 (nicht mergen).

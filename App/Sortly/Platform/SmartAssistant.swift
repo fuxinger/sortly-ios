@@ -15,7 +15,7 @@ enum SmartAssistant {
     }
 
     /// Turns a sentence like "Fotos vom Grillen bei Oma letzten Sommer" into the keywords
-    /// SORTLY's search understands ("Grillen Sommer 2025"). Returns nil when unavailable.
+    /// Albumist's search understands ("Grillen Sommer 2025"). Returns nil when unavailable.
     static func searchKeywords(for sentence: String, now: Date = Date()) async -> String? {
         #if canImport(FoundationModels)
         guard isAvailable else { return nil }

@@ -5,7 +5,7 @@ import UserNotifications
 
 /// iOS 26 continued processing: a long analysis the user started keeps running after they
 /// leave the app, and the system shows its progress on the Lock Screen and in the Dynamic
-/// Island. When it ends while SORTLY is in the background, a local notification says so.
+/// Island. When it ends while Albumist is in the background, a local notification says so.
 @MainActor
 enum ContinuedAnalysis {
     nonisolated static let taskID = AppInfo.continuedAnalysisTaskPrefix + ".continued"
@@ -17,7 +17,7 @@ enum ContinuedAnalysis {
         registerIfNeeded()
         let request = BGContinuedProcessingTaskRequest(
             identifier: taskID,
-            title: String(localized: "SORTLY analysiert deine Fotos"),
+            title: String(localized: "Albumist analysiert deine Fotos"),
             subtitle: String(localized: "Läuft weiter, auch wenn du die App verlässt")
         )
         request.strategy = .fail
@@ -53,7 +53,7 @@ enum ContinuedAnalysis {
                         let done = min(model.analysis.completed, total)
                         box.task.progress.totalUnitCount = Int64(total)
                         box.task.progress.completedUnitCount = Int64(done)
-                        box.task.updateTitle(String(localized: "SORTLY analysiert deine Fotos"),
+                        box.task.updateTitle(String(localized: "Albumist analysiert deine Fotos"),
                                              subtitle: String(localized: "\(done) von \(total)"))
                     } else {
                         idleChecks += 1

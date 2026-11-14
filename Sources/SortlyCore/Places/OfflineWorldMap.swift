@@ -5,7 +5,7 @@ import Foundation
 /// Data: Natural Earth 1:10m Admin-0/Admin-1 (public domain), simplified to ≈ 330 m and
 /// packed by `scripts/worldmap/build_world_map.py` (~5 MB). Borders are therefore coarse:
 /// a point closer than `borderMarginMeters` to another country is reported as *ambiguous*
-/// and must be confirmed by the online geocoder. SORTLY never guesses at a border.
+/// and must be confirmed by the online geocoder. Albumist never guesses at a border.
 public struct OfflineWorldMap: Sendable {
     public enum Level: UInt8, Sendable { case country = 0, region = 1 }
 

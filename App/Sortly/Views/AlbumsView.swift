@@ -44,7 +44,7 @@ struct AlbumsView: View {
                 } header: {
                     Text("Ähnliche Alben")
                 } footer: {
-                    Text("SORTLY ergänzt das größte Album um die fehlenden Fotos. Die anderen Alben bleiben erhalten.")
+                    Text("Albumist ergänzt das größte Album um die fehlenden Fotos. Die anderen Alben bleiben erhalten.")
                 }
             }
 
@@ -55,7 +55,7 @@ struct AlbumsView: View {
                         CollectionRow(collection: collection)
                     }
                 } header: {
-                    Text("Von SORTLY angelegt oder ergänzt")
+                    Text("Von Albumist angelegt oder ergänzt")
                 } footer: {
                     Text("Neue Alben liegen in Fotos im Ordner „\(model.settings.rootFolderTitle)“.")
                 }
@@ -138,7 +138,7 @@ struct AlbumDetailView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: Theme.Spacing.m) {
                 if !album.isEditableAlbum {
-                    Label("Dieses Album kann SORTLY nicht verändern.", systemImage: "lock")
+                    Label("Dieses Album kann Albumist nicht verändern.", systemImage: "lock")
                         .font(.footnote).foregroundStyle(.secondary)
                 }
                 ThumbnailGrid(ids: album.assetIDs.sorted(), columns: 4, limit: 200)

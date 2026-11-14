@@ -2,7 +2,7 @@
 
 Womit Apple Apps für Empfehlungen im App Store auswählt (laut Apple: Gestaltung,
 Bedienbarkeit, Barrierefreiheit, Lokalisierung, Einzigartigkeit, aktuelle Apple-Technik,
-gute Produktseite) und wie SORTLY dasteht.
+gute Produktseite) und wie Albumist dasteht.
 
 ## Erledigt
 
@@ -10,7 +10,7 @@ gute Produktseite) und wie SORTLY dasteht.
 |---|---|
 | iOS-26-Design | Systemleisten in Liquid Glass, Tab-Leiste schrumpft beim Scrollen, Suche als eigener Tab, Glasknöpfe (`glassProminent`/`glass`), iPad als Seitenleiste |
 | Apple-Technik | SwiftUI, Vision (neue Swift-API), Foundation Models auf dem Gerät (Foto-Geschichte, Namen, Suche in Sätzen), App Intents, Spotlight (`IndexedEntity`), BackgroundTasks mit Fortschritt auf dem Sperrbildschirm, StoreKit 2 |
-| Siri und Kurzbefehle | „Neue Fotos sortieren“, „Fotos aus Italien in SORTLY“, „Offene Vorschläge“, Vorschlag öffnen |
+| Siri und Kurzbefehle | „Neue Fotos sortieren“, „Fotos aus Italien in Albumist“, „Offene Vorschläge“, Vorschlag öffnen |
 | Spotlight | Länder („Italien, 120 Fotos“) und offene Vorschläge, Antippen öffnet sie |
 | Barrierefreiheit | VoiceOver-Beschriftungen, Dynamic Type bis zur größten Stufe mit eigenem Layout, Dunkelmodus mit eigenen Farbvarianten, Bewegung reduzieren im Atlas, Tippflächen mindestens 44 pt, automatischer Barrierefreiheits-Audit in jedem UI-Testlauf |
 | Haptik | Vibration bei Erfolg und Fehler beim Umsetzen |

@@ -3,7 +3,7 @@ import SwiftUI
 import UIKit
 import SortlyCore
 
-/// Thumbnails come straight from Photos every time; SORTLY stores no copies.
+/// Thumbnails come straight from Photos every time; Albumist stores no copies.
 /// The in-memory cache is limited by decoded bytes, asset lookups are cached, and requests for
 /// cells scrolled out of view are cancelled so fast scrolling stays smooth.
 @MainActor

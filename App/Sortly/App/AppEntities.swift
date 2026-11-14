@@ -100,7 +100,7 @@ struct CountryQuery: EntityStringQuery {
 @MainActor
 enum IntentData {
     /// The app state, loaded if an intent runs before the app was opened.
-    /// `nil` while SORTLY is not set up yet.
+    /// `nil` while Albumist is not set up yet.
     static func readyModel() async -> AppModel? {
         let model = AppModel.shared
         if model.phase == .loading { await model.bootstrap() }

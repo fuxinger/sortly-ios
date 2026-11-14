@@ -5,7 +5,7 @@ import SortlyTestSupport
 
 @Suite("Planning and safe execution")
 struct PlanningExecutionTests {
-    let planner = OrganizationPlanner(rootFolderTitle: "SORTLY", chunkSize: 50)
+    let planner = OrganizationPlanner(rootFolderTitle: "Albumist", chunkSize: 50)
     let allAssets: Set<AssetID> = ids("a", 0..<300)
 
     func proposal(_ id: String, _ kind: ProposalKind, _ title: String, _ path: [String], _ assets: Set<AssetID>) -> AlbumProposal {
@@ -32,7 +32,7 @@ struct PlanningExecutionTests {
         let plan = planner.makePlan(from: items, inventory: try await library.currentInventory())
         #expect(plan.conflicts.isEmpty)
         #expect(plan.summary.newAlbums == 4)
-        #expect(plan.summary.newFolders == 5) // SORTLY, Länder, Italien, Reisen, Themen
+        #expect(plan.summary.newFolders == 5) // Albumist, Länder, Italien, Reisen, Themen
         #expect(plan.summary.distinctAssets == 1)
         #expect(plan.summary.totalAssignments == 4)
         #expect(plan.summary.originalsDeleted == 0 && plan.summary.originalCopiesCreated == 0)
@@ -44,7 +44,7 @@ struct PlanningExecutionTests {
         #expect(inv.albums.filter { $0.assetIDs.contains(photo) }.count == 4)
         #expect(await library.assets == allAssets) // Scenario O: originals unchanged
         let rome = try #require(inv.albums.first { $0.title == "Rom" })
-        #expect(inv.path(of: rome.id) == ["SORTLY", "Länder", "Italien"])
+        #expect(inv.path(of: rome.id) == ["Albumist", "Länder", "Italien"])
     }
 
     @Test("Scenario L: only the selected areas are created")
@@ -69,7 +69,7 @@ struct PlanningExecutionTests {
     }
 
     @Test func existingFoldersAreReusedAndExtensionAddsOnlyMissing() throws {
-        let root = CollectionSnapshot(id: "f-root", title: "SORTLY", kind: .folder)
+        let root = CollectionSnapshot(id: "f-root", title: "Albumist", kind: .folder)
         let countries = CollectionSnapshot(id: "f-c", title: "Länder", kind: .folder, parentID: "f-root")
         let sommer = CollectionSnapshot(id: "sommer", title: "Sommerurlaub", assetIDs: ids("a", 0..<248))
         let inv = CollectionInventory([root, countries, sommer])
@@ -121,7 +121,7 @@ struct PlanningExecutionTests {
         let store = InMemoryPlanStore()
         let plan = confirmed(planner.makePlan(from: items, inventory: try await library.currentInventory()))
 
-        // Writes: 1 folder SORTLY, 2 folder Reisen, 3 album 0, 4+5 add, 6 album 1 ← crash here.
+        // Writes: 1 folder Albumist, 2 folder Reisen, 3 album 0, 4+5 add, 6 album 1 ← crash here.
         await library.setFailAfterWrites(5, afterApplying: crashAfterApplying)
         _ = try await ChangeExecutor(library: library, store: store).execute(plan)
 
@@ -194,7 +194,7 @@ struct PlanningExecutionTests {
         #expect(inv["a"]?.title == "Gardasee · 2026")
         #expect(inv["a"]?.assetIDs == ids("a", 0..<40))
         #expect(inv["b"] == nil) // old album container removed after merge
-        #expect(inv.path(of: "c") == ["SORTLY", "Archiv"])
+        #expect(inv.path(of: "c") == ["Albumist", "Archiv"])
         #expect(await library.assets == allAssets)
     }
 

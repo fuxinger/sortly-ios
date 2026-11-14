@@ -8,7 +8,7 @@ import SortlyWorldMap
 import SortlyTestSupport
 
 /// 20,000 photos over five years: everyday life, 30 trips, screenshots and 150 existing albums.
-/// Vision is faked, so this measures everything SORTLY itself does (clustering, trips, places,
+/// Vision is faked, so this measures everything Albumist itself does (clustering, trips, places,
 /// proposals, matching, database, status, atlas). Run with SORTLY_LOAD_TEST=1.
 @Suite("Load test", .enabled(if: ProcessInfo.processInfo.environment["SORTLY_LOAD_TEST"] != nil))
 struct LoadTests {

@@ -253,7 +253,7 @@ public struct AlbumMatcher: Sendable {
         }
 
         let alternatives = (candidates.filter { $0.albumID != best.albumID }) + weak
-        // Missing photos SORTLY may still add: photos the user took out of the album by hand stay out.
+        // Missing photos Albumist may still add: photos the user took out of the album by hand stay out.
         let bestMembers = inventory[best.albumID]?.assetIDs ?? []
         let addable = best.metrics.missing == 0 ? 0 : proposal.assetIDs.filter {
             !bestMembers.contains($0) && overrides.mayAdd($0, toAlbum: best.albumID) && overrides.mayAdd($0, toSource: proposal.id)

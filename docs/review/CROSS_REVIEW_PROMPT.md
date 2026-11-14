@@ -13,14 +13,14 @@ Ergebnisse versteht. Code-Beispiele für Korrekturen dürfen auf Englisch sein.
 
 ## Die App
 
-**SORTLY** (Arbeitsname) sortiert die Fotos-Mediathek eines iPhones in Alben, vollständig auf
+**Albumist** (Arbeitsname) sortiert die Fotos-Mediathek eines iPhones in Alben, vollständig auf
 dem Gerät. Sie erkennt Reisen, Länder und Orte, Screenshots, Dokumente und Messenger-Bilder,
 schlägt dafür Alben vor, vergleicht mit vorhandenen Alben und legt Alben erst nach Vorschau
 und Bestätigung an. Dazu gibt es einen Reise-Atlas (Weltkarte mit besuchten Ländern),
 Suche, Siri/Kurzbefehle und Spotlight.
 
 Feste Versprechen an die Nutzer, die der Code nie brechen darf:
-1. Es werden **nie Fotos gelöscht oder verändert**. SORTLY legt nur Alben/Ordner an und fügt
+1. Es werden **nie Fotos gelöscht oder verändert**. Albumist legt nur Alben/Ordner an und fügt
    Fotos zu Alben hinzu; jede Änderung lässt sich rückgängig machen.
 2. Alles passiert **auf dem Gerät**. Keine Server, kein Tracking, keine Analyse-SDKs.
 3. Alben, die der Nutzer selbst angelegt hat, werden nie umbenannt oder geleert. Was der

@@ -15,7 +15,7 @@ SQLite, Version über `PRAGMA user_version`, Migrationen in `Sources/SortlyStore
 | `analysis_progress` | `stage` | Fortschritt und Cursor je Etappe |
 | `overrides` | `id` | Nutzerentscheidungen (ignorieren, ablehnen, entfernte Fotos) |
 | `rules` | (`id`, `version`) | Regeln mit Versionsverlauf |
-| `managed_albums` | `album_id` | von SORTLY angelegte/ergänzte Alben |
+| `managed_albums` | `album_id` | von Albumist angelegte/ergänzte Alben |
 | `plans` | `id` | Änderungspläne mit Schrittstatus (Verlauf, Wiederanlauf) |
 | `settings` | `key` | Einstellungen, Entscheidungen, Vorschlags-Schnappschuss |
 

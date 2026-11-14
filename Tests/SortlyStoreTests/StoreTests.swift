@@ -55,7 +55,7 @@ struct StoreTests {
     @Test func inventoryRoundTrip() async throws {
         let s = try store()
         let inv = CollectionInventory([
-            CollectionSnapshot(id: "f", title: "SORTLY", kind: .folder, childIDs: ["a"]),
+            CollectionSnapshot(id: "f", title: "Albumist", kind: .folder, childIDs: ["a"]),
             CollectionSnapshot(id: "a", title: "Rom", parentID: "f", assetIDs: ["1", "2"]),
             CollectionSnapshot(id: "s", title: "Favoriten", kind: .smartAlbum, capabilities: [], assetIDs: ["2"]),
         ])

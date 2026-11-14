@@ -20,7 +20,7 @@
   dem passenden Albumvorschlag.
 - „Album passt nicht“: ein vorgeschlagenes vorhandenes Album lässt sich ausschließen; unter
   „Anpassen“ ist jedes bearbeitbare Album wählbar.
-- Siri, Kurzbefehle und Spotlight: „Fotos aus Italien in SORTLY“, „Offene Vorschläge“,
+- Siri, Kurzbefehle und Spotlight: „Fotos aus Italien in Albumist“, „Offene Vorschläge“,
   Vorschlag öffnen; Spotlight findet Länder und offene Vorschläge.
 - iOS-26-Glasknöpfe (`glassProminent`/`glass`), Vibration beim Fertigwerden und bei Fehlern.
 - Logiktest des ganzen Entscheidungs-Ablaufs (übernehmen, umsetzen, rückgängig, löschen,

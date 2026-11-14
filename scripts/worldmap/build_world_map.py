@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Builds SORTLY's offline world map (countries + first-level regions).
+"""Builds Albumist's offline world map (countries + first-level regions).
 
 Source: Natural Earth 1:10m Admin-0 countries and Admin-1 states/provinces,
 public domain (https://www.naturalearthdata.com/about/terms-of-use/).

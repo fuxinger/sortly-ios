@@ -58,7 +58,7 @@ public struct RequestThrottle: Sendable, Hashable {
     public var maxRequests: Int
     public var window: Duration
     /// Apple does not publish an exact limit; ~50 requests per minute is the commonly
-    /// observed ceiling for CLGeocoder/MapKit, so SORTLY stays below it.
+    /// observed ceiling for CLGeocoder/MapKit, so Albumist stays below it.
     public static let apple = RequestThrottle(maxRequests: 40, window: .seconds(60))
     public init(maxRequests: Int, window: Duration) {
         self.maxRequests = maxRequests

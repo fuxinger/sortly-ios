@@ -29,7 +29,7 @@ public struct OrganizationSettings: Hashable, Sendable, Codable {
         // the Photos app and are opt-in (decision 2026-11-13, docs/DECISIONS.md).
         enabledAreas = [.places, .trips, .frequentPlaces, .screenshots, .imageCategories, .documents]
         primaryAreas = [.trips, .places]
-        rootFolderTitle = "SORTLY"
+        rootFolderTitle = "Albumist"
         titleLanguage = .deviceDefault
         allowMultipleAssignments = true
         automation = AutomationPolicy(globalMode: .suggestOnly)

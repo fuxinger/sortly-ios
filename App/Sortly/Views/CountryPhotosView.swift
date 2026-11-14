@@ -3,7 +3,7 @@ import SortlyCore
 import SortlyEngine
 
 /// Opened from the travel atlas: every photo taken in one country, newest year first,
-/// with the places photographed most and, if SORTLY has one, the album suggestion.
+/// with the places photographed most and, if Albumist has one, the album suggestion.
 struct CountryPhotosView: View {
     @Environment(AppModel.self) private var model
     var code: String

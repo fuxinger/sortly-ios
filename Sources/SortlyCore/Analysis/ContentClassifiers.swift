@@ -237,7 +237,7 @@ public enum ImageTaxonomy {
         return index
     }()
 
-    /// Maps raw classifier observations to SORTLY categories (multi-label, §4.7).
+    /// Maps raw classifier observations to Albumist categories (multi-label, §4.7).
     /// Confidence → Reliability bands are explicit and conservative.
     public static func categories(from observations: [(identifier: String, confidence: Double)]) -> [String: Reliability] {
         var result: [String: Reliability] = [:]

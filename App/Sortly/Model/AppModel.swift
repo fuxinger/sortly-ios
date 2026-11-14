@@ -96,7 +96,7 @@ final class AppModel {
     var inventory = CollectionInventory()
     var mergeSuggestions: [AlbumOverlapAnalyzer.MergeSuggestion] = []
     var history: [ChangePlan] = []
-    /// Albums SORTLY created or extended, with exactly the media it added.
+    /// Albums Albumist created or extended, with exactly the media it added.
     var managedAlbums: [ManagedAlbumState] = []
     var plan: ChangePlan?
     var execution = ExecutionState()
@@ -450,7 +450,7 @@ final class AppModel {
     }
 
     /// Plan for photos the user put into an album by hand: an existing album is extended,
-    /// otherwise a new album is created (in the SORTLY folder). Goes through the normal review.
+    /// otherwise a new album is created (in the Albumist folder). Goes through the normal review.
     func manualPlan(assets: [AssetID], target: CollectionID?, newTitle: String?) async -> ChangePlan? {
         guard let store, !assets.isEmpty else { return nil }
         do {
@@ -468,7 +468,7 @@ final class AppModel {
         }
     }
 
-    // MARK: Albums created by SORTLY
+    // MARK: Albums created by Albumist
 
     /// Remembers which albums the plan created or extended (and which media it added).
     private func recordManagedAlbums(after result: ChangePlan) async {
@@ -489,7 +489,7 @@ final class AppModel {
     }
 
     /// Detects changes the user made in the Photos app (renamed, deleted, photos removed)
-    /// and turns them into overrides, so SORTLY never undoes a manual decision.
+    /// and turns them into overrides, so Albumist never undoes a manual decision.
     private func reconcileManagedAlbums() async {
         guard let store, let stored = try? await store.managedAlbums() else { return }
         // Only with full access: a limited library would look like deleted albums and photos.
@@ -506,7 +506,7 @@ final class AppModel {
         managedAlbums = result.updatedStates
     }
 
-    /// Plan that takes SORTLY's additions back out of one album (shown in the normal review).
+    /// Plan that takes Albumist's additions back out of one album (shown in the normal review).
     func removalPlan(for state: ManagedAlbumState) async -> ChangePlan? {
         do {
             let current = try await library.currentInventory()

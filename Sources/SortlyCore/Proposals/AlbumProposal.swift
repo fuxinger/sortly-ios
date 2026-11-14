@@ -76,12 +76,12 @@ public enum ProposalReason: Hashable, Sendable, Codable {
     case inferredWithoutLocation(count: Int)
 }
 
-/// One concrete album SORTLY could create or extend (prompt §7, Schritt 6).
+/// One concrete album Albumist could create or extend (prompt §7, Schritt 6).
 public struct AlbumProposal: Hashable, Sendable, Codable, Identifiable {
     public var id: SortlyID
     public var kind: ProposalKind
     public var title: String
-    /// Folder path below the SORTLY root, e.g. ["Länder", "Italien"].
+    /// Folder path below the Albumist root, e.g. ["Länder", "Italien"].
     public var folderPath: [String]
     /// Members backed by strong evidence.
     public var assetIDs: Set<AssetID>

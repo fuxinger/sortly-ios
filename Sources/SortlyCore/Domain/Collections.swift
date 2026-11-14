@@ -4,7 +4,7 @@ import Foundation
 public enum CollectionKind: String, Sendable, Codable {
     /// `PHAssetCollection` of type `.album`, subtype `.albumRegular` – a normal user album.
     case userAlbum
-    /// `PHCollectionList` folder created by the user (or by SORTLY).
+    /// `PHCollectionList` folder created by the user (or by Albumist).
     case folder
     /// Smart album maintained by Photos (Favorites, Screenshots, ...). Read-only.
     case smartAlbum
@@ -59,7 +59,7 @@ public struct CollectionSnapshot: Hashable, Sendable, Codable, Identifiable {
         kind == .userAlbum && capabilities.contains(.addContent)
     }
 
-    /// Fingerprint used to detect changes made outside SORTLY between preview and execution.
+    /// Fingerprint used to detect changes made outside Albumist between preview and execution.
     public var fingerprint: String {
         StableHash.hex([title, parentID?.rawValue ?? "-", StableHash.setFingerprint(assetIDs.map(\.rawValue))].joined(separator: "|"))
     }

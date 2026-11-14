@@ -124,7 +124,7 @@ struct ProposalDetailView: View {
     }
 
     private var match: MatchResult? { model.match(for: proposal) }
-    /// What the primary button does: the user's choice from "Anpassen" wins over SORTLY's
+    /// What the primary button does: the user's choice from "Anpassen" wins over Albumist's
     /// recommendation (it must never be overwritten by accepting the suggestion).
     private var recommended: ProposalDecision {
         let chosen = model.decision(for: proposal)
@@ -148,7 +148,7 @@ struct ProposalDetailView: View {
                         TextField(proposal.title, text: $name)
                             .font(.title2.weight(.bold))
                             .textFieldStyle(.roundedBorder)
-                        Text("Gib diesem Ort oder dieser Gruppe einen Namen. SORTLY benennt persönliche Orte nie selbst.")
+                        Text("Gib diesem Ort oder dieser Gruppe einen Namen. Albumist benennt persönliche Orte nie selbst.")
                             .font(.footnote).foregroundStyle(.secondary)
                     } else {
                         Text(model.userTitles[proposal.id] ?? proposal.title).font(.title2.weight(.bold))
@@ -231,7 +231,7 @@ struct ProposalDetailView: View {
                                 Task { await model.rejectMatch(best.albumID, for: proposal) }
                             }
                         } message: {
-                            Text("SORTLY merkt sich das und schlägt stattdessen ein neues oder ein anderes passendes Album vor. Am Album selbst ändert sich nichts.")
+                            Text("Albumist merkt sich das und schlägt stattdessen ein neues oder ein anderes passendes Album vor. Am Album selbst ändert sich nichts.")
                         }
                 }
             }
@@ -359,7 +359,7 @@ struct AdjustProposalView: View {
     }
 }
 
-/// Every album SORTLY may change, searchable; used when no suggested album fits.
+/// Every album Albumist may change, searchable; used when no suggested album fits.
 struct AlbumPickerView: View {
     @Environment(AppModel.self) private var model
     var excluded: Set<CollectionID> = []

@@ -1,6 +1,6 @@
 import Foundation
 
-/// Geographic hierarchy levels SORTLY can organize by (prompt §4.1).
+/// Geographic hierarchy levels Albumist can organize by (prompt §4.1).
 public enum PlaceLevel: Int, Sendable, Codable, CaseIterable, Comparable {
     case continent = 0
     case country
@@ -24,7 +24,7 @@ public enum PlaceSource: String, Sendable, Codable {
 }
 
 /// Address components of a resolved place. Mirrors what reverse geocoding provides
-/// (`CLPlacemark` / MapKit address representations). Every field is optional: SORTLY
+/// (`CLPlacemark` / MapKit address representations). Every field is optional: Albumist
 /// never fills a gap with a guess.
 public struct PlaceComponents: Hashable, Sendable, Codable {
     public var isoCountryCode: String?

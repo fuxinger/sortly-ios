@@ -8,11 +8,11 @@ import SortlyTestSupport
 
 /// The whole decision cycle, end to end, the way the app runs it: analysis → suggestions →
 /// the recommended decisions → plan → execution in a photo library → the next analysis.
-/// Every manual decision the user makes in Photos or in SORTLY must survive that cycle.
+/// Every manual decision the user makes in Photos or in Albumist must survive that cycle.
 @Suite("Decision lifecycle (logic test)")
 struct DecisionLifecycleTests {
     static let map: OfflineWorldMap = try! WorldMapResource.load()
-    let planner = OrganizationPlanner(rootFolderTitle: "SORTLY", chunkSize: 50)
+    let planner = OrganizationPlanner(rootFolderTitle: "Albumist", chunkSize: 50)
 
     struct World {
         var store: SortlyStore
@@ -152,7 +152,7 @@ struct DecisionLifecycleTests {
         try await apply(acceptSafe(try #require(try await w.pipeline.latestProposals())), in: w)
         let states = try await w.store.managedAlbums()
 
-        // In Photos, the user removes two Paris photos from the trip album SORTLY created.
+        // In Photos, the user removes two Paris photos from the trip album Albumist created.
         let parisAlbum = try #require(states.first { state in
             state.createdBySortly && state.addedBySortly == Set(w.paris) && state.lastKnownTitle.contains("·")
         })
@@ -173,7 +173,7 @@ struct DecisionLifecycleTests {
         let readded = plan.steps.flatMap { step -> [AssetID] in
             if case .addAssets(_, let assets) = step.operation { return assets } else { return [] }
         }
-        #expect(Set(readded).isDisjoint(with: removed), "SORTLY would put removed photos back")
+        #expect(Set(readded).isDisjoint(with: removed), "Albumist would put removed photos back")
     }
 
     @Test func aDeletedAlbumIsNotCreatedAgain() async throws {

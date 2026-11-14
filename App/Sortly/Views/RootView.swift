@@ -10,7 +10,7 @@ struct RootView: View {
             ProgressView().controlSize(.large)
         case .failed(let message):
             ContentUnavailableView {
-                Label("SORTLY konnte nicht starten", systemImage: "exclamationmark.triangle")
+                Label("Albumist konnte nicht starten", systemImage: "exclamationmark.triangle")
             } description: {
                 Text(message)
             }

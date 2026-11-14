@@ -35,7 +35,7 @@ targets:
     info:
       path: Sortly/Resources/Info.plist
       properties:
-        CFBundleDisplayName: SORTLY
+        CFBundleDisplayName: Albumist
         CFBundleShortVersionString: "0.1.0"
         CFBundleVersion: "1"
         LSRequiresIPhoneOS: true
@@ -52,7 +52,7 @@ targets:
           - UIInterfaceOrientationPortraitUpsideDown
           - UIInterfaceOrientationLandscapeLeft
           - UIInterfaceOrientationLandscapeRight
-        NSPhotoLibraryUsageDescription: "SORTLY liest deine Fotos nur auf diesem iPhone, um Alben vorzuschlagen. Nichts wird hochgeladen, Originale werden nie verändert."
+        NSPhotoLibraryUsageDescription: "Albumist liest deine Fotos nur auf diesem Gerät, um Alben vorzuschlagen. Nichts wird hochgeladen, Originale werden nie verändert."
         UIBackgroundModes:
           - processing
         BGTaskSchedulerPermittedIdentifiers:

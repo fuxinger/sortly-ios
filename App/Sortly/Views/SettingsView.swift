@@ -41,14 +41,14 @@ struct SettingsView: View {
                     Text("Englisch").tag(TitleLanguage.english)
                 }
                 LabeledContent("Hauptordner") {
-                    TextField("SORTLY", text: $model.settings.rootFolderTitle)
+                    TextField("Albumist", text: $model.settings.rootFolderTitle)
                         .multilineTextAlignment(.trailing)
                 }
                 Toggle("Foto in mehreren Alben erlauben", isOn: $model.settings.allowMultipleAssignments)
                 NavigationLink {
                     ManagedAlbumsView()
                 } label: {
-                    LabeledContent("Von SORTLY angelegt", value: model.managedAlbums.count.formatted())
+                    LabeledContent("Von Albumist angelegt", value: model.managedAlbums.count.formatted())
                 }
             }
 
@@ -77,7 +77,7 @@ struct SettingsView: View {
             Section {
                 Button("Analyse neu aufbauen", role: .destructive) { confirmReset = true }
             } footer: {
-                Text("Löscht nur SORTLYs eigene Analyse. Deine Fotos und Alben bleiben, wie sie sind.")
+                Text("Löscht nur Albumists eigene Analyse. Deine Fotos und Alben bleiben, wie sie sind.")
             }
 
             Section("Vollversion") {
@@ -163,7 +163,7 @@ struct HistoryRow: View {
                 }
             }
         } message: {
-            Text("Alben und Zuordnungen von SORTLY werden entfernt. Deine Fotos bleiben unverändert.")
+            Text("Alben und Zuordnungen von Albumist werden entfernt. Deine Fotos bleiben unverändert.")
         }
     }
 }

@@ -1,18 +1,18 @@
 # Datenschutz
 
 ## Datenverarbeitung
-Alle Analysen laufen auf dem Gerät. SORTLY lädt keine Fotos hoch, hat keinen Server, kein
+Alle Analysen laufen auf dem Gerät. Albumist lädt keine Fotos hoch, hat keinen Server, kein
 Konto, keine Werbung, kein Tracking und keine Analyse-SDKs.
 
 ## Speicherorte
-Eine SQLite-Datenbank in *Application Support/SORTLY* mit Metadaten, Analyseergebnissen,
+Eine SQLite-Datenbank in *Application Support/Albumist* mit Metadaten, Analyseergebnissen,
 erkanntem Text (nur für die Suche) und Entscheidungen. Der ganze Ordner ist vom iCloud-Backup
 ausgeschlossen und mit iOS-Dateischutz verschlüsselt (`completeUntilFirstUserAuthentication`:
 nach einem Neustart unlesbar, bis das iPhone einmal entsperrt wurde; stärker geht nicht, weil
 die Analyse auch nachts bei gesperrtem Gerät läuft).
 Es werden **keine Bildkopien** gespeichert. Wenige Einstellungen liegen in `UserDefaults`
 (Onboarding erledigt, Zahl der Gratis-Alben, Zeitpunkt des letzten Scans).
-Für Spotlight und Siri legt SORTLY im lokalen Spotlight-Index des iPhones nur Ländernamen mit
+Für Spotlight und Siri legt Albumist im lokalen Spotlight-Index des iPhones nur Ländernamen mit
 Fotoanzahl und die Titel offener Vorschläge ab (kein erkannter Text, keine Bilder, keine
 Koordinaten). Der Index wird nach jeder Analyse ersetzt und ist nach „Analyse zurücksetzen“ leer.
 

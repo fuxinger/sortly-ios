@@ -1,6 +1,6 @@
 # Reise-Atlas: Konzept zur Verfeinerung (14.11.2026)
 
-Ziel: Der Atlas ist der emotionale Teil von SORTLY und der beste Grund zum Teilen. Er soll
+Ziel: Der Atlas ist der emotionale Teil von Albumist und der beste Grund zum Teilen. Er soll
 aus einer Statistik ein persönliches Andenken machen, ohne Daten preiszugeben.
 
 ## Jetzt umgesetzt (v1)

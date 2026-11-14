@@ -51,7 +51,7 @@ SwiftUI (iOS 26, Liquid Glass über Systemleisten), PhotoKit, Vision (neue Swift
 App Intents. Keine Drittanbieter-Abhängigkeiten.
 
 ## Persistenz
-Eine SQLite-Datei in *Application Support/SORTLY* (vom Backup ausgeschlossen, da aus der
+Eine SQLite-Datei in *Application Support/Albumist* (vom Backup ausgeschlossen, da aus der
 Mediathek rekonstruierbar). Schema und Migrationen: `DATA_MODEL.md`. Es werden keine Bilder
 gespeichert; Vorschaubilder kommen jedes Mal frisch aus PhotoKit.
 

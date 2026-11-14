@@ -2,24 +2,24 @@ import AppIntents
 import SwiftUI
 import SortlyCore
 
-/// "Neue Fotos sortieren" for Shortcuts and Siri: opens SORTLY and checks for new photos.
+/// "Neue Fotos sortieren" for Shortcuts and Siri: opens Albumist and checks for new photos.
 /// Nothing in the library changes without the user's confirmation in the app.
 struct SortNewPhotosIntent: AppIntent {
     static let title: LocalizedStringResource = "Neue Fotos sortieren"
-    static let description = IntentDescription("Öffnet SORTLY und sucht nach neuen Fotos, für die es Vorschläge gibt.")
+    static let description = IntentDescription("Öffnet Albumist und sucht nach neuen Fotos, für die es Vorschläge gibt.")
     static var openAppWhenRun: Bool { true }
 
     @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog {
         guard let model = await IntentData.readyModel() else {
-            return .result(dialog: "Richte SORTLY zuerst in der App ein.")
+            return .result(dialog: "Richte Albumist zuerst in der App ein.")
         }
         model.startAnalysis()
-        return .result(dialog: "SORTLY sucht nach neuen Fotos. Die Vorschläge findest du in der Übersicht.")
+        return .result(dialog: "Albumist sucht nach neuen Fotos. Die Vorschläge findest du in der Übersicht.")
     }
 }
 
-/// "Was hat SORTLY für mich?": says how many suggestions are waiting, without opening the
+/// "Was hat Albumist für mich?": says how many suggestions are waiting, without opening the
 /// app, and hands them to Shortcuts (for example to open one of them).
 struct OpenSuggestionsIntent: AppIntent {
     static let title: LocalizedStringResource = "Offene Vorschläge"
@@ -28,7 +28,7 @@ struct OpenSuggestionsIntent: AppIntent {
     @MainActor
     func perform() async throws -> some IntentResult & ReturnsValue<[SuggestionEntity]> & ProvidesDialog {
         guard let model = await IntentData.readyModel() else {
-            return .result(value: [], dialog: "Richte SORTLY zuerst in der App ein.")
+            return .result(value: [], dialog: "Richte Albumist zuerst in der App ein.")
         }
         let open = IntentData.suggestions(model)
         if open.isEmpty {
@@ -41,7 +41,7 @@ struct OpenSuggestionsIntent: AppIntent {
 /// Opens one suggestion. Also runs when a suggestion is tapped in Spotlight.
 struct OpenSuggestionIntent: OpenIntent {
     static let title: LocalizedStringResource = "Vorschlag öffnen"
-    static let description = IntentDescription("Öffnet einen Albumvorschlag in SORTLY.")
+    static let description = IntentDescription("Öffnet einen Albumvorschlag in Albumist.")
 
     @Parameter(title: "Vorschlag")
     var target: SuggestionEntity
@@ -57,7 +57,7 @@ struct OpenSuggestionIntent: OpenIntent {
 /// Also runs when a country is tapped in Spotlight.
 struct OpenCountryIntent: OpenIntent {
     static let title: LocalizedStringResource = "Fotos aus einem Land zeigen"
-    static let description = IntentDescription("Zeigt in SORTLY alle Fotos, die in einem Land aufgenommen wurden.")
+    static let description = IntentDescription("Zeigt in Albumist alle Fotos, die in einem Land aufgenommen wurden.")
 
     @Parameter(title: "Land")
     var target: CountryEntity

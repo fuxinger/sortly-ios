@@ -54,7 +54,7 @@ struct OnboardingView: View {
 
     private var welcome: some View {
         page {
-            Text("SORTLY").font(.subheadline.weight(.semibold)).foregroundStyle(.secondary)
+            Text("Albumist").font(.subheadline.weight(.semibold)).foregroundStyle(.secondary)
             Text("Deine Fotos, endlich sortiert.").font(.largeTitle.weight(.bold))
                 .fixedSize(horizontal: false, vertical: true)
                 .padding(.bottom, Theme.Spacing.s)
@@ -78,7 +78,7 @@ struct OnboardingView: View {
 
     private var areas: some View {
         page(centered: false) {
-            Text("Was soll SORTLY sortieren?").font(.title.weight(.bold))
+            Text("Was soll Albumist sortieren?").font(.title.weight(.bold))
                 .fixedSize(horizontal: false, vertical: true)
             Text("Die markierten Bereiche zählen als deine Hauptsortierung. Du kannst das später jederzeit ändern.")
                 .foregroundStyle(.secondary)
@@ -118,7 +118,7 @@ struct OnboardingView: View {
             IconTile(systemName: "photo.on.rectangle", tint: Theme.accent).scaleEffect(1.4).padding(.bottom, Theme.Spacing.s)
             Text("Zugriff auf deine Fotos").font(.title.weight(.bold))
                 .fixedSize(horizontal: false, vertical: true)
-            Text("SORTLY braucht vollen Zugriff, um deine Mediathek zu analysieren und Alben anzulegen. Die Analyse passiert nur auf diesem iPhone.")
+            Text("Albumist braucht vollen Zugriff, um deine Mediathek zu analysieren und Alben anzulegen. Die Analyse passiert nur auf diesem iPhone.")
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
             switch model.access {
@@ -133,7 +133,7 @@ struct OnboardingView: View {
             case .limited:
                 Card {
                     Label("Nur ausgewählte Fotos", systemImage: "photo.badge.checkmark").font(.headline)
-                    Text("SORTLY sortiert dann nur die Fotos, die du freigegeben hast. Für die ganze Mediathek kannst du später vollen Zugriff erlauben.")
+                    Text("Albumist sortiert dann nur die Fotos, die du freigegeben hast. Für die ganze Mediathek kannst du später vollen Zugriff erlauben.")
                 }
             default:
                 EmptyView()
@@ -158,7 +158,7 @@ struct OnboardingView: View {
         return page {
             Text("Erst ein Probelauf?").font(.title.weight(.bold))
                 .fixedSize(horizontal: false, vertical: true)
-            Text("Die Analyse läuft immer über die ganze Mediathek. Für den ersten Durchgang kann SORTLY die Vorschläge aber auf ein Jahr beschränken, damit du das Ergebnis in Ruhe prüfen kannst.")
+            Text("Die Analyse läuft immer über die ganze Mediathek. Für den ersten Durchgang kann Albumist die Vorschläge aber auf ein Jahr beschränken, damit du das Ergebnis in Ruhe prüfen kannst.")
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
             // A settings-style row with a menu instead of a wheel (HIG: menus for short lists).
@@ -177,7 +177,7 @@ struct OnboardingView: View {
             .padding(.vertical, Theme.Spacing.s)
             .frame(minHeight: 52)
             .background(Theme.card, in: RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous))
-            Text("Die erste Analyse kann bei großen Mediatheken eine Weile dauern. Sie läuft weiter, auch wenn du die App verlässt, und zeigt den Fortschritt auf dem Sperrbildschirm. Wenn du magst, sagt SORTLY dir Bescheid, sobald sie fertig ist.")
+            Text("Die erste Analyse kann bei großen Mediatheken eine Weile dauern. Sie läuft weiter, auch wenn du die App verlässt, und zeigt den Fortschritt auf dem Sperrbildschirm. Wenn du magst, sagt Albumist dir Bescheid, sobald sie fertig ist.")
                 .font(.footnote).foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
         } footer: {

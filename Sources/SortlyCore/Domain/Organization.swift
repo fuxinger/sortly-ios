@@ -53,7 +53,7 @@ public enum EvidenceSource: String, Sendable, Codable, Comparable {
     public static func < (lhs: EvidenceSource, rhs: EvidenceSource) -> Bool { lhs.rank < rhs.rank }
 }
 
-/// Qualitative reliability. SORTLY deliberately shows no uncalibrated percentages (§17).
+/// Qualitative reliability. Albumist deliberately shows no uncalibrated percentages (§17).
 public enum Reliability: Int, Sendable, Codable, Comparable, CaseIterable {
     case uncertain = 0
     case plausible = 1
@@ -75,8 +75,8 @@ public enum AutomationMode: String, Sendable, Codable, CaseIterable {
 
 /// Per-area organization state of a single asset (prompt §6.1).
 public enum AreaStatus: String, Sendable, Codable, CaseIterable {
-    case preExisting          // already organized before SORTLY by a matching user album
-    case organized            // SORTLY assignment applied and verified
+    case preExisting          // already organized before Albumist by a matching user album
+    case organized            // Albumist assignment applied and verified
     case proposed             // assignment suggested
     case pendingConfirmation  // part of a plan waiting for confirmation
     case ignored              // user chose not to organize
@@ -87,7 +87,7 @@ public enum AreaStatus: String, Sendable, Codable, CaseIterable {
     case unorganized
 }
 
-/// The inbox buckets of the SORTLY library view (prompt §6).
+/// The inbox buckets of the Albumist library view (prompt §6).
 public enum InboxBucket: String, Sendable, Codable, CaseIterable {
     case all, unorganized, suggestions, organized, uncertain, ignored, excluded
 }

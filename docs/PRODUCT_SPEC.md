@@ -45,7 +45,7 @@ Bearbeiten von Originalen. Personen- und Haustiergruppen folgen in einer später
 ## Abnahmekriterien
 - Keine Operation kann Originale löschen, verändern oder kopieren (geschlossene
   Operationsmenge in `PlannedOperation`, Test `PlanningExecutionTests`).
-- Ohne Bestätigung ändert SORTLY nichts an der Mediathek.
+- Ohne Bestätigung ändert Albumist nichts an der Mediathek.
 - Jeder ausgeführte Plan ist rückgängig machbar, soweit der Nutzer die Alben seitdem
   nicht selbst geändert hat (dann wird nichts überschrieben).
 - Vorhandene passende Alben werden ergänzt statt dupliziert (Szenarien in `MatchingTests`).

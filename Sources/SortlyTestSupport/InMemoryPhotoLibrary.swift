@@ -1,7 +1,7 @@
 import Foundation
 import SortlyCore
 
-/// In-memory photo library for tests and previews. Mirrors the PhotoKit semantics SORTLY
+/// In-memory photo library for tests and previews. Mirrors the PhotoKit semantics Albumist
 /// relies on: collections have identities, albums reference assets (no copies), deleting an
 /// album never deletes media.
 public actor InMemoryPhotoLibrary: PhotoLibraryWriting {
@@ -11,7 +11,7 @@ public actor InMemoryPhotoLibrary: PhotoLibraryWriting {
     /// Simulates a crash: the write call number `failAfterWrites + 1` fails.
     public var failAfterWrites: Int?
     /// If true the failing write is applied before the error is thrown (crash between the
-    /// PhotoKit commit and SORTLY's journal update).
+    /// PhotoKit commit and Albumist's journal update).
     public var crashAfterApplying = false
     public private(set) var writeCount = 0
     private var nextID = 1
