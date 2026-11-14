@@ -111,12 +111,24 @@ final class SortlyFlowUITests: XCTestCase {
         }
     }
 
+    /// The system photo alert, if the simulator still asks (the CI grant does not always hold).
+    /// It can take several seconds to appear while it renders its photo preview.
     private func allowPhotosIfAsked() {
         let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
-        for label in ["Zugriff auf alle Fotos erlauben", "Allow Full Access", "Allow Access to All Photos", "Alle Fotos erlauben"] {
-            let allow = springboard.buttons[label]
-            if allow.waitForExistence(timeout: 2) { allow.tap(); print("UI_STEP_OK system photo alert"); return }
+        let labels = ["Zugriff auf alle Fotos erlauben", "Allow Full Access", "Allow Access to All Photos", "Alle Fotos erlauben", "Vollzugriff erlauben"]
+        let deadline = Date().addingTimeInterval(25)
+        while Date() < deadline {
+            for source in [springboard, app] {
+                for label in labels where source.buttons[label].exists {
+                    source.buttons[label].tap()
+                    print("UI_STEP_OK system photo alert")
+                    return
+                }
+            }
+            if button("Analyse starten").exists { return } // access was already granted
+            usleep(500_000)
         }
+        print("UI_STEP_MISSING system photo alert")
     }
 
     private func allowNotificationsIfAsked() {
