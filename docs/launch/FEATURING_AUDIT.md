@@ -1,5 +1,10 @@
 # Featuring-Check (Stand 14.11.2026)
 
+> Nachtrag 21.11.2026: Teils veraltet. Glasknöpfe (`glassProminent`/`glass`) gibt es im Code
+> heute nicht, Liquid Glass kommt nur über die Systemleisten. Name, Icon und TestFlight sind
+> erledigt. Aktuelle Unterlagen: `FEATURING_NOMINATION.md`, `BARRIEREFREIHEIT_ANGABEN.md`,
+> `SCREENSHOTS_VIDEO_PLAN.md`.
+
 Womit Apple Apps für Empfehlungen im App Store auswählt (laut Apple: Gestaltung,
 Bedienbarkeit, Barrierefreiheit, Lokalisierung, Einzigartigkeit, aktuelle Apple-Technik,
 gute Produktseite) und wie Albumist dasteht.

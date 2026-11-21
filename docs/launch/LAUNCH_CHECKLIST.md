@@ -48,11 +48,16 @@ Was vor dem Verkaufsstart erledigt sein muss. Wird bei jeder Entscheidung ergän
       Store Connect bestätigen, keine Unterlagen nötig.
 - [ ] **Support-URL** und **Datenschutz-URL** (Webseite, siehe „Marke und Recht“) eintragen; beide
       müssen auch nach dem Privatstellen des Repos erreichbar sein (K4).
+- [ ] **Barrierefreiheits-Angaben** als Entwurf speichern, am Starttag „Publish“
+      (`docs/launch/BARRIEREFREIHEIT_ANGABEN.md`; vorher die vier Kurztests am iPhone).
+- [ ] **Karten-Prototyp** (Sandbox-Seite) vor der ersten Einreichung entfernt (`APP_REVIEW_NOTES.md`).
+- [ ] **Featuring-Bewerbung** mindestens 3 Wochen, besser bis 3 Monate vorher
+      (`docs/launch/FEATURING_NOMINATION.md`).
 - [ ] **Notiz für App Review** aus `docs/launch/APP_REVIEW_NOTES.md` (DE oder EN) einfügen, kein Login nötig.
 - [ ] **Bildschirmaufnahme** nach dem Drehbuch in `APP_REVIEW_NOTES.md` (echte Mediathek, ca. 60 s)
       aufnehmen und in der Prüfnotiz verlinken oder als Anhang hochladen (K6).
-- [ ] Kategorie (Foto & Video), Untertitel, Schlüsselwörter, Screenshots 6,9" und 6,5" aus
-      `APP_STORE_DE.md` / `APP_STORE_EN.md`; Copyright-Zeile.
+- [ ] Kategorie (Foto & Video), Untertitel, Schlüsselwörter, Bildschirmfotos und Video nach
+      `SCREENSHOTS_VIDEO_PLAN.md`, Texte aus `APP_STORE_DE.md` / `APP_STORE_EN.md`; Copyright-Zeile.
 - [ ] Vor dem Einreichen auf einem Gerät mit leerer Mediathek prüfen: Übersicht zeigt „Noch keine Fotos“
       mit „Mit Beispielfotos ausprobieren“; Beispielfotos anlegen, Alben anlegen, Beispielfotos wieder
       entfernen (nur die Beispielfotos und ihre Alben verschwinden).
