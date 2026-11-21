@@ -25,8 +25,8 @@ struct IncrementalAnalysisTests {
             var textCalls: [(AssetID, Bool)] = []
             var contentCalls = 0
         }
-        let state = Mutex(State())
-        let onText = Mutex<(@Sendable () async -> Void)?>(nil)
+        let state = Locked(State())
+        let onText = Locked<(@Sendable () async -> Void)?>(nil)
 
         func analyzeContent(_ asset: AssetSnapshot, request: ContentAnalysisRequest) async throws -> ContentAnalysis {
             let fail = state.withLock { s -> Bool in
@@ -52,7 +52,7 @@ struct IncrementalAnalysisTests {
     }
 
     final class Clock: @unchecked Sendable {
-        let value = Mutex(Fixture.date("2026-07-01 12:00"))
+        let value = Locked(Fixture.date("2026-07-01 12:00"))
         func advance(_ seconds: TimeInterval) { value.withLock { $0 += seconds } }
     }
 
@@ -429,7 +429,7 @@ struct IncrementalAnalysisTests {
     /// Geocoder that runs a hook before it answers (the user changes a setting meanwhile).
     final class HookedGeocoder: ReverseGeocoding, @unchecked Sendable {
         let inner = FakeGeocoder()
-        let onCall = Mutex<(@Sendable () async -> Void)?>(nil)
+        let onCall = Locked<(@Sendable () async -> Void)?>(nil)
         func reverseGeocode(_ coordinate: GeoCoordinate) async throws -> PlaceComponents? {
             if let hook = onCall.withLock({ $0 }) { await hook() }
             return try await inner.reverseGeocode(coordinate)

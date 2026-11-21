@@ -38,7 +38,7 @@
       "_why": "Every other UI test except the accessibility tests (flow tests 1b-7, locked purchase, search). Each brings the app to an onboarded demo library by itself (UITestOnboarding).",
       "device": "pro",
       "only": "",
-      "skip": "AlbumistFlowUITests/test1_FullFlow AlbumistFlowUITests/test1b_AtlasLibrarySearch AccessibilityUITests DeviceConditionUITests/test01_WarmAndHotPhoneWaitAndFinish DeviceConditionUITests/test02_LowBatteryAndLowPowerModeWording DeviceConditionUITests/test03_BackgroundExpiryAndRelaunchContinue DeviceConditionUITests/test04_UnreadableICloudOfflineComplete DeviceConditionUITests/test06_DiskFullDuringAnalysisAndPlan DeviceConditionUITests/test09_PhotoAccessDeniedLimitedAndRevoked DeviceConditionUITests/test10_EmptyLibrary DeviceConditionUITests/test11_LargeLibrary DeviceConditionUITests/test12_StressManyPhotosICloudOnlyOffline DeviceConditionUITests/test05_UndoWhenDeletionIsDeclinedOrIgnored DeviceConditionUITests/test07_InterruptedPlanContinueAndUndo DeviceConditionUITests/test08_RemoveManagedAlbumAndUndo"
+      "skip": "AlbumistFlowUITests/test1_FullFlow AlbumistFlowUITests/test1b_AtlasLibrarySearch PerformanceUITests AccessibilityUITests DeviceConditionUITests/test01_WarmAndHotPhoneWaitAndFinish DeviceConditionUITests/test02_LowBatteryAndLowPowerModeWording DeviceConditionUITests/test03_BackgroundExpiryAndRelaunchContinue DeviceConditionUITests/test04_UnreadableICloudOfflineComplete DeviceConditionUITests/test06_DiskFullDuringAnalysisAndPlan DeviceConditionUITests/test09_PhotoAccessDeniedLimitedAndRevoked DeviceConditionUITests/test10_EmptyLibrary DeviceConditionUITests/test11_LargeLibrary DeviceConditionUITests/test12_StressManyPhotosICloudOnlyOffline DeviceConditionUITests/test05_UndoWhenDeletionIsDeclinedOrIgnored DeviceConditionUITests/test07_InterruptedPlanContinueAndUndo DeviceConditionUITests/test08_RemoveManagedAlbumAndUndo"
     },
     {
       "group": "accessibility",
@@ -54,9 +54,9 @@
       "group": "flow-full",
       "budget_min": 30,
       "title": "full flow, video, atlas and library",
-      "_why": "Onboarding, demo library, plan and the sorting-show video (test1), then atlas, library and search on the library test1 made (test1b, 11.6 min; it ran after test1 in one group before 16.11.). test1b moved here from other flows on 21.11.: in the full UI run 44828248004 other flows took 47.2 test minutes, the most of any group, this group 8.7.",
+      "_why": "Onboarding, demo library, plan and the sorting-show video (test1), then atlas, library and search on the library test1 made (test1b, 11.6 min; it ran after test1 in one group before 16.11.). test1b moved here from other flows on 21.11.: in the full UI run 44828248004 other flows took 47.2 test minutes, the most of any group, this group 8.7. PerformanceUITests (21.11., report only: start, scrolling, and in full runs the analysis, about 8 min) run last here, on the library test1 made.",
       "device": "pro",
-      "only": "AlbumistFlowUITests/test1_FullFlow AlbumistFlowUITests/test1b_AtlasLibrarySearch",
+      "only": "AlbumistFlowUITests/test1_FullFlow AlbumistFlowUITests/test1b_AtlasLibrarySearch PerformanceUITests",
       "skip": "",
       "video": true
     },

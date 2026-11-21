@@ -2202,8 +2202,12 @@ final class AlbumistFlowUITests: XCTestCase {
         // Trial year: chosen in the settings, shown on the overview, taken back there.
         let year = Calendar.current.component(.year, from: Date())
         if tap(app.buttons["Einstellungen"], "settings for trial year") {
+            // On a busy Mac (UI run 44886315629, flow-other 44 min, Home presses needed twice) the
+            // picker was not there 15 s after the tap: the settings open is now waited for and
+            // said by name, and the picker has 30 s.
+            UITestWait.appears(app.navigationBars["Einstellungen"], "settings open for the trial year", timeout: 20)
             let picker = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Albumist arbeitet mit")).firstMatch
-            if tap(picker, "trial year picker") {
+            if tap(picker, "trial year picker", timeout: 30) {
                 let onlyYear = app.buttons["Nur \(year)"]
                 tap(onlyYear, "choose \(year)")
                 // The menu has closed (not asserted: the overview's note below is).
@@ -2211,6 +2215,7 @@ final class AlbumistFlowUITests: XCTestCase {
             }
             shot("65-settings-trial-year")
             if app.buttons["Fertig"].exists { app.buttons["Fertig"].tap() }
+            UITestWait.disappears(app.navigationBars["Einstellungen"], "settings closed after the trial year", timeout: 20)
             let note = app.descendants(matching: .any)["analysis.trial"]
             let shown = note.waitForExistence(timeout: 20)
             print(shown ? "UI_STEP_OK trial year on overview" : "UI_STEP_MISSING trial year on overview")

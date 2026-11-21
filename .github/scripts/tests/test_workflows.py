@@ -299,8 +299,23 @@ class TestFlightWiringTests(unittest.TestCase):
         text = read(os.path.join(ROOT, ".github", "workflows", "testflight.yml"))
         self.assertIn("python3 .github/scripts/ui_evidence.py gate", text)
         release = text.split("\n  release:\n", 1)[1].split("\n  tag:\n", 1)[0]
-        self.assertIn("needs: [check, tests, ui, stress, release-smoke, ui-gate]", release)
+        self.assertIn("needs: [check, tests, ui, stress, release-smoke, ui-gate, tsan]", release)
         self.assertIn("needs.ui-gate.result == 'success'", release)
+
+    def test_upload_needs_the_thread_sanitizer(self):
+        # Owner's decision 16.11.2026: Thread Sanitizer before every upload (the core on Linux).
+        text = read(os.path.join(ROOT, ".github", "workflows", "testflight.yml"))
+        tsan = text.split("\n  tsan:\n", 1)[1].split("\n\n  ", 1)[0]
+        self.assertIn("uses: ./.github/workflows/sanitize.yml", tsan)
+        release = text.split("\n  release:\n", 1)[1].split("\n  tag:\n", 1)[0]
+        self.assertIn("needs.tsan.result == 'success'", release)
+        sanitize = read(os.path.join(ROOT, ".github", "workflows", "sanitize.yml"))
+        self.assertNotIn("pull_request", sanitize)
+        self.assertNotIn("push:", sanitize)
+        self.assertIn("swift test --sanitize=thread", sanitize)
+        self.assertIn("-enableThreadSanitizer YES", sanitize)
+        nightly = read(os.path.join(ROOT, ".github", "workflows", "nightly.yml"))
+        self.assertIn("uses: ./.github/workflows/sanitize.yml", nightly)
 
     def test_nothing_skips_the_tests_before_an_upload(self):
         # G5-02/G6-02: the owner decided on 17.11. to remove the emergency input "force", which

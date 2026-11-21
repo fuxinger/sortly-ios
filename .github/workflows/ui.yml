@@ -438,6 +438,7 @@ jobs:
             build/*.xcresult
             build/*-log.txt
             build/*-swiftui.txt
+            build/*-console-*.txt
             sim-boot.log
           retention-days: 7
           if-no-files-found: ignore

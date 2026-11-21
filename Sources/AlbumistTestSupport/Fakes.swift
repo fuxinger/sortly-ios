@@ -4,7 +4,7 @@ import AlbumistCore
 
 /// Fake geocoder: answers from a table of nearest fixture places, records calls.
 public final class FakeGeocoder: ReverseGeocoding, @unchecked Sendable {
-    public let lock = Mutex<[GeoCoordinate]>([])
+    public let lock = Locked<[GeoCoordinate]>([])
     public var failures: [GeocodingError] = []
     public let answers: [(GeoCoordinate, PlaceComponents)]
 
@@ -41,7 +41,7 @@ public actor MemoryPlaceCache: PlaceCaching {
 
 /// Manual time: sleeping advances the clock instantly.
 public final class ManualTime: @unchecked Sendable {
-    public let now = Mutex<Duration>(.zero)
+    public let now = Locked<Duration>(.zero)
     public init() {}
     public var source: TimeSource {
         TimeSource(elapsed: { self.now.withLock { $0 } }, sleep: { d in self.now.withLock { $0 += d } })
@@ -264,7 +264,7 @@ public final class FakeContentAnalyzer: ContentAnalyzing, @unchecked Sendable {
     public let labels: @Sendable (AssetSnapshot) -> [LabelScore]
     public let text: @Sendable (AssetSnapshot) -> String
     public let cloudOnly: Set<AssetID>
-    public let counts = Mutex<(content: Int, text: Int)>((0, 0))
+    public let counts = Locked<(content: Int, text: Int)>((0, 0))
 
     public init(
         cloudOnly: Set<AssetID> = [],
@@ -291,7 +291,7 @@ public final class FakeContentAnalyzer: ContentAnalyzing, @unchecked Sendable {
 
 /// Device conditions for tests: optionally pauses after a number of checks.
 public final class FakeConditions: AnalysisConditions, @unchecked Sendable {
-    public let state = Mutex<(checks: Int, pauseAfter: Int?, wifi: Bool)>((0, nil, true))
+    public let state = Locked<(checks: Int, pauseAfter: Int?, wifi: Bool)>((0, nil, true))
 
     public init(pauseAfterChecks: Int? = nil, wifi: Bool = true) {
         state.withLock { $0 = (0, pauseAfterChecks, wifi) }
@@ -311,8 +311,8 @@ public final class FakeConditions: AnalysisConditions, @unchecked Sendable {
 
     /// Scripted answers for runs in the app, one per check; the last one stays. Empty: the
     /// thermal pause above ends the run, as before.
-    public let paces = Mutex<[AnalysisPace]>([])
-    public let paceChecks = Mutex(0)
+    public let paces = Locked<[AnalysisPace]>([])
+    public let paceChecks = Locked(0)
 
     public func pace() async -> AnalysisPace {
         paceChecks.withLock { $0 += 1 }

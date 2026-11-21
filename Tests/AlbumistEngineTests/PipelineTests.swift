@@ -141,7 +141,7 @@ struct PipelineTests {
             store: s.store, reader: ReaderInParts(assets: assets), analyzer: s.analyzer, geocoder: s.geocoder, map: Self.map,
             conditions: s.conditions, settings: OrganizationSettings(), calendar: Fixture.calendar, time: ManualTime().source
         )
-        let seen = Mutex<[Int]>([])
+        let seen = Locked<[Int]>([])
         _ = try await pipeline.run(onProgress: { p in
             if p.stage == .inventory { seen.withLock { $0.append(p.completed) } }
         })
@@ -166,7 +166,7 @@ struct PipelineTests {
             store: s.store, reader: reader, analyzer: s.analyzer, geocoder: s.geocoder, map: Self.map,
             conditions: s.conditions, settings: OrganizationSettings(), calendar: Fixture.calendar, time: ManualTime().source
         )
-        let reads = Mutex<[Int]>([])
+        let reads = Locked<[Int]>([])
         let report = try await pipeline.run(control: control, onProgress: { p in
             if p.stage == .inventory { reads.withLock { $0.append(p.completed) } }
         })
@@ -246,7 +246,7 @@ struct PipelineTests {
 
     @Test func overallProgressNeverGoesBack() async throws {
         let s = try setup()
-        let seen = Mutex<[Double]>([])
+        let seen = Locked<[Double]>([])
         let report = try await s.pipeline.run { progress in
             let value = AnalysisPipeline.Progress.overall(stage: progress.stage, completed: progress.completed, total: progress.total)
             seen.withLock { $0.append(value) }

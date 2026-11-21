@@ -154,7 +154,7 @@ struct HomeReviewStoreTests {
 /// Runs `hook` once, at the first photo it looks at after `armed`.
 final class HookedAnalyzer: ContentAnalyzing, @unchecked Sendable {
     let base = FakeContentAnalyzer()
-    let state = Mutex<(armed: Bool, hook: (@Sendable () async -> Void)?)>((false, nil))
+    let state = Locked<(armed: Bool, hook: (@Sendable () async -> Void)?)>((false, nil))
     func analyzeContent(_ asset: AssetSnapshot, request: ContentAnalysisRequest) async throws -> ContentAnalysis {
         let hook: (@Sendable () async -> Void)? = state.withLock { s in
             guard s.armed else { return nil }

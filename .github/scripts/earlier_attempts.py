@@ -31,6 +31,8 @@ import sys
 MACHINERY_STEPS = {
     "Set up job", "Initialize containers", "Stop containers", "Complete job",
     "Install SQLite headers", "Install XcodeGen",
+    # sanitize.yml: the host setting TSan needs and the container its tests run in.
+    "Address space for TSan", "Start the swift container",
     "Boot simulator (in the background)", "Wait for the simulator",
     # ci.yml: erases and boots the simulator before the app tests; a failure there is the
     # simulator's, no test ran yet.

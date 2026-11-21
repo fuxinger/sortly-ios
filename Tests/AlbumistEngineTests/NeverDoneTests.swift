@@ -102,9 +102,9 @@ struct NeverDoneTests {
     /// Reads chosen photos only after a number of failed tries (a photo kept only in iCloud,
     /// whose preview comes later).
     final class LateAnalyzer: ContentAnalyzing, @unchecked Sendable {
-        let failuresLeft: Mutex<[AssetID: Int]>
-        let calls = Mutex<[AssetID: Int]>([:])
-        init(failures: [AssetID: Int]) { failuresLeft = Mutex(failures) }
+        let failuresLeft: Locked<[AssetID: Int]>
+        let calls = Locked<[AssetID: Int]>([:])
+        init(failures: [AssetID: Int]) { failuresLeft = Locked(failures) }
         func analyzeContent(_ asset: AssetSnapshot, request: ContentAnalysisRequest) async throws -> ContentAnalysis {
             calls.withLock { $0[asset.id, default: 0] += 1 }
             let fail = failuresLeft.withLock { left -> Bool in
@@ -121,7 +121,7 @@ struct NeverDoneTests {
     }
 
     final class Clock: @unchecked Sendable {
-        let value = Mutex(Fixture.date("2026-07-01 12:00"))
+        let value = Locked(Fixture.date("2026-07-01 12:00"))
         var now: Date { value.withLock { $0 } }
         func advance(_ seconds: TimeInterval) { value.withLock { $0 += seconds } }
     }
@@ -204,7 +204,7 @@ struct NeverDoneTests {
         struct VisionFailed: Error {}
         let unreadable: Set<AssetID>
         let unreadableReads: Int
-        let calls = Mutex<[AssetID: Int]>([:])
+        let calls = Locked<[AssetID: Int]>([:])
         init(unreadable: Set<AssetID>, unreadableReads: Int) {
             self.unreadable = unreadable
             self.unreadableReads = unreadableReads
@@ -289,7 +289,7 @@ struct NeverDoneTests {
     final class SeaGeocoder: ReverseGeocoding, @unchecked Sendable {
         let inner = FakeGeocoder()
         let sea: GeoCoordinate
-        let calls = Mutex(0)
+        let calls = Locked(0)
         init(sea: GeoCoordinate) { self.sea = sea }
         func reverseGeocode(_ coordinate: GeoCoordinate) async throws -> PlaceComponents? {
             calls.withLock { $0 += 1 }

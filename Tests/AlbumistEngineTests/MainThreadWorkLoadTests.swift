@@ -76,8 +76,8 @@ enum MainThreadWork {
     /// millisecond and notes the longest gap.
     @MainActor
     static func mainActorStall<T: Sendable>(_ work: @escaping @Sendable () -> T) async -> (stall: Duration, took: Duration) {
-        let running = Mutex(true)
-        let longest = Mutex(Duration.zero)
+        let running = Locked(true)
+        let longest = Locked(Duration.zero)
         let ticker = Task { @MainActor in
             var last = ContinuousClock.now
             while running.withLock({ $0 }) {

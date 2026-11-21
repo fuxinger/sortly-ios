@@ -20,10 +20,10 @@ struct AnalysisReliabilityTests {
     /// runs on the same pipeline would interleave if nothing kept them apart.
     final class ScriptedAnalyzer: ContentAnalyzing, @unchecked Sendable {
         enum Answer { case labels, unreadable, analyzerError }
-        let contentAnswer = Mutex<@Sendable (AssetSnapshot) -> Answer>({ _ in .labels })
-        let textAnswer = Mutex<@Sendable (AssetSnapshot) -> Answer>({ _ in .labels })
-        let contentCalls = Mutex<[AssetID]>([])
-        let textCalls = Mutex<[AssetID]>([])
+        let contentAnswer = Locked<@Sendable (AssetSnapshot) -> Answer>({ _ in .labels })
+        let textAnswer = Locked<@Sendable (AssetSnapshot) -> Answer>({ _ in .labels })
+        let contentCalls = Locked<[AssetID]>([])
+        let textCalls = Locked<[AssetID]>([])
 
         func analyzeContent(_ asset: AssetSnapshot, request: ContentAnalysisRequest) async throws -> ContentAnalysis {
             contentCalls.withLock { $0.append(asset.id) }
@@ -47,7 +47,7 @@ struct AnalysisReliabilityTests {
     }
 
     final class Clock: @unchecked Sendable {
-        let value = Mutex(Fixture.date("2026-07-01 12:00"))
+        let value = Locked(Fixture.date("2026-07-01 12:00"))
         func advance(_ seconds: TimeInterval) { value.withLock { $0 += seconds } }
     }
 
@@ -247,7 +247,7 @@ struct AnalysisReliabilityTests {
     // MARK: A throttled geocoder does not hold the run
 
     final class RefusingGeocoder: ReverseGeocoding, @unchecked Sendable {
-        let calls = Mutex(0)
+        let calls = Locked(0)
         let retryAfter: Double?
         init(retryAfter: Double? = nil) { self.retryAfter = retryAfter }
         func reverseGeocode(_ coordinate: GeoCoordinate) async throws -> PlaceComponents? {
@@ -284,7 +284,7 @@ struct AnalysisReliabilityTests {
             map: Self.map, geocoder: geocoder, cache: MemoryPlaceCache(),
             policy: PlaceResolutionPolicy(deepestLevel: .locality, onlineAllowed: true, language: .german), time: time.source
         )
-        let checks = Mutex(0)
+        let checks = Locked(0)
         // The user taps Pause a few seconds into a ten-minute wait.
         let outcome = try await service.resolve(requests(Self.fivePlaces), shouldStop: {
             checks.withLock { $0 += 1; return $0 > 3 }

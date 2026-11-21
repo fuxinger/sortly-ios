@@ -451,7 +451,10 @@ class SelectionTests(unittest.TestCase):
         fakes = {"run_pass": fake_pass, "crash_reports": lambda since: [], "other_crash_reports": lambda since: [],
                  "sh": lambda *a, **k: (0, "/Users/runner"), "read_bundle": lambda path: [],
                  "reset": lambda *a: reset_ok, "swiftui_warnings": lambda path: 0, "boot_retries": lambda out: [],
-                 "write_flaky": lambda args, record: None}
+                 "write_flaky": lambda args, record: None,
+                 # The hang and checker gates have their own tests (test_quality_gates.py); the
+                 # faked passes run no app, so a checker in fail mode would find no launch.
+                 "quality_gates": lambda *a: False}
         saved = {k: getattr(ui_tests, k) for k in fakes}
         for k, v in fakes.items():
             setattr(ui_tests, k, v)

@@ -35,9 +35,25 @@ enum UITestAppEnd {
     static func launch(_ app: XCUIApplication, justBefore: () -> Void = {}) {
         end(app)
         app.launchArguments += UITestStalls.arguments(besides: app.launchArguments)
+        mainThreadChecker(app)
         UITestLaunchRecord.shared.launching(app.launchArguments)
         justBefore()
         app.launch()
+    }
+
+    /// Xcode's Main Thread Checker in the app (owner's decision 16.11.2026): `ui_tests.py` finds
+    /// the simulator's copy of the library on the Mac and hands its path over as
+    /// TEST_RUNNER_ALBUMIST_MTC_DYLIB (with ALBUMIST_MTC_PROBE=1 for the app's deliberate report,
+    /// `MainThreadCheckerProbe`). Its reports go to the app's console file, which `ui_tests.py`
+    /// reads after the pass. Without the variable (a run in Xcode, which inserts the checker
+    /// itself) nothing changes.
+    static func mainThreadChecker(_ app: XCUIApplication) {
+        let environment = ProcessInfo.processInfo.environment
+        guard let dylib = environment["ALBUMIST_MTC_DYLIB"], !dylib.isEmpty else { return }
+        app.launchEnvironment["DYLD_INSERT_LIBRARIES"] = dylib
+        // Report and go on (no stop at a report): the test keeps running and every report counts.
+        app.launchEnvironment["MTC_CRASH_ON_REPORT"] = "0"
+        if environment["ALBUMIST_MTC_PROBE"] == "1" { app.launchEnvironment["ALBUMIST_MTC_PROBE"] = "1" }
     }
 
     /// `when`: what the log lines say ("before the next launch", "during the plan").

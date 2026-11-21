@@ -77,7 +77,7 @@ struct ImageStepStartTests {
     /// deadline only for that case; a busy test machine still counts 30 photos in well under it).
     @Test func photosAreCountedWhileTheEarlySuggestionsAreMade() async throws {
         let s = try setup()
-        let seen = Mutex(Seen())
+        let seen = Locked(Seen())
         await s.pipeline.setOffActorProbe {
             let first = seen.withLock { state -> Bool in
                 guard state.inContent, !state.held else { return false }
@@ -124,7 +124,7 @@ struct ImageStepStartTests {
     @Test func pauseBeforeTheFirstPhotoOffersEarlySuggestionsThatAreDone() async throws {
         let s = try setup(grace: .seconds(60))
         let control = AnalysisRunControl()
-        let seen = Mutex<[AnalysisPipeline.Progress]>([])
+        let seen = Locked<[AnalysisPipeline.Progress]>([])
         let report = try await s.pipeline.run(control: control) { progress in
             seen.withLock { $0.append(progress) }
             if progress.stage == .content { control.pause() }
@@ -139,7 +139,7 @@ struct ImageStepStartTests {
         #expect(content.filter(\.earlyProposals).count == 1)
         #expect(content.allSatisfy { $0.completed == 0 })
         // The run that goes on makes the full set and says no early ones again.
-        let rest = Mutex(false)
+        let rest = Locked(false)
         let second = try await s.pipeline.run { progress in if progress.earlyProposals { rest.withLock { $0 = true } } }
         #expect(second.isComplete)
         #expect(!second.earlyProposals && !rest.withLock { $0 })
@@ -157,8 +157,8 @@ struct ImageStepStartTests {
     /// load test: in the parallel suite the machine's load decides the time.)
     @Test func pauseDoesNotWaitForSlowEarlySuggestions() async throws {
         let s = try setup()
-        let release = Mutex(false)
-        let letGo = Mutex(false)
+        let release = Locked(false)
+        let letGo = Locked(false)
         await s.pipeline.setOffActorProbe {
             guard !letGo.withLock({ $0 }) else { return }
             let deadline = Date().addingTimeInterval(60)
@@ -166,7 +166,7 @@ struct ImageStepStartTests {
             if !release.withLock({ $0 }) { letGo.withLock { $0 = true } }
         }
         let control = AnalysisRunControl()
-        let saidEarly = Mutex(false)
+        let saidEarly = Locked(false)
         let report = try await s.pipeline.run(control: control) { progress in
             if progress.earlyProposals { saidEarly.withLock { $0 = true } }
             if progress.stage == .content { control.pause() }
@@ -181,7 +181,7 @@ struct ImageStepStartTests {
         #expect(!saidEarly.withLock { $0 })
         // Fortsetzen: the next run offers them beside its photos, then the full set.
         await s.pipeline.setOffActorProbe(nil)
-        let said = Mutex(0)
+        let said = Locked(0)
         let second = try await s.pipeline.run { progress in if progress.earlyProposals { said.withLock { $0 += 1 } } }
         #expect(second.isComplete)
         #expect(second.earlyProposals && said.withLock { $0 } == 1)
@@ -195,7 +195,7 @@ struct ImageStepStartTests {
         let s = try setup()
         // First run: the early suggestions are held until the run paused (they are dropped),
         // after 100 photos with every dog among them (newest first).
-        let release = Mutex(false)
+        let release = Locked(false)
         await s.pipeline.setOffActorProbe {
             let deadline = Date().addingTimeInterval(30)
             while !release.withLock({ $0 }), Date() < deadline { try? await Task.sleep(for: .milliseconds(1)) }
@@ -237,7 +237,7 @@ struct ImageStepStartTests {
         struct Broken: Error {}
         let s = try setup()
         await s.pipeline.setEarlyProbe { throw Broken() }
-        let saidEarly = Mutex(false)
+        let saidEarly = Locked(false)
         let report = try await s.pipeline.run { progress in if progress.earlyProposals { saidEarly.withLock { $0 = true } } }
         #expect(report.isComplete)
         #expect(!report.earlyProposals)
@@ -254,7 +254,7 @@ struct ImageStepStartTests {
     @Test func factsAreAssembledOffTheActor() async throws {
         let s = try setup()
         _ = try await s.pipeline.run()
-        let probed = Mutex(0)
+        let probed = Locked(0)
         await s.pipeline.setOffActorProbe { probed.withLock { $0 += 1 } }
         let facts = try await s.pipeline.currentFacts()
         #expect(facts.count == s.photos)

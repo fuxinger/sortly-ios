@@ -71,7 +71,7 @@ public struct RequestThrottle: Sendable, Hashable {
 /// within a minute of the run before knows the requests that run made, so a run in the app
 /// never asks more often than the throttle allows without waiting (device test 18.11., build 36).
 public final class RequestLog: Sendable {
-    private let times = Mutex<[Duration]>([])
+    private let times = Locked<[Duration]>([])
     public init() {}
 
     /// Takes a slot at `now` when one is free (fewer than `maxRequests` in the window).

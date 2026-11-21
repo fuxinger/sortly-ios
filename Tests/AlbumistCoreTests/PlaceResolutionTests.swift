@@ -81,7 +81,7 @@ struct PlaceResolutionTests {
     @Test func pauseStopsTheMapPassAtTheNextPart() async throws {
         actor Saved { var ids = Set<AssetID>(); func add(_ b: [AssetID: ResolvedPlace]) { ids.formUnion(b.keys) } }
         let saved = Saved()
-        let flag = Mutex(false)
+        let flag = Locked(false)
         let n = 3 * PlaceResolutionService.offlineChunk
         let all = requests(Fixture.Places.rome, count: n, prefix: "r")
         let outcome = try await service(level: .country, geocoder: FakeGeocoder())
@@ -117,7 +117,7 @@ struct PlaceResolutionTests {
         let all = requests(Fixture.Places.rome, count: n, prefix: "r")
         // First run: paused after the second part.
         let first = Log()
-        let parts = Mutex(0)
+        let parts = Locked(0)
         _ = try await service(level: .locality, geocoder: FakeGeocoder(failures: [.offline]))
             .resolve(all, checked: { await first.add($0); parts.withLock { $0 += 1 } }, paused: { parts.withLock { $0 >= 2 } }) { _ in }
         let lastShown = try #require(await first.counts.last)
@@ -217,7 +217,7 @@ struct PlaceResolutionTests {
     /// while a slot is free, without sleeping, and leaves the rest pending for a later run.
     @Test func aCallThatMayNotWaitAsksOnlyWhileASlotIsFree() async throws {
         let time = ManualTime()
-        let sleeps = Mutex(0)
+        let sleeps = Locked(0)
         let counting = TimeSource(elapsed: time.source.elapsed, sleep: { d in sleeps.withLock { $0 += 1 }; try await time.source.sleep(d) })
         let geocoder = FakeGeocoder()
         let places = [Fixture.Places.munichHome, Fixture.Places.rome, Fixture.Places.florence, Fixture.Places.naples, Fixture.Places.gardaLake]
@@ -285,7 +285,7 @@ struct PlaceResolutionTests {
     /// a slot would be free again for a later cell (a slow run: the minute moves on while it
     /// goes through the cells). The rest comes with a later run, in priority order.
     @Test func aCallThatMayNotWaitStopsAtTheFirstFullThrottle() async throws {
-        let clock = Mutex<Duration>(.zero)
+        let clock = Locked<Duration>(.zero)
         // Every look at the clock is 25 s later: the third request finds both slots taken,
         // the fourth would find one free again.
         let slow = TimeSource(elapsed: { clock.withLock { $0 += .seconds(25); return $0 } },
@@ -304,11 +304,11 @@ struct PlaceResolutionTests {
     /// log: when another caller took the slot that came free meanwhile, it waits again, and the
     /// minute never holds more requests than the throttle allows (second review, SF5).
     @Test func aSlotTakenDuringTheWaitIsWaitedForAgain() async throws {
-        let now = Mutex<Duration>(.zero)
+        let now = Locked<Duration>(.zero)
         let log = RequestLog()
         let throttle = RequestThrottle(maxRequests: 1, window: .seconds(60))
         #expect(log.take(at: .zero, throttle) == nil)
-        let tookFreedSlot = Mutex(false)
+        let tookFreedSlot = Locked(false)
         let time = TimeSource(elapsed: { now.withLock { $0 } }, sleep: { d in
             let t = now.withLock { $0 += d; return $0 }
             // Just as the slot comes free, someone else takes it.

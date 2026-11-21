@@ -1,5 +1,6 @@
 import Foundation
 import Synchronization
+import AlbumistCore
 
 /// The App target's sources, for tests that check how the App uses a rule tested here: the App
 /// does not build on Linux, so these tests read its code (`AnalysisStartCauseTests`,
@@ -147,7 +148,7 @@ public enum AppSource {
         var keepStrings: Bool
     }
 
-    private static let cache = Mutex<[CacheKey: String]>([:])
+    private static let cache = Locked<[CacheKey: String]>([:])
 
     private static func blanked(_ source: String, keepStrings: Bool) -> String {
         let scalars = Array(source.unicodeScalars)

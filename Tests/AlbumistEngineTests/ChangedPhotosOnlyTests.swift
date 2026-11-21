@@ -27,7 +27,7 @@ struct ChangedPhotosOnlyTests {
 
     /// A clock tests move on.
     final class Clock: Sendable {
-        let now = Mutex(ChangedPhotosOnlyTests.clock)
+        let now = Locked(ChangedPhotosOnlyTests.clock)
     }
 
     /// Munich everyday life, a Rome trip, a few screenshots, and one album of the trip.

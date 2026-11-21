@@ -284,8 +284,8 @@ enum UITestOnboarding {
         return created
     }
 
-    /// `condition` held on three checks in a row, `interval` seconds apart.
-    private static func waitStable(timeout: TimeInterval, interval: UInt32 = 2, _ condition: () -> Bool) -> Bool {
+    /// `condition` held on three checks in a row, `interval` seconds apart (also PerformanceUITests).
+    static func waitStable(timeout: TimeInterval, interval: UInt32 = 2, _ condition: () -> Bool) -> Bool {
         let deadline = Date().addingTimeInterval(timeout)
         var streak = 0
         while Date() < deadline {

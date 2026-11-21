@@ -141,7 +141,7 @@ struct OverlappingRefreshTests {
         let library = try await DerivedRefreshTests().analysed()
         let pipeline = library.launch()
         let overview = Overview()
-        let held = Mutex(false), release = Mutex(false)
+        let held = Locked(false), release = Locked(false)
         let holdFirst: DerivedLibrary.Probe = { piece, ended in
             guard piece == .status, !ended else { return }
             held.withLock { $0 = true }

@@ -1,0 +1,142 @@
+name: Thread Sanitizer
+
+# Data races found by Thread Sanitizer (owner's decision 16.11.2026: "nightly and before an
+# upload"). TSan slows the tests several times over and its build is separate, so it never runs
+# on a push or a pull request; CI, the UI flow and the uploaded build stay as they are.
+#
+#   linux: the core package (AlbumistCore, AlbumistEngine, AlbumistStore: the analysis pipeline,
+#          its actors, the database) with `swift test --sanitize=thread` on Linux. No Mac time,
+#          about 25 min. Called by testflight.yml before every upload and by nightly.yml.
+#   mac:   the app's unit tests (scheme Albumist, hosted in the app) with xcodebuild
+#          -enableThreadSanitizer YES on the pinned Xcode and simulator. Mac time, so only in
+#          the nightly run (input mac: true) or by hand.
+#
+# Red: any "ThreadSanitizer:" line (a data race, a Swift access race, a lock-order inversion;
+# nothing is suppressed, every report with both stacks in the job summary,
+# .github/scripts/sanitizer_report.py) and a test process that crashed. A test that fails only
+# because TSan made it slow (the wall-clock limits, e.g. DecisionLifecycleTests
+# placeHeavyLibraryMatchesQuickly: 13.9 s instead of under 5 s) is listed as a warning, not red:
+# the same tests run unslowed in CI, where their limits hold.
+on:
+  workflow_dispatch:
+    inputs:
+      mac:
+        description: Also the app's unit tests on a Mac (about 30 min of Mac time)
+        type: boolean
+        default: false
+  workflow_call:
+    inputs:
+      mac:
+        description: Also the app's unit tests on a Mac
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+env:
+  HOMEBREW_NO_AUTO_UPDATE: 1
+  HOMEBREW_NO_INSTALL_CLEANUP: 1
+  # history_size=7: the earlier access of a race keeps its stack also in long tests.
+  TSAN_OPTIONS: history_size=7
+
+jobs:
+  linux:
+    name: Thread Sanitizer, core (Linux)
+    runs-on: ubuntu-24.04
+    # Measured on a 4-core container (21.11.): build about 6 min, tests about 20-24 min.
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Address space for TSan
+        # TSan's shadow memory needs the kernel's mmap randomization at 28 bits; the Ubuntu 24.04
+        # runners use 32, and TSan then stops at once ("FATAL: ThreadSanitizer: unexpected memory
+        # mapping"). A host setting, so this job runs the swift container itself (below) instead
+        # of `container:`, whose steps could not change it. Not a test result: machinery.
+        run: sudo sysctl -w vm.mmap_rnd_bits=28
+      - name: Start the swift container
+        # The same image as the other Linux jobs (swift:6.2-noble), kept running for the steps below.
+        run: docker run -d --name swift -e TSAN_OPTIONS -v "$PWD:/work" -w /work swift:6.2-noble sleep infinity
+      - name: Install SQLite headers
+        run: docker exec swift bash .github/scripts/apt_install.sh libsqlite3-dev python3
+      - name: Core tests with Thread Sanitizer
+        id: tests
+        continue-on-error: true
+        timeout-minutes: 50
+        run: |
+          docker exec swift python3 .github/scripts/swift_test_watch.py --minutes 45 --log tsan-core.log -- \
+            swift test --sanitize=thread --parallel
+      - name: Thread Sanitizer reports
+        # Not when the tests never started (a cancelled job, a failed step before): no log, and
+        # no finding to report; that failure shows in its own step.
+        if: ${{ !cancelled() && steps.tests.outcome != 'skipped' }}
+        env:
+          TESTS: ${{ steps.tests.outcome }}
+        run: python3 .github/scripts/sanitizer_report.py --tests "$TESTS" tsan-core.log >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload log
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: tsan-core-log
+          path: tsan-core.log
+          retention-days: 14
+          if-no-files-found: ignore
+
+  mac:
+    name: Thread Sanitizer, app unit tests (macOS)
+    if: ${{ inputs.mac }}
+    runs-on: xcode-27
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Select pinned Xcode
+        run: python3 .github/scripts/toolchain.py xcode --runtime
+      - name: Install XcodeGen
+        run: python3 .github/scripts/toolchain.py xcodegen
+      - name: Generate Xcode project
+        run: cd App && xcodegen generate
+      - name: App unit tests with Thread Sanitizer
+        id: tests
+        continue-on-error: true
+        timeout-minutes: 50
+        run: |
+          set +e
+          mkdir -p build
+          UDID=$(xcrun simctl list devices available -j | python3 .github/scripts/pick_simulator.py --role default)
+          [ -n "$UDID" ] || { echo "::error::pinned simulator not found"; exit 1; }
+          cd App
+          TEST_RUNNER_TSAN_OPTIONS="$TSAN_OPTIONS" xcodebuild test \
+            -project Albumist.xcodeproj \
+            -scheme Albumist \
+            -destination "id=$UDID" \
+            -enableThreadSanitizer YES \
+            -derivedDataPath ../build/tsan-dd \
+            -resultBundlePath ../build/tsan-app.xcresult \
+            COMPILER_INDEX_STORE_ENABLE=NO \
+            CODE_SIGNING_ALLOWED=NO > ../build/tsan-app.log 2>&1
+          status=$?
+          grep -aE "error:|Executed|\*\* |ThreadSanitizer:" ../build/tsan-app.log | grep -v "/SourcePackages/" | head -200
+          exit $status
+      - name: Thread Sanitizer reports
+        if: ${{ !cancelled() && steps.tests.outcome != 'skipped' }}
+        env:
+          TESTS: ${{ steps.tests.outcome }}
+        run: |
+          # The test host's console as the result bundle kept it, in case xcodebuild's own output
+          # left a line out (a report found in both is shown once, with both counted).
+          xcrun xcresulttool get log --path build/tsan-app.xcresult --type console > build/tsan-app-console.log 2>/dev/null || true
+          python3 .github/scripts/sanitizer_report.py --tests "$TESTS" build/tsan-app.log build/tsan-app-console.log >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: tsan-app-logs
+          path: |
+            build/tsan-app.log
+            build/tsan-app-console.log
+          retention-days: 14
+          if-no-files-found: ignore

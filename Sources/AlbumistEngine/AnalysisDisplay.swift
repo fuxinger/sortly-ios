@@ -1217,7 +1217,7 @@ public final class ProgressMailbox: Sendable {
         public var waiting: PauseReason?
     }
 
-    private let state = Mutex(Taken(progress: nil, workload: nil, recent: []))
+    private let state = Locked(Taken(progress: nil, workload: nil, recent: []))
 
     public init() {}
 

@@ -288,7 +288,7 @@ struct DeleteQuestionNoteTests {
     /// by the clock (the parallel suite starved a timer for 28 s): the list, had it been waited
     /// for, says the user's own photo keeps "Rom", so nothing would be announced.
     @Test func aSlowAlbumListIsNotWaitedFor() async {
-        let cancelled = Mutex(false)
+        let cancelled = Locked(false)
         let slow = DeleteQuestion(listAlbums: {
             do {
                 try await Task.sleep(for: .seconds(300))

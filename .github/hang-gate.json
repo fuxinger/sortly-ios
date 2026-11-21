@@ -1,0 +1,21 @@
+{
+  "_comment": [
+    "Hang watch and Main Thread Checker of the UI runs (owner's decision 16.11.2026, read by .github/scripts/ui_tests.py: hang_report, main_thread_checker_report).",
+    "hangs: every main-thread hang of limit_ms or more is a UI_MAIN_HANG line of the app (MainThreadWatch, kinds in Sources/AlbumistCore/Diagnostics/HangKind.swift). Only kind 'app' (Albumist's own code on the stack) counts; 'test' (XCTest reading the screen), 'start', 'inactive' and 'system' are reported only.",
+    "main_thread_checker: Xcode's checker is inserted into every app launch of the UI tests; each report ('Main Thread Checker: UI API called on a background thread') with Albumist's frames counts. probe: the app makes one deliberate report per launch (MainThreadCheckerProbe), so a run proves the checker works; a pass without it is a warning.",
+    "mode 'report': numbers, stacks and a job-summary table, never red. mode 'fail': a counted finding not in 'known' makes the group red.",
+    "known: findings accepted for now, each with the place ('stack' for hangs: a part of the UI_MAIN_HANG frames; 'api' or 'stack' for the checker) and why, with the finding's number. The list only gets shorter: a fix removes its entry.",
+    "Started in 'report' (measure first): switch to 'fail' once a full UI run has shown the baseline and its findings are fixed or listed here.",
+    "Baseline 21.11.2026 (full UI run 44870948643 on 8249555, accessibility and flow-full again in 44875998902): the Main Thread Checker was in every launch (UI_MTC_STATE: flow-other 26, flow-full 12, accessibility 4 launches) and found nothing but its probe, so it fails from now on. Hangs of Albumist's own code: flow-other 21, accessibility 14, flow-full 5; most are SwiftUI building a view the first time in the debug build (_makeViewList/_makeView, type metadata), the rest named places (Apple Intelligence availability in body: fixed, see SmartAssistant.swift; first localized strings and date formats). Hangs stay in 'report' until those are fixed or listed."
+  ],
+  "hangs": {
+    "mode": "report",
+    "limit_ms": 250,
+    "known": []
+  },
+  "main_thread_checker": {
+    "mode": "fail",
+    "probe": true,
+    "known": []
+  }
+}

@@ -19,18 +19,18 @@ struct LabelsLaterTests {
 
     /// Labels from the id: every third photo a receipt, the others a dog. Records each request.
     final class Analyzer: ContentAnalyzing, @unchecked Sendable {
-        let requests = Mutex<[(AssetID, ContentAnalysisRequest)]>([])
-        let textCalls = Mutex<[AssetID]>([])
-        let unreadable = Mutex<Set<AssetID>>([])
+        let requests = Locked<[(AssetID, ContentAnalysisRequest)]>([])
+        let textCalls = Locked<[AssetID]>([])
+        let unreadable = Locked<Set<AssetID>>([])
         /// Photos the analyzer itself fails on (not `AnalysisError`): counted against a photo only
         /// once a photo after it works.
-        let failing = Mutex<Set<AssetID>>([])
+        let failing = Locked<Set<AssetID>>([])
         /// Photos Photos does not hand over in time (`PhotosNotResponding`).
-        let quiet = Mutex<Set<AssetID>>([])
+        let quiet = Locked<Set<AssetID>>([])
         /// Photos whose text Photos does not hand over in time.
-        let textQuiet = Mutex<Set<AssetID>>([])
+        let textQuiet = Locked<Set<AssetID>>([])
         /// How often the image step said it ended (`contentEnded`).
-        let contentEnds = Mutex(0)
+        let contentEnds = Locked(0)
         struct VisionFailed: Error {}
         let delay: Duration
         init(delay: Duration = .zero) { self.delay = delay }
@@ -103,8 +103,8 @@ struct LabelsLaterTests {
 
     /// The content step's reports of one run, in order.
     final class Recorder: @unchecked Sendable {
-        let content = Mutex<[(completed: Int, total: Int)]>([])
-        let overall = Mutex<[Double]>([])
+        let content = Locked<[(completed: Int, total: Int)]>([])
+        let overall = Locked<[Double]>([])
         var onProgress: @Sendable (AnalysisPipeline.Progress) -> Void {
             { p in
                 if p.stage == .content { self.content.withLock { $0.append((p.completed, p.total)) } }
@@ -677,7 +677,7 @@ struct LabelsLaterTests {
             return resolver.progress(states.values).total
         }
         let control = AnalysisRunControl()
-        let reached = Mutex(0)
+        let reached = Locked(0)
         _ = try await s.pipeline.run(control: control, onProgress: { p in
             if p.stage == .content, p.completed >= 14 { reached.withLock { $0 = p.completed }; control.pause() }
         })
@@ -835,8 +835,8 @@ struct LabelsLaterFollowUpTests {
 
     /// The workloads and the image step's counts of one run.
     final class Reports: Sendable {
-        let workloads = Mutex<[AnalysisWorkload]>([])
-        let content = Mutex<[(completed: Int, total: Int)]>([])
+        let workloads = Locked<[AnalysisWorkload]>([])
+        let content = Locked<[(completed: Int, total: Int)]>([])
         var onProgress: @Sendable (AnalysisPipeline.Progress) -> Void {
             { p in
                 if let w = p.workload { self.workloads.withLock { $0.append(w) } }
@@ -911,7 +911,7 @@ struct LabelsLaterFollowUpTests {
     @Test func turnedOnDuringARunTheRunAfterItGivesTheLabels() async throws {
         let s = try T.setup(photos: 12, screenshots: 0, labels: false)
         let on = T.settings(labels: true)
-        final class Change: Sendable { let task = Mutex<Task<OrganizationSettings, Never>?>(nil) }
+        final class Change: Sendable { let task = Locked<Task<OrganizationSettings, Never>?>(nil) }
         let change = Change()
         let pipeline = s.pipeline
         let report = try await pipeline.run(onProgress: { p in

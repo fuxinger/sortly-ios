@@ -208,7 +208,7 @@ struct AnalysisRecentThumbnailTests {
             store: try AlbumistStore(url: nil), reader: InMemoryLibraryReader(assets: assets), analyzer: analyzer,
             geocoder: FakeGeocoder(), map: EmptyLibraryPipelineTests.map, conditions: FakeConditions(), settings: settings,
             calendar: Fixture.calendar, time: ManualTime().source)
-        let seen = Mutex<[AssetID]>([])
+        let seen = Locked<[AssetID]>([])
         _ = try await pipeline.run(onProgress: { progress in seen.withLock { $0 += progress.recent } })
         let recent = seen.withLock { $0 }
         #expect(!recent.isEmpty)

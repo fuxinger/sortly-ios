@@ -218,7 +218,7 @@ struct FullRunDisplayTests {
     /// comes back (invariant 9), then a right one again.
     @Test func backgroundGapResettles() async throws {
         let sim = try Sim()
-        let suspended = Mutex(false)
+        let suspended = Locked(false)
         sim.onProgress = { [weak sim] progress, _ in
             guard progress.stage == .content, progress.total > 0,
                   Double(progress.completed) >= 0.3 * Double(progress.total),
@@ -299,7 +299,7 @@ struct FullRunDisplayTests {
     /// after the one that starts the step and repeats the newest count: never back, no jump.
     @Test func earlySuggestionsAreSaidOnceSaved() async throws {
         let sim = try Sim(scale: 0.2)
-        let saidAt = Mutex<[Int]>([])
+        let saidAt = Locked<[Int]>([])
         let paused = await sim.run("early", pause: .when(stage: .content, atLeast: 0.2))
         let events = paused.events.withLock { $0 }.compactMap { e -> PipelineProgress? in
             if case .progress(let p) = e.kind { return p } else { return nil }
@@ -363,7 +363,7 @@ struct FullRunDisplayTests {
         let service = PlaceResolutionService(map: Self.map, geocoder: geocoder, cache: MemoryPlaceCache(),
                                              policy: PlaceResolutionPolicy(deepestLevel: .locality, onlineAllowed: true, language: .german),
                                              time: clock.source)
-        let seen = Mutex<[(Duration, Duration?)]>([])
+        let seen = Locked<[(Duration, Duration?)]>([])
         _ = try await service.resolve(requests,
                                       progress: { _ in seen.withLock { $0.append((clock.now, nil)) } },
                                       waiting: { left in seen.withLock { $0.append((clock.now, left)) } }) { _ in }
@@ -483,8 +483,8 @@ enum SimCost {
 
 /// Simulated clock: sleeping and work advance it at once; hooks see every step.
 final class SimClock: @unchecked Sendable {
-    private let state = Mutex<Duration>(.zero)
-    private let hooks = Mutex<[@Sendable (Duration) -> Void]>([])
+    private let state = Locked<Duration>(.zero)
+    private let hooks = Locked<[@Sendable (Duration) -> Void]>([])
     static let base = Fixture.date("2026-11-15 08:00")
 
     var now: Duration { state.withLock { $0 } }
@@ -518,7 +518,7 @@ final class SimConditions: AnalysisConditions, @unchecked Sendable {
         var steps: [(after: Duration, pace: AnalysisPace)] = []
     }
     let clock: SimClock
-    let plan = Mutex(Plan())
+    let plan = Locked(Plan())
     init(clock: SimClock) { self.clock = clock }
     func pauseReason() async -> PauseReason? { nil }
     func pace() async -> AnalysisPace {
@@ -535,9 +535,9 @@ final class SimConditions: AnalysisConditions, @unchecked Sendable {
 final class SimGeocoder: ReverseGeocoding, @unchecked Sendable {
     let clock: SimClock
     let map: OfflineWorldMap
-    let calls = Mutex(0)
-    let refusals = Mutex<[Duration]>([])
-    private let refused = Mutex<Range<Int>>(0..<0)
+    let calls = Locked(0)
+    let refusals = Locked<[Duration]>([])
+    private let refused = Locked<Range<Int>>(0..<0)
     var onCall: (@Sendable (Stage) -> Void)?
 
     init(clock: SimClock, map: OfflineWorldMap) {
@@ -564,7 +564,7 @@ final class SimGeocoder: ReverseGeocoding, @unchecked Sendable {
 
 final class SimAnalyzer: ContentAnalyzing, @unchecked Sendable {
     let clock: SimClock
-    let contentCalls = Mutex(0)
+    let contentCalls = Locked(0)
     var onCall: (@Sendable (Stage) -> Void)?
     init(clock: SimClock) { self.clock = clock }
 
@@ -681,7 +681,7 @@ struct SimEvent: Sendable {
 
 final class RunLog: @unchecked Sendable {
     let label: String
-    let events = Mutex<[SimEvent]>([])
+    let events = Locked<[SimEvent]>([])
     var start: Duration = .zero
     var end: Duration = .zero
     var report: AnalysisPipeline.Report?
@@ -770,7 +770,7 @@ final class Sim: @unchecked Sendable {
     var finishTimes: [(run: String, t: Duration, shown: FinishEstimate, end: Duration, complete: Bool)] = []
     var violations: [String] = []
     var onProgress: (@Sendable (PipelineProgress, Duration) -> Void)?
-    private let current = Mutex<RunLog?>(nil)
+    private let current = Locked<RunLog?>(nil)
     var currentLog: RunLog? { current.withLock { $0 } }
     /// The Pause (or the end of the app) planned for the run in progress. Data, not closures:
     /// a closure kept in a Mutex and called on every tick slowed the simulation down many times.
@@ -780,7 +780,7 @@ final class Sim: @unchecked Sendable {
         var control: AnalysisRunControl
         var task: Task<AnalysisPipeline.Report, any Error>?
     }
-    private let armed = Mutex<Armed?>(nil)
+    private let armed = Locked<Armed?>(nil)
     private let wallStart = ContinuousClock.now
 
     init(scale: Double = FullRunDisplayTests.scale, empty: Bool = false) throws {

@@ -111,7 +111,7 @@ struct LoadTests {
             print("LOAD_PROFILE upsert1 \(t1) upsert2 \(t2) remove \(t3) inventory1 \(t4) inventory2 \(t5) allAssets \(t6)")
         }
         var report: AnalysisPipeline.Report?
-        let firstMarks = Mutex<[(String, ContinuousClock.Instant)]>([(String, ContinuousClock.Instant)]())
+        let firstMarks = Locked<[(String, ContinuousClock.Instant)]>([(String, ContinuousClock.Instant)]())
         let started = ContinuousClock.now
         let full = try await clock.measure {
             report = try await pipeline.run { progress in
@@ -124,7 +124,7 @@ struct LoadTests {
         let fm = firstMarks.withLock { $0 }
         print("LOAD_STAGES first run (end of stage): " + fm.map { "\($0.0)@\(($0.1 - started).components.seconds * 1000 + ($0.1 - started).components.attoseconds / 1_000_000_000_000_000)ms" }.joined(separator: " "))
         #expect(report?.isComplete == true)
-        let marks = Mutex<[(String, ContinuousClock.Instant)]>([])
+        let marks = Locked<[(String, ContinuousClock.Instant)]>([])
         let again = try await clock.measure {
             _ = try await pipeline.run { progress in
                 let now = ContinuousClock.now
@@ -246,8 +246,8 @@ struct LoadTests {
                                         geocoder: OfflineGeocoder(), map: try WorldMapResource.load(), conditions: FakeConditions(),
                                         settings: OrganizationSettings(), foregroundOnlineBudget: 60)
         let control = AnalysisRunControl()
-        let reports = Mutex<[(at: ContinuousClock.Instant, progress: AnalysisPipeline.Progress)]>([])
-        let refreshed = Mutex<ContinuousClock.Instant?>(nil)
+        let reports = Locked<[(at: ContinuousClock.Instant, progress: AnalysisPipeline.Progress)]>([])
+        let refreshed = Locked<ContinuousClock.Instant?>(nil)
         let report = try await pipeline.run(control: control) { progress in
             guard progress.stage == .content else { return }
             let count = reports.withLock { $0.append((.now, progress)); return $0.count }
@@ -297,8 +297,8 @@ struct LoadTests {
                                         geocoder: OfflineGeocoder(), map: try WorldMapResource.load(), conditions: FakeConditions(),
                                         settings: OrganizationSettings(), foregroundOnlineBudget: 60)
         let control = AnalysisRunControl()
-        let pausedAt = Mutex<(at: ContinuousClock.Instant, completed: Int)?>(nil)
-        let start = Mutex<Int?>(nil)
+        let pausedAt = Locked<(at: ContinuousClock.Instant, completed: Int)?>(nil)
+        let start = Locked<Int?>(nil)
         let report = try await pipeline.run(control: control) { progress in
             guard progress.stage == .content, pausedAt.withLock({ $0 }) == nil else { return }
             let first = start.withLock { s -> Int in

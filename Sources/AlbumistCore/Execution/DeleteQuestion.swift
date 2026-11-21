@@ -97,10 +97,10 @@ private final class Once<T: Sendable>: Sendable {
         var timer: Task<Void, Never>?
         var done = false
     }
-    private let state: Mutex<State>
+    private let state: Locked<State>
 
     init(_ continuation: CheckedContinuation<T?, Never>) {
-        state = Mutex(State(continuation: continuation))
+        state = Locked(State(continuation: continuation))
     }
 
     var timer: Task<Void, Never>? {

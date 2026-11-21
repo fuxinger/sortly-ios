@@ -118,7 +118,7 @@ struct ReviewFifthPassEvidenceTests {
         let reader = InMemoryLibraryReader(assets: library.assets)
         let pipeline = AnalysisCoverageTests.pipeline(store: store, reader: reader, analyzer: .init())
         let control = AnalysisRunControl()
-        let events = Mutex<[(ContinuousClock.Instant, String)]>([])
+        let events = Locked<[(ContinuousClock.Instant, String)]>([])
         _ = try await pipeline.run(control: control, onProgress: { p in
             events.withLock { $0.append((.now, "\(p.stage) \(p.completed)/\(p.total)")) }
             if p.stage == .content { control.pause() }

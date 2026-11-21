@@ -18,11 +18,11 @@ struct AnalysisCoverageTests {
     /// a hook per content call, and photos it cannot read.
     final class Analyzer: ContentAnalyzing, @unchecked Sendable {
         let delay: Duration
-        let contentCalls = Mutex<[AssetID]>([])
-        let textCalls = Mutex<[AssetID]>([])
-        let unreadable = Mutex<Set<AssetID>>([])
-        let blocked = Mutex(false)
-        let hook = Mutex<(@Sendable (Int) async -> Void)?>(nil)
+        let contentCalls = Locked<[AssetID]>([])
+        let textCalls = Locked<[AssetID]>([])
+        let unreadable = Locked<Set<AssetID>>([])
+        let blocked = Locked(false)
+        let hook = Locked<(@Sendable (Int) async -> Void)?>(nil)
 
         init(delay: Duration = .zero) { self.delay = delay }
 
@@ -45,7 +45,7 @@ struct AnalysisCoverageTests {
     }
 
     final class Clock: @unchecked Sendable {
-        let value = Mutex(Fixture.date("2026-07-01 12:00"))
+        let value = Locked(Fixture.date("2026-07-01 12:00"))
     }
 
     static func library(photos: Int, screenshots: Int = 0, videos: Int = 0) -> [AssetSnapshot] {
@@ -100,7 +100,7 @@ struct AnalysisCoverageTests {
         let store = try AlbumistStore(url: nil)
         let reader = InMemoryLibraryReader(assets: assets)
         let pipeline = Self.pipeline(store: store, reader: reader, analyzer: Analyzer())
-        let counts = Mutex<[Int]>([])
+        let counts = Locked<[Int]>([])
         _ = try await pipeline.run(onProgress: { p in
             if p.stage == .patterns { counts.withLock { $0.append(p.completed) } }
         })
@@ -116,7 +116,7 @@ struct AnalysisCoverageTests {
         let store = try AlbumistStore(url: nil)
         let reader = InMemoryLibraryReader(assets: assets)
         let pipeline = Self.pipeline(store: store, reader: reader, analyzer: Analyzer())
-        let workloads = Mutex<[AnalysisWorkload]>([])
+        let workloads = Locked<[AnalysisWorkload]>([])
         let record: @Sendable (AnalysisPipeline.Progress) -> Void = { p in
             if let w = p.workload { workloads.withLock { $0.append(w) } }
         }
@@ -167,7 +167,7 @@ struct AnalysisCoverageTests {
         // Access back: goes on from where it was and finishes; no photo is read twice.
         await reader.set(access: .full)
         analyzer.blocked.withLock { $0 = false }
-        let seen = Mutex<[AnalysisPipeline.Progress]>([])
+        let seen = Locked<[AnalysisPipeline.Progress]>([])
         let resumed = try await p.run(onProgress: { progress in seen.withLock { $0.append(progress) } })
         #expect(resumed.isComplete)
         #expect(resumed.contentAnalyzed == assets.count - done)
@@ -289,7 +289,7 @@ struct AnalysisCoverageTests {
         } }
         let firstStore = try AlbumistStore(url: url)
         let first = Self.pipeline(store: firstStore, reader: InMemoryLibraryReader(assets: assets), analyzer: killed, batchSize: batch)
-        let progress = Mutex<[AnalysisPipeline.Progress]>([])
+        let progress = Locked<[AnalysisPipeline.Progress]>([])
         let abandoned = Task { try await first.run(onProgress: { p in progress.withLock { $0.append(p) } }) }
         // Wait until it hangs in the 25th photo, and until the early suggestions it makes beside
         // the image step are saved: a process iOS has ended writes nothing more, but this one
@@ -312,7 +312,7 @@ struct AnalysisCoverageTests {
         let analyzer = Analyzer()
         let store = try AlbumistStore(url: url)
         let second = Self.pipeline(store: store, reader: InMemoryLibraryReader(assets: assets), analyzer: analyzer, batchSize: batch)
-        let seen = Mutex<[AnalysisPipeline.Progress]>([])
+        let seen = Locked<[AnalysisPipeline.Progress]>([])
         let report = try await second.run(onProgress: { p in seen.withLock { $0.append(p) } })
         // The first process is gone for good: its run is never resumed or cancelled.
         _ = abandoned

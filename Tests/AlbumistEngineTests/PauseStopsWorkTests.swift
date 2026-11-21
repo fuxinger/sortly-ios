@@ -35,9 +35,9 @@ struct PauseStopsWorkTests {
         /// Wall-clock time each `willAnalyze` takes while the gate is shut: a machine so busy
         /// that a second passes between two photos handed out.
         let slowMachine: Duration
-        let open = Mutex(false)
+        let open = Locked(false)
         /// Analyses begun and analyses that ran to their end.
-        let counts = Mutex<(started: Int, finished: Int)>((0, 0))
+        let counts = Locked<(started: Int, finished: Int)>((0, 0))
 
         init(gateContent: Bool = false, gateText: Bool = false, slowMachine: Duration = .zero) {
             self.gateContent = gateContent
@@ -89,7 +89,7 @@ struct PauseStopsWorkTests {
     @Test func pauseInTheTripsStepBeginsNoLaterStep() async throws {
         let (_, pipeline) = try pipeline()
         let control = AnalysisRunControl()
-        let afterPause = Mutex<[AnalysisPipeline.Stage]>([])
+        let afterPause = Locked<[AnalysisPipeline.Stage]>([])
         let report = try await pipeline.run(control: control) { progress in
             if control.isPaused {
                 afterPause.withLock { $0.append(progress.stage) }
@@ -110,8 +110,8 @@ struct PauseStopsWorkTests {
     @Test func pauseWhileTheSuggestionsAreMadeBeginsNoMoreOfTheirWork() async throws {
         let (_, pipeline) = try pipeline()
         let control = AnalysisRunControl()
-        let inProposals = Mutex(false)
-        let begunAfterPause = Mutex(0)
+        let inProposals = Locked(false)
+        let begunAfterPause = Locked(0)
         await pipeline.setOffActorProbe {
             guard inProposals.withLock({ $0 }) else { return }
             if control.isPaused { begunAfterPause.withLock { $0 += 1 } } else { control.pause() }
@@ -133,7 +133,7 @@ struct PauseStopsWorkTests {
     func runAndPauseInWork(_ pipeline: AnalysisPipeline, _ analyzer: GatedAnalyzer,
                            grace: Duration = .seconds(10)) async throws -> AnalysisPipeline.Report {
         let control = AnalysisRunControl()
-        let ended = Mutex(false)
+        let ended = Locked(false)
         let run = Task {
             defer { ended.withLock { $0 = true } }
             return try await pipeline.run(control: control)
@@ -184,7 +184,7 @@ struct PauseStopsWorkTests {
     @Test func resumeAfterCancelledPhotosCountsOnExactly() async throws {
         let analyzer = GatedAnalyzer(gateContent: true)
         let (store, pipeline) = try pipeline(analyzer: analyzer)
-        let said = Mutex<[[AnalysisPipeline.Progress]]>([[], []])
+        let said = Locked<[[AnalysisPipeline.Progress]]>([[], []])
         let control = AnalysisRunControl()
         let run = Task { try await pipeline.run(control: control) { p in if p.stage == .content { said.withLock { $0[0].append(p) } } } }
         while analyzer.counts.withLock({ $0.started }) == 0 { try await Task.sleep(for: .milliseconds(1)) }
@@ -302,7 +302,7 @@ struct PauseStopsWorkTests {
         let before = try await Stored(store)
         let moved = L.pipeline(store: store, reader: InMemoryLibraryReader(assets: lib.assets), geocoder: nil, deviceZone: "Europe/Berlin")
         let control = AnalysisRunControl()
-        let seen = Mutex<[AnalysisPipeline.StopPoint]>([])
+        let seen = Locked<[AnalysisPipeline.StopPoint]>([])
         await moved.setStopPointProbe { p in
             seen.withLock { $0.append(p) }
             if p == point { control.pause() }
@@ -351,7 +351,7 @@ struct PauseStopsWorkTests {
     @Test func pauseRightBeforeTheSuggestionsAreSavedSavesNothing() async throws {
         let (_, pipeline) = try pipeline()
         let control = AnalysisRunControl()
-        let inProposals = Mutex(false)
+        let inProposals = Locked(false)
         await pipeline.setStopPointProbe { p in
             if p == .suggestionsBeforeSaving, inProposals.withLock({ $0 }) { control.pause() }
         }
@@ -368,8 +368,8 @@ struct PauseStopsWorkTests {
     @Test func fortsetzenWaitsForTheWorkGivenUpAtThePause() async throws {
         let (_, pipeline) = try pipeline()
         let control = AnalysisRunControl()
-        let inProposals = Mutex(false)
-        let held = Mutex<(holding: Bool, release: Bool)>((false, false))
+        let inProposals = Locked(false)
+        let held = Locked<(holding: Bool, release: Bool)>((false, false))
         await pipeline.setOffActorProbe {
             guard inProposals.withLock({ $0 }), !control.isPaused else { return }
             held.withLock { $0.holding = true }
@@ -383,7 +383,7 @@ struct PauseStopsWorkTests {
         #expect(report.pausedBecause == .userPaused)
         #expect(held.withLock { $0.holding }, "the run waited for the work it gave up")
         await pipeline.setOffActorProbe(nil)
-        let began = Mutex(false)
+        let began = Locked(false)
         let resumed = Task { try await pipeline.run { _ in began.withLock { $0 = true } } }
         try await Task.sleep(for: .milliseconds(200))
         #expect(!began.withLock { $0 }, "Fortsetzen began beside the work given up")

@@ -1,4 +1,5 @@
 import Foundation
+import UIKit
 import AlbumistCore
 #if canImport(FoundationModels)
 import FoundationModels
@@ -8,11 +9,40 @@ import FoundationModels
 /// Everything here is a bonus: when the model is unavailable (older iPhone, feature off,
 /// unsupported language) the app works exactly as without it. Nothing leaves the device.
 enum SmartAssistant {
+    /// Whether the model can be used, as last asked. Views read this in their `body` (search
+    /// field prompt, atlas story, suggested album titles), and asking the system blocked the main
+    /// thread for 0.7 to 1 s on a cold start (hang watch, UI run 44870948643: SearchView,
+    /// AtlasView, ProposalDetailView). So the system is asked off the main thread at launch and
+    /// whenever the app comes back on screen (Apple Intelligence can be switched on or its model
+    /// can finish downloading meanwhile); only a read before the first answer asks directly.
     static var isAvailable: Bool {
+        if let known = known.withLock({ $0 }) { return known }
+        return refreshNow()
+    }
+
+    private static let known = Locked<Bool?>(nil)
+
+    /// Launch (`AlbumistApp.init`): asks once in the background now and again each time the app
+    /// becomes active.
+    static func watchAvailability() {
+        refreshInBackground()
+        _ = NotificationCenter.default.addObserver(forName: UIApplication.didBecomeActiveNotification, object: nil, queue: nil) { _ in
+            refreshInBackground()
+        }
+    }
+
+    private static func refreshInBackground() {
+        DispatchQueue.global(qos: .utility).async { _ = refreshNow() }
+    }
+
+    @discardableResult
+    private static func refreshNow() -> Bool {
+        var available = false
         #if canImport(FoundationModels)
-        if case .available = SystemLanguageModel.default.availability { return true }
+        if case .available = SystemLanguageModel.default.availability { available = true }
         #endif
-        return false
+        known.withLock { $0 = available }
+        return available
     }
 
     /// Turns a sentence like "Fotos vom Grillen bei Oma letzten Sommer" into the keywords

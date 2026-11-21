@@ -257,6 +257,17 @@ jobs:
       photos: '10000'
       minutes: '15'
 
+  tsan:
+    name: Thread Sanitizer
+    # Data races in the core package before every upload (owner's decision 16.11.2026; Linux
+    # only, no Mac time, about 25 min next to the UI flow). The app's unit tests under TSan run
+    # in the nightly pass (Mac time).
+    needs: check
+    if: needs.check.outputs.ready == 'true'
+    uses: ./.github/workflows/sanitize.yml
+    with:
+      mac: false
+
   release-smoke:
     # Review P5-03: every UI test runs a Debug build (ui.yml builds without a configuration),
     # where UITestSupport.isRunning and the app's #if DEBUG code change what runs; the Release
@@ -500,12 +511,12 @@ jobs:
 
   release:
     name: Archive and upload to TestFlight
-    needs: [check, tests, ui, stress, release-smoke, ui-gate]
-    # The tests, the UI flow, the stress pass, the Release smoke test and the UI gate of this run
-    # must all be green, with either gate; nothing skips them.
+    needs: [check, tests, ui, stress, release-smoke, ui-gate, tsan]
+    # The tests, the UI flow, the stress pass, the Release smoke test, the UI gate and the Thread
+    # Sanitizer pass of this run must all be green, with either gate; nothing skips them.
     if: >-
       ${{ !cancelled() && needs.check.outputs.ready == 'true' && needs.tests.result == 'success'
-      && needs.ui.result == 'success' && needs.stress.result == 'success'
+      && needs.ui.result == 'success' && needs.stress.result == 'success' && needs.tsan.result == 'success'
       && needs.release-smoke.result == 'success' && needs.ui-gate.result == 'success' }}
     # No click since the owner's decision of 19.11.2026 (it replaced decision 5 of 18.11.): the job
     # starts when every gate above is green, in the environment testflight-upload, which only

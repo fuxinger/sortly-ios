@@ -5,7 +5,8 @@ name: Nightly
 #   - the large-library load tests (20,000 / 100,000 photos, journal with 200 albums) on Linux
 #     and macOS,
 #   - a build in fresh DerivedData with the app tests in the simulator (CI builds without a
-#     cache too: its cache steps, off since 16.11., were removed on 17.11., Profi-Analyse Top 10).
+#     cache too: its cache steps, off since 16.11., were removed on 17.11., Profi-Analyse Top 10),
+#   - Thread Sanitizer on the core (Linux) and the app's unit tests (macOS), sanitize.yml.
 # Scheduled workflows only run from the default branch's copy of this file, so this starts once
 # it is on main. It tests the commit it runs on: main at night, or the branch chosen under
 # "Run workflow" when started by hand.
@@ -19,6 +20,10 @@ on:
         description: Random libraries for the stress test
         type: string
         default: '300'
+      only_tsan:
+        description: Only the Thread Sanitizer pass on Linux (no Mac), to try sanitize.yml on a branch
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -40,6 +45,7 @@ concurrency:
 
 jobs:
   core-linux:
+    if: ${{ !inputs.only_tsan }}
     name: Stress and load tests (Linux)
     runs-on: ubuntu-24.04
     container: swift:6.2-noble
@@ -73,6 +79,7 @@ jobs:
             --swift-log core.log --swift-log load.log --load-log load.log >> "$GITHUB_STEP_SUMMARY" || true
 
   macos:
+    if: ${{ !inputs.only_tsan }}
     name: Clean build, stress, load and app tests (macOS)
     runs-on: xcode-27
     timeout-minutes: 75
@@ -140,6 +147,14 @@ jobs:
             build/load.log
             build/TestResults.xcresult
           retention-days: 7
+
+  tsan:
+    name: Thread Sanitizer
+    # Data races in the core (Linux) and in the app's unit tests (Mac, about 30 min), owner's
+    # decision 16.11.2026; red on any report (sanitize.yml).
+    uses: ./.github/workflows/sanitize.yml
+    with:
+      mac: ${{ !inputs.only_tsan }}
 
   # TODO(ui.yml): the UI flow in English and on a second device size (test plan A11, A16).
   # ui.yml can be called now (`workflow_call`, testflight.yml uses it), but its only input is

@@ -19,7 +19,7 @@ public final class AnalysisRunControl: Sendable {
         var nextID = 0
     }
 
-    private let state = Mutex(State())
+    private let state = Locked(State())
     public init() {}
 
     public func pause() {
@@ -1753,7 +1753,7 @@ public actor AnalysisPipeline {
         let budget = refining ? nil : (askedRecently ? 0 : foregroundOnlineBudget)
         onProgress(Progress(stage: .places, completed: before, total: total))
         // The count last shown, repeated with the time left while the run waits for the geocoder.
-        let shown = Mutex(before)
+        let shown = Locked(before)
         let control = activeControl
         let outcome = try await service.resolve(requests, refining: refining, maxOnlineRequests: budget,
                                          mayWait: refining,
@@ -2130,7 +2130,7 @@ public actor AnalysisPipeline {
     /// Set when the early suggestions' task has ended, so a stopping run can wait for them a
     /// limited time (`run`).
     final class EarlyDone: Sendable {
-        private let done = Mutex(false)
+        private let done = Locked(false)
         func mark() { done.withLock { $0 = true } }
         /// Whether they ended within `limit` (at once when the run itself is cancelled).
         func wait(upTo limit: Duration) async -> Bool {
@@ -2216,7 +2216,7 @@ public actor AnalysisPipeline {
 
     /// Settled once: by the end of the work (`false`) or by a stop (`true`), whichever is first.
     private final class FirstOf: Sendable {
-        private let state = Mutex<(stopped: Bool?, waiting: CheckedContinuation<Bool, Never>?)>((nil, nil))
+        private let state = Locked<(stopped: Bool?, waiting: CheckedContinuation<Bool, Never>?)>((nil, nil))
 
         func settle(stopped: Bool) {
             let waiting = state.withLock { state -> CheckedContinuation<Bool, Never>? in

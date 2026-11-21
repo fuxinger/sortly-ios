@@ -51,7 +51,7 @@ struct DeviceConditionRunTests {
 
     /// The image step's counts of one run, in the order the card showed them.
     final class ContentCounts: Sendable {
-        let seen = Mutex<[Int]>([])
+        let seen = Locked<[Int]>([])
         var onProgress: @Sendable (AnalysisPipeline.Progress) -> Void {
             { progress in
                 guard progress.stage == .content else { return }
@@ -73,7 +73,7 @@ struct DeviceConditionRunTests {
             $0 = Array(repeating: .normal, count: 40) + Array(repeating: .gentle, count: 40)
                 + Array(repeating: .wait(.thermal), count: 10) + [.normal]
         }
-        let waits = Mutex<[PauseReason?]>([])
+        let waits = Locked<[PauseReason?]>([])
         let counts = ContentCounts()
         let report = try await s.pipeline().run(onProgress: counts.onProgress, onWaiting: { reason in waits.withLock { $0.append(reason) } })
         #expect(report.isComplete)
@@ -96,7 +96,7 @@ struct DeviceConditionRunTests {
     @Test func lowBatteryThenLowPowerModeEndsWithEveryPhoto() async throws {
         let s = try setup()
         s.conditions.paces.withLock { $0 = Array(repeating: .normal, count: 30) + Array(repeating: .wait(.batteryLow), count: 8) + [.normal] }
-        let waits = Mutex<[PauseReason?]>([])
+        let waits = Locked<[PauseReason?]>([])
         let counts = ContentCounts()
         let report = try await s.pipeline().run(onProgress: counts.onProgress, onWaiting: { reason in waits.withLock { $0.append(reason) } })
         #expect(report.isComplete)
@@ -283,7 +283,7 @@ extension DeviceConditionRunTests {
 
 /// Every progress report of one run, in order.
 final class ProgressReports: Sendable {
-    private let seen = Mutex<[AnalysisPipeline.Progress]>([])
+    private let seen = Locked<[AnalysisPipeline.Progress]>([])
     var onProgress: @Sendable (AnalysisPipeline.Progress) -> Void {
         { progress in self.seen.withLock { $0.append(progress) } }
     }
@@ -296,7 +296,7 @@ final class DiskFillingAnalyzer: ContentAnalyzing, Sendable {
     let base: FakeContentAnalyzer
     let store: AlbumistStore
     let after: Int
-    private let analysed = Mutex(0)
+    private let analysed = Locked(0)
 
     init(base: FakeContentAnalyzer, store: AlbumistStore, after: Int) {
         self.base = base

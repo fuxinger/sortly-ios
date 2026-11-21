@@ -19,6 +19,8 @@ struct AlbumistApp: App {
         NotificationRouter.register()
         // MetricKit's daily numbers and hang reports, for the diagnostic report.
         EnergyMetricsSubscriber.start()
+        // Apple Intelligence's availability, asked off the main thread (views read it in `body`).
+        SmartAssistant.watchAvailability()
         // UI runs only: says in the log when the main thread or the whole app stood still.
         MainThreadWatch.shared.start()
         // iOS warns that memory runs low: the caches go before iOS has to end the app, also

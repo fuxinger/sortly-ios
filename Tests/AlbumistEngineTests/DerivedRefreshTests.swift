@@ -103,8 +103,8 @@ struct DerivedRefreshTests {
     @Test func theRingDoesNotWaitForTheOverlappingAlbums() async throws {
         let library = try await analysed()
         let pipeline = library.launch()
-        let ended = Mutex<Set<DerivedLibrary.Piece>>([])
-        let held = Mutex(true)
+        let ended = Locked<Set<DerivedLibrary.Piece>>([])
+        let held = Locked(true)
         let probe: DerivedLibrary.Probe = { piece, end in
             if end { _ = ended.withLock { $0.insert(piece) } }
             if piece == .merges, !end {
@@ -207,8 +207,8 @@ struct DerivedRefreshTests {
     @Test func theRefreshPackageHasWhatTheAppReadItself() async throws {
         let library = try await analysed()
         let pipeline = library.launch()
-        let reopened = Mutex<[Set<AlbumistID>]>([])
-        let undone = Mutex<[Set<AlbumistID>]>([])
+        let reopened = Locked<[Set<AlbumistID>]>([])
+        let undone = Locked<[Set<AlbumistID>]>([])
         let once = DerivedRefresh.Once(reopened: { ids in reopened.withLock { $0.append(ids) } },
                                        undone: { ids in undone.withLock { $0.append(ids) } })
         let refreshed = try await pipeline.derivedRefresh(settings: library.settings, managed: [], scope: .all, historyLimit: 50, once: once)
@@ -242,7 +242,7 @@ struct DerivedRefreshTests {
     /// the package carries nothing of either.
     @Test func aRefreshMakesNeitherTheAtlasOfEachYearNorTheHomeName() async throws {
         let library = try await analysed()
-        let started = Mutex<Set<String>>([])
+        let started = Locked<Set<String>>([])
         let probe: DerivedLibrary.Probe = { piece, ended in
             if !ended { _ = started.withLock { $0.insert(piece.rawValue) } }
         }
@@ -269,7 +269,7 @@ struct DerivedRefreshTests {
         let settings = library.settings
         let first = try await pipeline.derivedRefresh(settings: settings, managed: [], scope: .all, historyLimit: 50, once: .nothing)
         let shown = first.library.facts
-        let started = Mutex<Set<String>>([])
+        let started = Locked<Set<String>>([])
         let probe: DerivedLibrary.Probe = { piece, ended in if !ended { _ = started.withLock { $0.insert(piece.rawValue) } } }
         let again = try await pipeline.derivedRefresh(settings: settings, managed: [], scope: .all, historyLimit: 50, once: .nothing,
                                                       shown: shown, probe: probe)
@@ -300,7 +300,7 @@ struct DerivedRefreshTests {
                                                                   once: .nothing)
         let facts = refreshed.library.facts, allYears = refreshed.library.atlas
         let center = try #require(refreshed.detectedHome?.center)
-        let started = Mutex(false)
+        let started = Locked(false)
         let making = Task.detached { () -> ([Int: TravelAtlas]?, HomePlace?) in
             started.withLock { $0 = true }
             while !Task.isCancelled { await Task.yield() }

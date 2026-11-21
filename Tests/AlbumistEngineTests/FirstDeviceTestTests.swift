@@ -49,7 +49,7 @@ struct FirstDeviceTestTests {
     @Test func hotDeviceWaitsAndGoesOnByItself() async throws {
         let s = try setup()
         s.conditions.paces.withLock { $0 = Array(repeating: .normal, count: 30) + Array(repeating: .wait(.thermal), count: 5) + [.normal] }
-        let waits = Mutex<[PauseReason?]>([])
+        let waits = Locked<[PauseReason?]>([])
         let report = try await s.pipeline.run(onWaiting: { reason in waits.withLock { $0.append(reason) } })
         #expect(report.isComplete)
         #expect(report.pausedBecause == nil)
@@ -101,7 +101,7 @@ struct FirstDeviceTestTests {
         s.conditions.paces.withLock { $0 = [.normal] }
         let done = first.contentAnalyzed
         #expect(done > 0)
-        let seen = Mutex<[AnalysisPipeline.Progress]>([])
+        let seen = Locked<[AnalysisPipeline.Progress]>([])
         let second = try await pipeline.run(onProgress: { progress in seen.withLock { $0.append(progress) } })
         #expect(second.isComplete)
         let content = seen.withLock { $0 }.filter { $0.stage == .content }
@@ -139,7 +139,7 @@ struct FirstDeviceTestTests {
     @Test func trialYearAnalysesOnlyItsPhotos() async throws {
         let s = try setup()
         try await s.pipeline.setScope(.year(2026))
-        let seen = Mutex<[AnalysisPipeline.Progress]>([])
+        let seen = Locked<[AnalysisPipeline.Progress]>([])
         let report = try await s.pipeline.run(onProgress: { progress in seen.withLock { $0.append(progress) } })
         #expect(report.isComplete)
         #expect(report.contentAnalyzed == s.year2026.count)
@@ -176,7 +176,7 @@ struct FirstDeviceTestTests {
             policy: PlaceResolutionPolicy(deepestLevel: .locality, onlineAllowed: true, language: .german),
             time: ManualTime().source
         )
-        let seen = Mutex<[Int]>([])
+        let seen = Locked<[Int]>([])
         _ = try await service.resolve(requests, progress: { n in seen.withLock { $0.append(n) } }) { _ in }
         let values = seen.withLock { $0 }
         #expect(!values.isEmpty)
@@ -190,7 +190,7 @@ struct FirstDeviceTestTests {
     /// the run went on through stages that said nothing, and Pause was only seen at the end.
     @Test func everyStageSaysWhenItBeginsAndPauseHoldsBeforeTheLastSteps() async throws {
         let s = try setup()
-        let seen = Mutex<[AnalysisPipeline.Stage]>([])
+        let seen = Locked<[AnalysisPipeline.Stage]>([])
         let full = try await s.pipeline.run(onProgress: { progress in
             seen.withLock { if $0.last != progress.stage { $0.append(progress.stage) } }
         })

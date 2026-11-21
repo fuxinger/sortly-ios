@@ -148,7 +148,7 @@ struct AnalysisRunEndTests {
         let s = try T.setup(photos: 12, screenshots: 0, labels: false)
         _ = try await s.pipeline.run()
         let pipeline = s.pipeline
-        final class Change: Sendable { let task = Mutex<Task<OrganizationSettings, Never>?>(nil) }
+        final class Change: Sendable { let task = Locked<Task<OrganizationSettings, Never>?>(nil) }
         let change = Change()
         let first = try await pipeline.run(mode: .refinement, onProgress: { p in
             guard p.stage == .content else { return }
@@ -202,7 +202,7 @@ struct AnalysisRunEndTests {
     /// was read, before the run decides on labels (the change lands there for certain, not when
     /// a task happens to run).
     final class FirstCheck: AnalysisConditions, Sendable {
-        let action = Mutex<(@Sendable () async -> Void)?>(nil)
+        let action = Locked<(@Sendable () async -> Void)?>(nil)
         func pauseReason() async -> PauseReason? { nil }
         func pace() async -> AnalysisPace {
             let act = action.withLock { a in
@@ -236,7 +236,7 @@ struct AnalysisRunEndTests {
     @Test func aChangeAfterTheLabelsAreDecidedStartsTheFollowUp() async throws {
         let s = try T.setup(photos: 12, screenshots: 0, labels: false)
         let pipeline = s.pipeline
-        final class Change: Sendable { let task = Mutex<Task<OrganizationSettings, Never>?>(nil) }
+        final class Change: Sendable { let task = Locked<Task<OrganizationSettings, Never>?>(nil) }
         let change = Change()
         let first = try await pipeline.run(onProgress: { p in
             guard p.stage == .content else { return }
@@ -259,7 +259,7 @@ struct AnalysisRunEndTests {
     @Test func pauseDuringTheSuggestionsKeepsTheChangeForFortsetzen() async throws {
         let s = try T.setup(photos: 12, screenshots: 0, labels: false)
         let pipeline = s.pipeline
-        final class Change: Sendable { let task = Mutex<Task<OrganizationSettings, Never>?>(nil) }
+        final class Change: Sendable { let task = Locked<Task<OrganizationSettings, Never>?>(nil) }
         let change = Change()
         let control = AnalysisRunControl()
         let report = try await pipeline.run(control: control, onProgress: { p in
