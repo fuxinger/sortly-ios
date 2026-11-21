@@ -18,7 +18,7 @@ Die Knöpfe bei GitHub sind englisch; sie stehen unten **fett**.
 
 ## Die Schritte
 
-1. https://github.com/fuxinger/sortly-ios/settings/environments öffnen. Gibt es
+1. https://github.com/fuxinger/albumist-ios/settings/environments öffnen. Gibt es
    `testflight-upload` noch nicht: **New environment**, Name genau so, **Configure environment**.
    Sonst `testflight-upload` antippen.
 2. Unter „Deployment protection rules“ den Haken bei **Required reviewers** entfernen, dann
@@ -36,7 +36,7 @@ Die Knöpfe bei GitHub sind englisch; sie stehen unten **fett**.
    | `ASC_KEY_P8` | ganzer Inhalt der Datei `AuthKey_….p8`, mit den Zeilen BEGIN und END |
    | `APPLE_TEAM_ID` | Team-ID (https://developer.apple.com/account > Mitgliedschaft) |
 
-5. https://github.com/fuxinger/sortly-ios/settings/secrets/actions öffnen und unter **Repository
+5. https://github.com/fuxinger/albumist-ios/settings/secrets/actions öffnen und unter **Repository
    secrets** dieselben vier Namen löschen, falls sie dort noch stehen. Alle anderen bleiben
    (zum Beispiel `APPETIZE_TOKEN`). Solange einer dort steht, kann ihn jeder Workflow lesen.
 6. Prüfen: **Actions** > **TestFlight** > **Run workflow**, Zweig `main`, „Gate“ `small`. Der
@@ -79,7 +79,7 @@ Secrets kann bis dahin jeder Workflow auf jedem Zweig lesen. Sobald die Umgebung
 
 1. In App Store Connect einen Team-Schlüssel `GitHub Feedback` mit Zugriff **Developer** (nicht
    Admin) anlegen, falls es ihn noch nicht gibt. Hier nie den Admin-Schlüssel nehmen.
-2. https://github.com/fuxinger/sortly-ios/settings/environments > **New environment**, Name
+2. https://github.com/fuxinger/albumist-ios/settings/environments > **New environment**, Name
    genau `asc-feedback`, **Configure environment**. Keine „Required reviewers“.
 3. Unter „Deployment branches and tags“ **Selected branches and tags**, genau eine Regel `main`
    (**Add deployment branch or tag rule**, Name `main`, **Add rule**).
@@ -88,7 +88,7 @@ Secrets kann bis dahin jeder Workflow auf jedem Zweig lesen. Sobald die Umgebung
    `.p8`-Datei mit BEGIN und END). GitHub zeigt gespeicherte Secrets nie wieder an, „verschieben“
    heißt also neu eintragen; ist die `.p8`-Datei weg, in App Store Connect einen neuen
    Feedback-Schlüssel erzeugen und den alten widerrufen.
-5. https://github.com/fuxinger/sortly-ios/settings/secrets/actions: unter **Repository secrets**
+5. https://github.com/fuxinger/albumist-ios/settings/secrets/actions: unter **Repository secrets**
    die drei `ASC_FEEDBACK_*` löschen. Solange einer dort steht, kann ihn jeder Workflow auf jedem
    Zweig lesen; der Lauf warnt dann („still a repository secret“).
 6. Prüfen: **Actions** > **TestFlight feedback** > **Run workflow**, Zweig `main`. Der Job
@@ -107,8 +107,8 @@ scheitern. Zum Lesen nur Artefakte von **geplanten Läufen auf `main`** laden, �
 (ein von Hand auf einem anderen Zweig gestarteter Lauf könnte alles Mögliche enthalten). Der
 Zielordner muss außerhalb des Repositorys liegen:
 
-    gh run list -R fuxinger/sortly-ios -w asc-feedback.yml -b main -e schedule -L 5
-    gh run download <Lauf-Nummer> -R fuxinger/sortly-ios -n testflight-feedback-encrypted -D ~/Downloads/feedback-<Lauf-Nummer>
+    gh run list -R fuxinger/albumist-ios -w asc-feedback.yml -b main -e schedule -L 5
+    gh run download <Lauf-Nummer> -R fuxinger/albumist-ios -n testflight-feedback-encrypted -D ~/Downloads/feedback-<Lauf-Nummer>
     python3 -I tools/feedback_inbox.py --key <privater Schlüssel> --out ~/albumist-feedback \
         ~/Downloads/feedback-<Lauf-Nummer>/testflight-feedback-*.cms
 

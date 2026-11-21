@@ -1,0 +1,967 @@
+{
+ "_comment": "Findings per file and rule that were there before SwiftLint ran; more fail the job (.github/scripts/swiftlint_report.py). Lower it, never raise it by hand.",
+ "files": {
+  "App/Albumist/DesignSystem/Presentation.swift": {
+   "cyclomatic_complexity": 1
+  },
+  "App/Albumist/DesignSystem/Theme.swift": {
+   "file_length": 1,
+   "large_tuple": 4
+  },
+  "App/Albumist/Model/AppModel.swift": {
+   "cyclomatic_complexity": 6,
+   "file_length": 1,
+   "for_where": 1,
+   "function_body_length": 6,
+   "large_tuple": 1,
+   "line_length": 12,
+   "nesting": 2,
+   "type_body_length": 1
+  },
+  "App/Albumist/Platform/AnalysisMarker.swift": {
+   "implicit_optional_initialization": 11
+  },
+  "App/Albumist/Platform/BatteryLog.swift": {
+   "large_tuple": 1
+  },
+  "App/Albumist/Platform/ContinuedAnalysis.swift": {
+   "large_tuple": 1,
+   "line_length": 1
+  },
+  "App/Albumist/Platform/DemoLibrary.swift": {
+   "function_body_length": 1,
+   "type_body_length": 1,
+   "vertical_whitespace": 1
+  },
+  "App/Albumist/Platform/DeviceInfo.swift": {
+   "cyclomatic_complexity": 1,
+   "line_length": 1,
+   "optional_data_string_conversion": 1
+  },
+  "App/Albumist/Platform/PhotoKitLibrary.swift": {
+   "cyclomatic_complexity": 2,
+   "file_length": 1,
+   "function_body_length": 1,
+   "multiple_closures_with_trailing_closure": 3,
+   "type_body_length": 1
+  },
+  "App/Albumist/Platform/PhotosNotRespondingMessage.swift": {
+   "line_length": 5
+  },
+  "App/Albumist/Platform/Purchases.swift": {
+   "file_length": 1,
+   "line_length": 2,
+   "type_body_length": 1
+  },
+  "App/Albumist/Platform/SamplePhotos.swift": {
+   "cyclomatic_complexity": 1,
+   "function_body_length": 2,
+   "large_tuple": 1,
+   "line_length": 4,
+   "type_body_length": 1
+  },
+  "App/Albumist/Platform/StorageFullMessage.swift": {
+   "line_length": 1
+  },
+  "App/Albumist/Platform/SystemServices.swift": {
+   "large_tuple": 1
+  },
+  "App/Albumist/Platform/UITestServices.swift": {
+   "file_length": 1
+  },
+  "App/Albumist/Platform/UITestSupport.swift": {
+   "file_length": 1,
+   "line_length": 2,
+   "type_body_length": 1
+  },
+  "App/Albumist/Platform/VisionAnalyzer.swift": {
+   "function_parameter_count": 1
+  },
+  "App/Albumist/Views/AnalysisProgressCard.swift": {
+   "file_length": 1,
+   "function_body_length": 1,
+   "line_length": 1,
+   "type_body_length": 1
+  },
+  "App/Albumist/Views/AssetThumbnail.swift": {
+   "implicit_optional_initialization": 1,
+   "line_length": 1
+  },
+  "App/Albumist/Views/Atlas.swift": {
+   "file_length": 1,
+   "implicit_optional_initialization": 3
+  },
+  "App/Albumist/Views/EmptyLibraryCard.swift": {
+   "line_length": 3
+  },
+  "App/Albumist/Views/HomeSettingsView.swift": {
+   "file_length": 1,
+   "line_length": 3
+  },
+  "App/Albumist/Views/LibraryView.swift": {
+   "file_length": 1,
+   "redundant_discardable_let": 2
+  },
+  "App/Albumist/Views/ManagedAlbumsView.swift": {
+   "line_length": 2
+  },
+  "App/Albumist/Views/OnboardingView.swift": {
+   "line_length": 4
+  },
+  "App/Albumist/Views/OverviewView.swift": {
+   "file_length": 1,
+   "line_length": 10,
+   "redundant_discardable_let": 1,
+   "type_body_length": 1
+  },
+  "App/Albumist/Views/PlanReceiptView.swift": {
+   "file_length": 1,
+   "line_length": 2,
+   "type_body_length": 1
+  },
+  "App/Albumist/Views/PlanReviewView.swift": {
+   "cyclomatic_complexity": 1,
+   "file_length": 1,
+   "implicit_optional_initialization": 2,
+   "large_tuple": 1,
+   "line_length": 6,
+   "redundant_discardable_let": 1,
+   "type_body_length": 1
+  },
+  "App/Albumist/Views/ProposalViews.swift": {
+   "cyclomatic_complexity": 1,
+   "file_length": 1,
+   "implicit_optional_initialization": 1,
+   "line_length": 4,
+   "multiple_closures_with_trailing_closure": 1,
+   "type_body_length": 1
+  },
+  "App/Albumist/Views/RootView.swift": {
+   "line_length": 2
+  },
+  "App/Albumist/Views/SearchView.swift": {
+   "cyclomatic_complexity": 1,
+   "file_length": 1
+  },
+  "App/Albumist/Views/SettingsView.swift": {
+   "file_length": 1,
+   "line_length": 9
+  },
+  "App/Albumist/Views/SortingShow.swift": {
+   "cyclomatic_complexity": 1,
+   "file_length": 1,
+   "large_tuple": 1
+  },
+  "App/Albumist/Views/TripWorkshopView.swift": {
+   "file_length": 1,
+   "line_length": 3,
+   "type_body_length": 1
+  },
+  "App/AlbumistTests/AlbumistAppTests.swift": {
+   "file_length": 1,
+   "large_tuple": 1,
+   "line_length": 3,
+   "nesting": 1
+  },
+  "App/AlbumistTests/NavigationTests.swift": {
+   "large_tuple": 1
+  },
+  "App/AlbumistTests/PurchaseStoreKitTests.swift": {
+   "cyclomatic_complexity": 1,
+   "file_length": 1,
+   "function_body_length": 2,
+   "line_length": 16,
+   "type_body_length": 1,
+   "type_name": 2
+  },
+  "App/AlbumistTests/StepProblemTextTests.swift": {
+   "line_length": 2
+  },
+  "App/AlbumistUITests/AccessibilityUITests.swift": {
+   "cyclomatic_complexity": 5,
+   "file_length": 1,
+   "function_body_length": 3,
+   "identifier_name": 1,
+   "large_tuple": 1,
+   "line_length": 6,
+   "type_body_length": 1
+  },
+  "App/AlbumistUITests/AlbumistFlowUITests.swift": {
+   "cyclomatic_complexity": 6,
+   "file_length": 1,
+   "for_where": 1,
+   "function_body_length": 11,
+   "large_tuple": 2,
+   "line_length": 5,
+   "type_body_length": 1
+  },
+  "App/AlbumistUITests/AlbumistLockedUITests.swift": {
+   "function_body_length": 1,
+   "type_body_length": 1
+  },
+  "App/AlbumistUITests/DeviceConditionUITests.swift": {
+   "cyclomatic_complexity": 1,
+   "file_length": 1,
+   "function_body_length": 4,
+   "large_tuple": 5,
+   "line_length": 13,
+   "type_body_length": 1
+  },
+  "App/AlbumistUITests/PauseCountCheck.swift": {
+   "large_tuple": 1
+  },
+  "App/AlbumistUITests/SearchUITests.swift": {
+   "function_body_length": 1,
+   "line_length": 1
+  },
+  "App/AlbumistUITests/UITestOnboarding.swift": {
+   "function_body_length": 1,
+   "line_length": 1
+  },
+  "App/AlbumistUITests/UITestWait.swift": {
+   "function_parameter_count": 1,
+   "line_length": 2
+  },
+  "Sources/AlbumistCore/Analysis/AnalysisContracts.swift": {
+   "file_length": 1
+  },
+  "Sources/AlbumistCore/Analysis/ContentClassifiers.swift": {
+   "cyclomatic_complexity": 1,
+   "line_length": 3
+  },
+  "Sources/AlbumistCore/Analysis/DocumentAnalyzer.swift": {
+   "file_length": 1,
+   "for_where": 1,
+   "force_try": 2,
+   "line_length": 6,
+   "switch_case_alignment": 3,
+   "type_body_length": 1
+  },
+  "Sources/AlbumistCore/Analysis/MediaTypeClassifier.swift": {
+   "cyclomatic_complexity": 1
+  },
+  "Sources/AlbumistCore/Analysis/PhotosDeadline.swift": {
+   "file_length": 1,
+   "function_parameter_count": 1,
+   "large_tuple": 1
+  },
+  "Sources/AlbumistCore/Analysis/TextMinimizer.swift": {
+   "cyclomatic_complexity": 1,
+   "force_try": 3
+  },
+  "Sources/AlbumistCore/Execution/ChangeExecutor.swift": {
+   "cyclomatic_complexity": 6,
+   "file_length": 1,
+   "function_body_length": 6,
+   "line_length": 1,
+   "type_body_length": 1
+  },
+  "Sources/AlbumistCore/Execution/PlanDiagnostics.swift": {
+   "cyclomatic_complexity": 1
+  },
+  "Sources/AlbumistCore/Execution/UndoRemainder.swift": {
+   "cyclomatic_complexity": 1
+  },
+  "Sources/AlbumistCore/Geo/GeoClusterer.swift": {
+   "cyclomatic_complexity": 1,
+   "function_body_length": 1
+  },
+  "Sources/AlbumistCore/Geo/GeoMath.swift": {
+   "large_tuple": 1
+  },
+  "Sources/AlbumistCore/Matching/AlbumMatcher.swift": {
+   "cyclomatic_complexity": 2,
+   "file_length": 1,
+   "function_body_length": 2,
+   "function_parameter_count": 2,
+   "large_tuple": 1,
+   "line_length": 5,
+   "type_body_length": 1
+  },
+  "Sources/AlbumistCore/Naming/Labels.swift": {
+   "cyclomatic_complexity": 3
+  },
+  "Sources/AlbumistCore/Naming/Naming.swift": {
+   "cyclomatic_complexity": 1,
+   "function_body_length": 1,
+   "large_tuple": 4
+  },
+  "Sources/AlbumistCore/Places/Continent.swift": {
+   "line_length": 3
+  },
+  "Sources/AlbumistCore/Places/FrequentPlaceDetector.swift": {
+   "cyclomatic_complexity": 1,
+   "large_tuple": 1
+  },
+  "Sources/AlbumistCore/Places/OfflineWorldMap.swift": {
+   "file_length": 1,
+   "function_body_length": 1,
+   "function_parameter_count": 1,
+   "large_tuple": 2,
+   "optional_data_string_conversion": 1,
+   "type_body_length": 1
+  },
+  "Sources/AlbumistCore/Places/PhotoStory.swift": {
+   "cyclomatic_complexity": 1,
+   "function_body_length": 1,
+   "line_length": 4
+  },
+  "Sources/AlbumistCore/Places/PlaceResolution.swift": {
+   "cyclomatic_complexity": 2,
+   "file_length": 1,
+   "function_body_length": 1,
+   "line_length": 1,
+   "type_body_length": 1
+  },
+  "Sources/AlbumistCore/Places/TravelAtlas.swift": {
+   "cyclomatic_complexity": 1,
+   "function_body_length": 1,
+   "implicit_optional_initialization": 1,
+   "large_tuple": 1
+  },
+  "Sources/AlbumistCore/Planning/ChangePlan.swift": {
+   "cyclomatic_complexity": 1,
+   "file_length": 1,
+   "implicit_optional_initialization": 6
+  },
+  "Sources/AlbumistCore/Planning/OrganizationPlanner.swift": {
+   "cyclomatic_complexity": 1,
+   "file_length": 1,
+   "function_body_length": 1,
+   "line_length": 1
+  },
+  "Sources/AlbumistCore/Planning/PlanPreview.swift": {
+   "cyclomatic_complexity": 1,
+   "function_body_length": 1
+  },
+  "Sources/AlbumistCore/Planning/PlanReceipt.swift": {
+   "cyclomatic_complexity": 1,
+   "function_body_length": 1,
+   "nesting": 1
+  },
+  "Sources/AlbumistCore/Planning/RetryPlanner.swift": {
+   "cyclomatic_complexity": 1,
+   "function_body_length": 1
+  },
+  "Sources/AlbumistCore/Planning/ReviewPrompt.swift": {
+   "cyclomatic_complexity": 1,
+   "function_parameter_count": 1
+  },
+  "Sources/AlbumistCore/Proposals/OrganizationSettings.swift": {
+   "line_length": 1
+  },
+  "Sources/AlbumistCore/Proposals/PreviewPicker.swift": {
+   "vertical_parameter_alignment": 1
+  },
+  "Sources/AlbumistCore/Proposals/ProposalCuration.swift": {
+   "cyclomatic_complexity": 1,
+   "function_body_length": 1
+  },
+  "Sources/AlbumistCore/Proposals/ProposalEngine.swift": {
+   "cyclomatic_complexity": 4,
+   "file_length": 1,
+   "function_body_length": 2,
+   "function_parameter_count": 1,
+   "large_tuple": 7,
+   "line_length": 1,
+   "nesting": 1,
+   "type_body_length": 1
+  },
+  "Sources/AlbumistCore/Rules/RuleEngine.swift": {
+   "cyclomatic_complexity": 1
+  },
+  "Sources/AlbumistCore/Search/QueryParser.swift": {
+   "cyclomatic_complexity": 3,
+   "file_length": 1,
+   "function_body_length": 3,
+   "large_tuple": 2,
+   "line_length": 6,
+   "type_body_length": 1
+  },
+  "Sources/AlbumistCore/Search/Search.swift": {
+   "large_tuple": 1
+  },
+  "Sources/AlbumistCore/Search/SearchDates.swift": {
+   "cyclomatic_complexity": 1
+  },
+  "Sources/AlbumistCore/Search/SearchIndex.swift": {
+   "cyclomatic_complexity": 4,
+   "file_length": 1,
+   "function_body_length": 2,
+   "large_tuple": 2,
+   "line_length": 3,
+   "type_body_length": 1,
+   "vertical_whitespace": 1
+  },
+  "Sources/AlbumistCore/Search/SearchLexicon.swift": {
+   "file_length": 1,
+   "function_body_length": 1,
+   "line_length": 88,
+   "type_body_length": 1
+  },
+  "Sources/AlbumistCore/Similarity/Similarity.swift": {
+   "function_body_length": 1
+  },
+  "Sources/AlbumistCore/Status/ManagedAlbumTracker.swift": {
+   "cyclomatic_complexity": 1,
+   "file_length": 1,
+   "function_body_length": 1,
+   "line_length": 1
+  },
+  "Sources/AlbumistCore/Time/Chronology.swift": {
+   "cyclomatic_complexity": 1,
+   "large_tuple": 1
+  },
+  "Sources/AlbumistCore/Time/CountryTimeZoneTable.swift": {
+   "file_length": 1
+  },
+  "Sources/AlbumistCore/Time/CountryTimeZones.swift": {
+   "large_tuple": 2
+  },
+  "Sources/AlbumistCore/Trips/Home.swift": {
+   "file_length": 1
+  },
+  "Sources/AlbumistCore/Trips/RecurringPlaces.swift": {
+   "implicit_optional_initialization": 1,
+   "line_length": 1
+  },
+  "Sources/AlbumistCore/Trips/TripDetector.swift": {
+   "cyclomatic_complexity": 2,
+   "file_length": 1,
+   "function_body_length": 1,
+   "function_parameter_count": 1,
+   "large_tuple": 3,
+   "line_length": 1,
+   "type_body_length": 1
+  },
+  "Sources/AlbumistCore/Trips/TripIdentity.swift": {
+   "cyclomatic_complexity": 1
+  },
+  "Sources/AlbumistEngine/AnalysisDisplay.swift": {
+   "cyclomatic_complexity": 1,
+   "file_length": 1,
+   "function_parameter_count": 1
+  },
+  "Sources/AlbumistEngine/AnalysisPipeline.swift": {
+   "cyclomatic_complexity": 4,
+   "file_length": 1,
+   "for_where": 1,
+   "function_body_length": 6,
+   "function_parameter_count": 3,
+   "implicit_optional_initialization": 3,
+   "large_tuple": 1,
+   "line_length": 1,
+   "multiple_closures_with_trailing_closure": 1,
+   "type_body_length": 1
+  },
+  "Sources/AlbumistEngine/BatteryUse.swift": {
+   "file_length": 1,
+   "line_length": 1
+  },
+  "Sources/AlbumistEngine/DerivedLibrary.swift": {
+   "function_parameter_count": 2
+  },
+  "Sources/AlbumistEngine/EnergyMetrics.swift": {
+   "line_length": 1
+  },
+  "Sources/AlbumistEngine/FactsAssembler.swift": {
+   "function_parameter_count": 1
+  },
+  "Sources/AlbumistEngine/LibraryStatus.swift": {
+   "cyclomatic_complexity": 1,
+   "file_length": 1,
+   "function_body_length": 1,
+   "function_parameter_count": 2,
+   "large_tuple": 1,
+   "line_length": 1,
+   "vertical_parameter_alignment": 1
+  },
+  "Sources/AlbumistEngine/RecountState.swift": {
+   "function_parameter_count": 1
+  },
+  "Sources/AlbumistEngine/SortedCountCard.swift": {
+   "nesting": 1
+  },
+  "Sources/AlbumistStore/AlbumistStore.swift": {
+   "file_length": 1,
+   "function_body_length": 1,
+   "line_length": 6,
+   "nesting": 1,
+   "optional_data_string_conversion": 1,
+   "type_body_length": 1
+  },
+  "Sources/AlbumistStore/DatabaseFile.swift": {
+   "cyclomatic_complexity": 1
+  },
+  "Sources/AlbumistStore/Quarantine.swift": {
+   "line_length": 1
+  },
+  "Sources/AlbumistStore/SQLiteDatabase.swift": {
+   "identifier_name": 1,
+   "implicit_getter": 1
+  },
+  "Sources/AlbumistStore/SafetyBackup.swift": {
+   "for_where": 2,
+   "implicit_optional_initialization": 1,
+   "nesting": 1
+  },
+  "Sources/AlbumistTestSupport/AppSource.swift": {
+   "cyclomatic_complexity": 1,
+   "function_body_length": 1
+  },
+  "Sources/AlbumistTestSupport/Fakes.swift": {
+   "large_tuple": 1,
+   "line_length": 1,
+   "optional_data_string_conversion": 1,
+   "vertical_whitespace": 1
+  },
+  "Sources/AlbumistTestSupport/Fixtures.swift": {
+   "line_length": 1
+  },
+  "Tests/AlbumistCoreTests/AlbumInterplayTests.swift": {
+   "file_length": 1,
+   "line_length": 1,
+   "trailing_newline": 1,
+   "type_body_length": 1
+  },
+  "Tests/AlbumistCoreTests/AnalysisRulesTests.swift": {
+   "line_length": 1,
+   "vertical_whitespace": 1
+  },
+  "Tests/AlbumistCoreTests/AnalyzerTests.swift": {
+   "line_length": 3
+  },
+  "Tests/AlbumistCoreTests/DeleteQuestionNoteTests.swift": {
+   "file_length": 1,
+   "line_length": 8,
+   "type_body_length": 1
+  },
+  "Tests/AlbumistCoreTests/DisputedAreaTests.swift": {
+   "file_length": 1,
+   "force_try": 1,
+   "line_length": 2,
+   "optional_data_string_conversion": 1,
+   "type_body_length": 1
+  },
+  "Tests/AlbumistCoreTests/ExecutionEdgeCaseTests.swift": {
+   "line_length": 2
+  },
+  "Tests/AlbumistCoreTests/ExecutionUndoSafetyTests.swift": {
+   "file_length": 1,
+   "line_length": 2,
+   "type_body_length": 1
+  },
+  "Tests/AlbumistCoreTests/FreeAlbumUndoOrderTests.swift": {
+   "force_try": 1,
+   "line_length": 5
+  },
+  "Tests/AlbumistCoreTests/FreeAlbumsAndReceiptTests.swift": {
+   "line_length": 2
+  },
+  "Tests/AlbumistCoreTests/HomeConfirmationTests.swift": {
+   "line_length": 1
+  },
+  "Tests/AlbumistCoreTests/HomePlacesAndMoveTests.swift": {
+   "large_tuple": 1,
+   "line_length": 4
+  },
+  "Tests/AlbumistCoreTests/HomeTests.swift": {
+   "file_length": 1,
+   "force_try": 2,
+   "line_length": 9
+  },
+  "Tests/AlbumistCoreTests/InterruptedPlanUndoTests.swift": {
+   "file_length": 1,
+   "function_body_length": 1,
+   "large_tuple": 1,
+   "line_length": 4,
+   "nesting": 1,
+   "type_body_length": 1
+  },
+  "Tests/AlbumistCoreTests/LifePatternLibraries.swift": {
+   "function_parameter_count": 1,
+   "large_tuple": 1,
+   "line_length": 1,
+   "type_body_length": 1
+  },
+  "Tests/AlbumistCoreTests/LifePatternTripTests.swift": {
+   "type_body_length": 1
+  },
+  "Tests/AlbumistCoreTests/LocalTimeTests.swift": {
+   "large_tuple": 1,
+   "line_length": 1
+  },
+  "Tests/AlbumistCoreTests/MatchingTests.swift": {
+   "line_length": 1
+  },
+  "Tests/AlbumistCoreTests/NamingTests.swift": {
+   "line_length": 2
+  },
+  "Tests/AlbumistCoreTests/OfflinePlacesInPartsTests.swift": {
+   "force_try": 1,
+   "multiple_closures_with_trailing_closure": 1
+  },
+  "Tests/AlbumistCoreTests/OfflineWorldMapTests.swift": {
+   "force_try": 1
+  },
+  "Tests/AlbumistCoreTests/PhotosDeadlineTests.swift": {
+   "file_length": 1,
+   "type_body_length": 1
+  },
+  "Tests/AlbumistCoreTests/PhotosTimeoutExecutionTests.swift": {
+   "file_length": 1,
+   "large_tuple": 1,
+   "type_body_length": 1
+  },
+  "Tests/AlbumistCoreTests/PlaceResolutionTests.swift": {
+   "force_try": 1,
+   "line_length": 7,
+   "multiple_closures_with_trailing_closure": 6,
+   "type_body_length": 1
+  },
+  "Tests/AlbumistCoreTests/PlanPreviewButtonTests.swift": {
+   "large_tuple": 2,
+   "line_length": 2
+  },
+  "Tests/AlbumistCoreTests/PlanRecordOrderTests.swift": {
+   "line_length": 1
+  },
+  "Tests/AlbumistCoreTests/PlanReviewFactsTests.swift": {
+   "large_tuple": 1
+  },
+  "Tests/AlbumistCoreTests/PlanningExecutionTests.swift": {
+   "file_length": 1,
+   "line_length": 14,
+   "type_body_length": 1
+  },
+  "Tests/AlbumistCoreTests/PreviewPickerTests.swift": {
+   "file_length": 1,
+   "line_length": 1
+  },
+  "Tests/AlbumistCoreTests/PromiseWordingTests.swift": {
+   "orphaned_doc_comment": 1
+  },
+  "Tests/AlbumistCoreTests/ProposalAndSearchTests.swift": {
+   "large_tuple": 1,
+   "line_length": 11
+  },
+  "Tests/AlbumistCoreTests/ProposalCurationTests.swift": {
+   "file_length": 1,
+   "large_tuple": 1,
+   "line_length": 1,
+   "switch_case_alignment": 2
+  },
+  "Tests/AlbumistCoreTests/PurchaseRulesTests.swift": {
+   "file_length": 1,
+   "line_length": 2,
+   "type_body_length": 1,
+   "type_name": 5
+  },
+  "Tests/AlbumistCoreTests/ReviewPromptTests.swift": {
+   "file_length": 1,
+   "type_body_length": 1
+  },
+  "Tests/AlbumistCoreTests/SearchExampleTests.swift": {
+   "line_length": 1
+  },
+  "Tests/AlbumistCoreTests/SearchPerformanceTests.swift": {
+   "function_body_length": 1,
+   "large_tuple": 1
+  },
+  "Tests/AlbumistCoreTests/SearchQuerySetTests.swift": {
+   "cyclomatic_complexity": 1,
+   "file_length": 1,
+   "function_body_length": 2,
+   "line_length": 6
+  },
+  "Tests/AlbumistCoreTests/SimulatedLibrary.swift": {
+   "cyclomatic_complexity": 2,
+   "file_length": 1,
+   "function_body_length": 2,
+   "function_parameter_count": 1,
+   "large_tuple": 2,
+   "line_length": 5,
+   "type_body_length": 1
+  },
+  "Tests/AlbumistCoreTests/StatusAndRuleTests.swift": {
+   "line_length": 3
+  },
+  "Tests/AlbumistCoreTests/StoredDefaultsTests.swift": {
+   "nesting": 2
+  },
+  "Tests/AlbumistCoreTests/TextMinimizerTests.swift": {
+   "line_length": 2
+  },
+  "Tests/AlbumistCoreTests/TripChangeLedgerTests.swift": {
+   "function_body_length": 1,
+   "line_length": 2,
+   "type_body_length": 1
+  },
+  "Tests/AlbumistCoreTests/TripDetectorStopTests.swift": {
+   "large_tuple": 1
+  },
+  "Tests/AlbumistCoreTests/TripTests.swift": {
+   "large_tuple": 1,
+   "line_length": 2
+  },
+  "Tests/AlbumistCoreTests/TripTimeZoneTests.swift": {
+   "type_name": 1
+  },
+  "Tests/AlbumistCoreTests/TripWorkshopTests.swift": {
+   "function_body_length": 1,
+   "line_length": 3,
+   "type_body_length": 1
+  },
+  "Tests/AlbumistCoreTests/UndoHardeningTests.swift": {
+   "file_length": 1,
+   "line_length": 4,
+   "nesting": 2,
+   "type_body_length": 1
+  },
+  "Tests/AlbumistEngineTests/AlbumNameLanguageTests.swift": {
+   "large_tuple": 1
+  },
+  "Tests/AlbumistEngineTests/AnalysisCardGlanceTests.swift": {
+   "line_length": 2
+  },
+  "Tests/AlbumistEngineTests/AnalysisCoverageTests.swift": {
+   "file_length": 1,
+   "large_tuple": 1,
+   "line_length": 2,
+   "type_body_length": 1
+  },
+  "Tests/AlbumistEngineTests/AnalysisDisplayTests.swift": {
+   "file_length": 1,
+   "function_parameter_count": 1,
+   "large_tuple": 1,
+   "type_body_length": 1
+  },
+  "Tests/AlbumistEngineTests/AnalysisReliabilityTests.swift": {
+   "file_length": 1,
+   "multiple_closures_with_trailing_closure": 1,
+   "nesting": 1,
+   "type_body_length": 1
+  },
+  "Tests/AlbumistEngineTests/AnalysisRunEndTests.swift": {
+   "file_length": 1,
+   "function_body_length": 1,
+   "type_body_length": 1,
+   "type_name": 2
+  },
+  "Tests/AlbumistEngineTests/BatteryUseTests.swift": {
+   "type_body_length": 1
+  },
+  "Tests/AlbumistEngineTests/ChangedPhotosOnlyTests.swift": {
+   "file_length": 1,
+   "force_try": 1,
+   "large_tuple": 1,
+   "line_length": 1,
+   "type_body_length": 1
+  },
+  "Tests/AlbumistEngineTests/ClassifierUpdateTests.swift": {
+   "force_try": 1
+  },
+  "Tests/AlbumistEngineTests/DecisionLifecycleTests.swift": {
+   "cyclomatic_complexity": 1,
+   "file_length": 1,
+   "force_try": 1,
+   "function_body_length": 1,
+   "line_length": 3,
+   "type_body_length": 1
+  },
+  "Tests/AlbumistEngineTests/DerivedLibraryStatusTests.swift": {
+   "force_try": 1,
+   "large_tuple": 1
+  },
+  "Tests/AlbumistEngineTests/DerivedRefreshTests.swift": {
+   "file_length": 1,
+   "force_try": 1,
+   "type_body_length": 1
+  },
+  "Tests/AlbumistEngineTests/DeviceConditionRunTests.swift": {
+   "force_try": 1,
+   "large_tuple": 2,
+   "line_length": 1
+  },
+  "Tests/AlbumistEngineTests/EmptyLibraryPipelineTests.swift": {
+   "force_try": 1
+  },
+  "Tests/AlbumistEngineTests/EnergyMetricsLogTests.swift": {
+   "line_length": 1
+  },
+  "Tests/AlbumistEngineTests/FinishMomentTests.swift": {
+   "type_name": 1
+  },
+  "Tests/AlbumistEngineTests/FirstDeviceTestTests.swift": {
+   "force_try": 1,
+   "multiple_closures_with_trailing_closure": 1
+  },
+  "Tests/AlbumistEngineTests/FloorTimeShareTests.swift": {
+   "line_length": 2
+  },
+  "Tests/AlbumistEngineTests/FullRunDisplayTests.swift": {
+   "cyclomatic_complexity": 2,
+   "file_length": 1,
+   "force_try": 1,
+   "function_body_length": 2,
+   "large_tuple": 4,
+   "line_length": 13,
+   "multiple_closures_with_trailing_closure": 1,
+   "type_body_length": 2
+  },
+  "Tests/AlbumistEngineTests/HomeChangeAndRunTests.swift": {
+   "line_length": 1
+  },
+  "Tests/AlbumistEngineTests/HomePipelineTests.swift": {
+   "line_length": 1
+  },
+  "Tests/AlbumistEngineTests/IgnoreChangeTests.swift": {
+   "force_try": 1
+  },
+  "Tests/AlbumistEngineTests/ImageStepStartTests.swift": {
+   "force_try": 1
+  },
+  "Tests/AlbumistEngineTests/IncrementalAnalysisTests.swift": {
+   "file_length": 1,
+   "line_length": 2,
+   "nesting": 1,
+   "type_body_length": 1
+  },
+  "Tests/AlbumistEngineTests/InterruptionWaysOutTests.swift": {
+   "cyclomatic_complexity": 2,
+   "file_length": 1,
+   "for_where": 1,
+   "function_body_length": 1,
+   "line_length": 6,
+   "type_body_length": 1
+  },
+  "Tests/AlbumistEngineTests/LabelsHoldFollowUpTests.swift": {
+   "function_body_length": 1
+  },
+  "Tests/AlbumistEngineTests/LabelsLaterTests.swift": {
+   "file_length": 1,
+   "function_body_length": 3,
+   "large_tuple": 1,
+   "line_length": 1,
+   "nesting": 1,
+   "type_body_length": 2,
+   "type_name": 1
+  },
+  "Tests/AlbumistEngineTests/LateNoteWaysOutTests.swift": {
+   "large_tuple": 1
+  },
+  "Tests/AlbumistEngineTests/LoadTests.swift": {
+   "function_body_length": 1,
+   "function_parameter_count": 1,
+   "large_tuple": 2,
+   "line_length": 7,
+   "type_body_length": 1
+  },
+  "Tests/AlbumistEngineTests/LocalTimePipelineTests.swift": {
+   "file_length": 1,
+   "line_length": 2,
+   "type_body_length": 1
+  },
+  "Tests/AlbumistEngineTests/MainThreadWorkLoadTests.swift": {
+   "function_body_length": 1,
+   "large_tuple": 1,
+   "line_length": 1
+  },
+  "Tests/AlbumistEngineTests/NearCapPhaseRuleTests.swift": {
+   "line_length": 2
+  },
+  "Tests/AlbumistEngineTests/NeverDoneTests.swift": {
+   "force_try": 1,
+   "nesting": 1,
+   "type_body_length": 1
+  },
+  "Tests/AlbumistEngineTests/OverlappingRefreshTests.swift": {
+   "line_length": 1
+  },
+  "Tests/AlbumistEngineTests/OverviewNumbersTests.swift": {
+   "file_length": 1,
+   "force_try": 1,
+   "large_tuple": 4,
+   "type_body_length": 1
+  },
+  "Tests/AlbumistEngineTests/PauseStopsWorkTests.swift": {
+   "file_length": 1,
+   "force_try": 1,
+   "nesting": 1,
+   "type_body_length": 1,
+   "type_name": 3
+  },
+  "Tests/AlbumistEngineTests/PhotoAccessLossTests.swift": {
+   "force_try": 1
+  },
+  "Tests/AlbumistEngineTests/PipelineTests.swift": {
+   "force_try": 1,
+   "large_tuple": 1,
+   "line_length": 2,
+   "type_body_length": 1
+  },
+  "Tests/AlbumistEngineTests/PreviewRankFactsTests.swift": {
+   "line_length": 1
+  },
+  "Tests/AlbumistEngineTests/RandomLibraryTests.swift": {
+   "function_body_length": 1,
+   "large_tuple": 1,
+   "line_length": 1
+  },
+  "Tests/AlbumistEngineTests/RecurringPlacePipelineTests.swift": {
+   "large_tuple": 1
+  },
+  "Tests/AlbumistEngineTests/ResumedRunNeverStandsStillTests.swift": {
+   "large_tuple": 1
+  },
+  "Tests/AlbumistEngineTests/RingAndListTests.swift": {
+   "force_try": 1,
+   "line_length": 1
+  },
+  "Tests/AlbumistEngineTests/SelectedPhotosTests.swift": {
+   "file_length": 1,
+   "force_try": 1,
+   "function_body_length": 1,
+   "large_tuple": 1,
+   "line_length": 1,
+   "type_body_length": 1
+  },
+  "Tests/AlbumistEngineTests/SortedCountTests.swift": {
+   "file_length": 1,
+   "force_try": 1,
+   "function_body_length": 1,
+   "function_parameter_count": 1,
+   "large_tuple": 1,
+   "line_length": 2,
+   "type_body_length": 1
+  },
+  "Tests/AlbumistEngineTests/StatusAndDecisionTests.swift": {
+   "line_length": 2
+  },
+  "Tests/AlbumistEngineTests/UndoResuggestTests.swift": {
+   "line_length": 1
+  },
+  "Tests/AlbumistStoreTests/DataSafetyTests.swift": {
+   "file_length": 1,
+   "line_length": 6,
+   "type_body_length": 1
+  },
+  "Tests/AlbumistStoreTests/DatabaseFileTests.swift": {
+   "optional_data_string_conversion": 1
+  },
+  "Tests/AlbumistStoreTests/OpenPlansTests.swift": {
+   "line_length": 1,
+   "nesting": 1
+  },
+  "Tests/AlbumistStoreTests/StoreTests.swift": {
+   "file_length": 1,
+   "function_body_length": 1,
+   "line_length": 9,
+   "optional_data_string_conversion": 1,
+   "type_body_length": 1
+  },
+  "Tests/AlbumistUITestLogicTests/PauseCountCheckTests.swift": {
+   "line_length": 2
+  }
+ }
+}

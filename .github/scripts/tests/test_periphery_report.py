@@ -47,6 +47,9 @@ class ReportTests(unittest.TestCase):
         self.assertIn("| Sources/AlbumistCore | 2 |", out)
         self.assertIn("| App/Albumist/A.swift:12 | function.method.instance old() | unused |", out)
         self.assertIn("PERIPHERY findings=3", err)
+        # Every finding is in the log, not only the first 40 of the summary.
+        self.assertEqual(err.count("PERIPHERY_FINDING "), 3)
+        self.assertIn("PERIPHERY_FINDING Sources/AlbumistCore/B.swift:3 | var.instance count | assignOnlyProperty", err)
 
     def test_no_findings(self):
         code, out, _ = self.run_main(0, [])
@@ -65,7 +68,7 @@ class ReportTests(unittest.TestCase):
 
     def test_long_list_is_cut(self):
         findings = [finding(f"f{n}()", f"Tests/X/A.swift:{n + 1}:1") for n in range(45)]
-        self.assertIn("| 5 more (artifact \"periphery\") | | |", periphery_report.summary(findings, listed=40))
+        self.assertIn("| 5 more (PERIPHERY_FINDING lines in the log, artifact \"periphery\") | | |", periphery_report.summary(findings, listed=40))
 
 
 class PinTests(unittest.TestCase):
@@ -97,6 +100,10 @@ class WorkflowTests(unittest.TestCase):
         self.assertNotIn("continue-on-error", text)
         self.assertNotIn("mac-queue", text)
         self.assertIn("persist-credentials: false", text)
+        # The report goes to the log too, and its exit status is not lost in the pipe (macOS
+        # runs "bash -e" without pipefail).
+        self.assertIn("| tee -a \"$GITHUB_STEP_SUMMARY\"", text)
+        self.assertIn("set -o pipefail", text)
 
 
 if __name__ == "__main__":

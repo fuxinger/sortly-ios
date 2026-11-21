@@ -23,7 +23,7 @@ checksum stops the job.
 its own: SwiftLint only reads the code, it does not build the app, so a new version must not
 count in the app fingerprint of the UI runs the way toolchain.json does). It is the statically
 linked Linux binary of the release, run in the swift container of the Linux jobs (ci.yml,
-"SwiftLint report"), which has the libsourcekitdInProc.so it loads. `periphery` installs the
+"SwiftLint"), which has the libsourcekitdInProc.so it loads. `periphery` installs the
 pinned Periphery (unused code; macOS zip with the libIndexStore.dylib it loads) from the same file
 (code-checks.yml).
 """

@@ -54,11 +54,12 @@ let package = Package(
             swiftSettings: strictSettings
         ),
         // Files of the UI tests built here as well so Linux tests them: test12's pause check,
-        // and which app process the end of the app is about (UITestLaunchRecord).
+        // which app process the end of the app is about (UITestLaunchRecord), and the app's lifecycle
+        // lines next to a Home press (UITestLifecycle).
         .target(
             name: "AlbumistUITestLogic",
             path: "App/AlbumistUITests",
-            sources: ["PauseCountCheck.swift", "UITestLaunchRecord.swift"],
+            sources: ["PauseCountCheck.swift", "UITestLaunchRecord.swift", "UITestLifecycle.swift"],
             swiftSettings: strictSettings
         ),
         .testTarget(

@@ -158,11 +158,15 @@ enum UITestWait {
         let pressed = Date()
         UITestOnboarding.clock("wait start app in the background \(why)")
         // The moment iOS reported the app in the background (or ended), nil while it has not.
+        // The app's own lifecycle line counts too (`UITestLifecycle.inBackground`): in UI run
+        // 44880878362 it was in the background 1.1 s after the first press while XCTest read
+        // state 4 for 8 s more, and only that stale state made the second press.
         func inBackground(within seconds: TimeInterval) -> Date? {
             let until = Date().addingTimeInterval(seconds)
             repeat {
                 let state = app.state
                 if state == .runningBackground || state == .runningBackgroundSuspended || state == .notRunning { return Date() }
+                if let since = appReportedBackground(since: pressed, state: state) { return since }
                 usleep(250_000)
             } while Date() < until
             return nil
@@ -183,6 +187,9 @@ enum UITestWait {
                 print("UI_FLAKY_RETRY \(testID(test)) app still in the foreground (state \(app.state.rawValue)) \(Int(Date().timeIntervalSince(pressed))) s after the Home press \(why), tried: \(way.name)")
             }
             clearSystemAlert(index == 0 ? "before the Home press \(why)" : "before the \(way.name) \(why)")
+            // The moment of each way, next to the app's own `UI_FACT app lifecycle` lines
+            // (`UITestLifecycle`): did the first press reach the app at all?
+            UITestOnboarding.clock("\(way.name) \(why)")
             if index < 2 {
                 XCUIDevice.shared.press(.home)
             } else {
@@ -208,6 +215,15 @@ enum UITestWait {
         // pacing: the minimum time in the background, counted from when iOS reported it
         if wait > 0 { usleep(UInt32(wait * 1_000_000)) }
         return reached
+    }
+
+    /// When the app wrote that it entered the background after `pressed` (its watch file,
+    /// `UITestStalls.path`), nil while it has not; `state` is what XCTest reads meanwhile.
+    private static func appReportedBackground(since pressed: Date, state: XCUIApplication.State) -> Date? {
+        guard let text = try? String(contentsOfFile: UITestStalls.path, encoding: .utf8),
+              let since = UITestLifecycle.inBackground(text, since: pressed.timeIntervalSince1970) else { return nil }
+        print("UI_FACT app reported the background at \(UITestLifecycle.clock(since)) UTC, XCTest state \(state.rawValue)")
+        return Date(timeIntervalSince1970: since)
     }
 
     /// A system alert in front of the app takes a Home press for itself: SpringBoard closes the

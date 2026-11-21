@@ -7,7 +7,7 @@ name: Code checks
 #
 # Xcode's analyzer ("xcodebuild analyze") is left out on purpose: it is the Clang static analyzer,
 # which checks C, C++ and Objective-C only, and this app is Swift (the one C file is the SQLite
-# module header Sources/CSQLite/shim.h). SwiftLint runs in ci.yml ("SwiftLint report").
+# module header Sources/CSQLite/shim.h). SwiftLint runs in ci.yml ("SwiftLint").
 #
 # Once a night (a Mac for about 10 minutes, at an hour without UI runs), by hand, and in a pull
 # request that changes this check itself. Not in the Mac queue of the UI runs (ui.yml): it
@@ -65,6 +65,7 @@ jobs:
           tail -2 ../build/periphery/build-log.txt
       - name: Scan (report only)
         run: |
+          set -o pipefail
           set +e
           periphery scan \
             --project App/Albumist.xcodeproj \
@@ -77,7 +78,8 @@ jobs:
             --quiet > build/periphery/findings.json
           status=$?
           set -e
-          python3 .github/scripts/periphery_report.py --status "$status" build/periphery/findings.json >> "$GITHUB_STEP_SUMMARY"
+          # Also in the log: the job summary cannot be read through the API, the log can.
+          python3 .github/scripts/periphery_report.py --status "$status" build/periphery/findings.json | tee -a "$GITHUB_STEP_SUMMARY"
       - name: Upload the report
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

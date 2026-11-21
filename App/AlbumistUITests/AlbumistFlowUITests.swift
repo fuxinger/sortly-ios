@@ -2115,10 +2115,14 @@ final class AlbumistFlowUITests: XCTestCase {
         tap(rebuild, "rebuild analysis")
         let confirmRebuild = app.buttons["Neu aufbauen"]
         tap(confirmRebuild, "confirm rebuild")
-        // The dialog has closed, so "Fertig" of the settings is not behind it. Not asserted: the
-        // analysis checks after this say whether the rebuild started.
-        _ = UITestWait.holds(timeout: 5) { !confirmRebuild.exists }
-        if app.buttons["Fertig"].exists { app.buttons["Fertig"].tap() }
+        // The dialog has closed, so "Fertig" of the settings is not behind it. On a Mac at load 714
+        // (UI run 44880878362) it took longer than the 5 s this waited before, "Fertig" was not
+        // tapped, and the rest of the test ran under the settings sheet: every later step missed.
+        // Now the dialog has 20 s, and the settings must close, both said by name when they do not.
+        UITestWait.disappears(confirmRebuild, "rebuild dialog closed", timeout: 20)
+        let settingsDone = app.buttons["Fertig"]
+        if settingsDone.exists { settingsDone.tap() }
+        UITestWait.disappears(app.navigationBars["Einstellungen"], "settings closed after the rebuild", timeout: 20)
 
         var seen: [(step: Int, done: Int, total: Int)] = []
         func record(_ moment: String) {

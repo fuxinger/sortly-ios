@@ -5,7 +5,7 @@
 Bitte melde Sicherheitsprobleme **nicht** als öffentliches Issue, sondern privat:
 
 1. Auf GitHub im Repository unter **Security > Advisories > Report a vulnerability**
-   (https://github.com/fuxinger/sortly-ios/security/advisories/new). Nur der Maintainer sieht
+   (https://github.com/fuxinger/albumist-ios/security/advisories/new). Nur der Maintainer sieht
    die Meldung.
 2. Beschreibe, was betroffen ist, wie es sich nachstellen lässt und welche Version (Build aus
    TestFlight oder Commit) du verwendet hast. Bitte keine privaten Fotos oder persönlichen Daten

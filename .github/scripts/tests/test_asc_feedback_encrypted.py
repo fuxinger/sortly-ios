@@ -280,7 +280,7 @@ class MainEncryptedTests(Identity):
         def transport(method, url, headers):
             github_calls.append(url)
             return github[0], {}, json.dumps(github[1]).encode()
-        env = {"GITHUB_REPOSITORY": "fuxinger/sortly-ios", "GH_TOKEN": "t", "KEY_ID": "k", "ISSUER_ID": "i",
+        env = {"GITHUB_REPOSITORY": "fuxinger/albumist-ios", "GH_TOKEN": "t", "KEY_ID": "k", "ISSUER_ID": "i",
                "KEY_PATH": os.path.join(self.base, "missing.p8"), "GITHUB_OUTPUT": self.output,
                "RUNNER_TEMP": self.runner_temp}
         fetch_mock = mock.Mock(side_effect=fetch or self.fake_fetch)
@@ -490,7 +490,7 @@ class EnvironmentTests(unittest.TestCase):
     """Review S1 and its change: target env when asc-feedback is fenced to main, target repo (with a
     warning) while it does not exist yet, red with any other rule."""
 
-    REPO = "fuxinger/sortly-ios"
+    REPO = "fuxinger/albumist-ios"
     MAIN = {"deployment_branch_policy": {"protected_branches": False, "custom_branch_policies": True}}
     PR_RULE = [{"type": "pull_request"}]
 

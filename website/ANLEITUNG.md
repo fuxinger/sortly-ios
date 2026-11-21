@@ -37,14 +37,15 @@ Sobald die Website-Dateien auf dem Branch `main` liegen, baut GitHub die
 Seite automatisch (zu sehen unter **Actions › Website**, dauert etwa
 1 Minute). Danach ist sie hier erreichbar:
 
-- Start: `https://fuxinger.github.io/sortly-ios/`
-- Support-URL: `https://fuxinger.github.io/sortly-ios/de/support.html`
-- Datenschutz-URL: `https://fuxinger.github.io/sortly-ios/de/datenschutz.html`
+- Start: `https://fuxinger.github.io/albumist-ios/`
+- Support-URL: `https://fuxinger.github.io/albumist-ios/de/support.html`
+- Datenschutz-URL: `https://fuxinger.github.io/albumist-ios/de/datenschutz.html`
   (für die englische App-Store-Seite: `.../en/privacy.html`)
 
 Diese Adressen trägst du in **App Store Connect** ein: Datenschutz-URL
 unter *App-Datenschutz*, Support-URL und Marketing-URL bei der jeweiligen
-Sprache der App-Version.
+Sprache der App-Version. Nach der Umbenennung des Repositorys (21.11.2026) stellt der
+nächste TestFlight-Lauf die alten Adressen dort selbst um (`.github/scripts/asc_urls.py`).
 
 Jede spätere Änderung in `website/` wird automatisch neu veröffentlicht.
 
@@ -54,10 +55,10 @@ Die App heißt jetzt **Albumist**. Das steht schon in `EINSTELLUNGEN.txt`.
 Sollte sich der Name noch einmal ändern, änderst du nur die Zeile `APP_NAME=`.
 Alle Seiten übernehmen ihn.
 
-Die Adresse enthält noch den alten Namen des Repositorys (`sortly-ios`).
-Das lässt sich auf zwei Wegen ändern:
-- Repository umbenennen, zum Beispiel in `albumist` (Settings › General).
-  Dann lautet die Adresse `https://fuxinger.github.io/albumist/`.
+Das Repository heißt `albumist-ios`, die Adressen oben gelten seit der Umbenennung. Die
+Adresse mit dem früheren Namen leitet GitHub Pages nicht weiter: In App Store Connect
+müssen Datenschutz-, Support- und Marketing-URL die Adressen oben sein.
+Eine eigene Adresse ist weiter möglich:
 - Eine eigene Domain kaufen (etwa 1 € im Monat) und unter Settings › Pages
   bei *Custom domain* eintragen.
 

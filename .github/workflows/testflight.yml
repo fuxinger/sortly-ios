@@ -674,6 +674,18 @@ jobs:
           python3 .github/scripts/testflight_notes.py upload --notes docs/TESTFLIGHT_NOTES.md \
             --build "${{ github.run_number }}" --sha "$GITHUB_SHA" --bundle-id app.albumist.ios \
             --wait-minutes 20 --gate "$GATE"
+      - name: App Store Connect addresses of the website
+        # Since the repository rename (21.11.2026) the Pages site is fuxinger.github.io/albumist-ios;
+        # the old address is gone. Moves every address of the old site in App Store Connect (privacy
+        # policy, support, marketing, TestFlight's privacy policy) to the same path on the new one,
+        # nothing else (asc_urls.py; the owner's "Mach selber" of 21.11.). Here, because only this
+        # job gets the key; a run with nothing left to move only reads. Never touches the upload.
+        continue-on-error: true
+        timeout-minutes: 5
+        env:
+          KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+        run: python3 .github/scripts/asc_urls.py fix --bundle-id app.albumist.ios
       - name: Remove key
         if: always()
         run: if [ -n "${KEY_PATH:-}" ]; then rm -rf "$(dirname "$KEY_PATH")"; fi

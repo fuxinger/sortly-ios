@@ -69,6 +69,14 @@ class LoosenedTests(unittest.TestCase):
                          [("B.swift", 0.5, 1)])
         self.assertEqual(found(diff(unit, ["@Test(.timeLimit(.minutes(1))) func a() {}"], ["@Test(.timeLimit(.minutes(2))) func a() {}"])),
                          [("B.swift", 60, 120)])
+        # A deadline the test builds itself (AlbumistLockedUITests: `Date().addingTimeInterval(900)`).
+        self.assertEqual(found(diff(ui, ["let deadline = Date().addingTimeInterval(900)"],
+                                    ["let deadline = Date().addingTimeInterval(1200)"])), [("A.swift", 900, 1200)])
+        self.assertEqual(found(diff(ui, ["let end = Date(timeIntervalSinceNow: 40)"], ["let end = Date(timeIntervalSinceNow: 60)"])),
+                         [("A.swift", 40, 60)])
+        # A window moved back from a moment, or computed from a variable, is no deadline.
+        self.assertEqual(found(diff(ui, ["reacted.addingTimeInterval(-1)"], ["reacted.addingTimeInterval(-2)"])), [])
+        self.assertEqual(found(diff(ui, ["Date().addingTimeInterval(timeout)"], ["Date().addingTimeInterval(timeout * 2)"])), [])
         # Time the test moves forward is no limit.
         self.assertEqual(found(diff(unit, ["clock.advance(by: .seconds(5))"], ["clock.advance(by: .seconds(50))"])), [])
         self.assertEqual(found(diff(flow, ["    timeout-minutes: 60"], ["    timeout-minutes: 85"])), [("ui.yml", 3600, 5100)])

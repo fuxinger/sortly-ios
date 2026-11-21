@@ -18,7 +18,8 @@ enum UITestStalls {
     /// 18:31:05.2 UTC` (the clock of `UI_MAIN_STALL` and of `UI_FACT slow query`), and each stack
     /// as `UI_FACT main stack after 5.0 s of the stall from …: frame | frame | …`, and the marked
     /// work the main thread did in it as `UI_FACT main work in the stall of …: name 12x 0.3 s, …`
-    /// (`MainThreadWatch.count` and `section`). `file`: another file the app wrote the same way
+    /// (`MainThreadWatch.count` and `section`), and each change between active, inactive and
+    /// background as `UI_FACT app lifecycle background at 18:31:05.2 UTC` (`UITestLifecycle`). `file`: another file the app wrote the same way
     /// (the stress test's measured launch, `-AlbumistUITestWatchMainLog <file>`), else `path`.
     static func report(_ file: String? = nil) {
         let file = file ?? path
@@ -35,6 +36,10 @@ enum UITestStalls {
                 print("UI_FACT main work \(line.dropFirst(2))")
                 continue
             }
+            if let fact = UITestLifecycle.fact(line) {
+                print(fact)
+                continue
+            }
             let parts = line.split(separator: " ")
             // "@ <pid> <process start> <app code reached>": `ui_tests.py` compares the start
             // with the test's "UI_FACT clock … launch" when XCTest lost the app at a launch.
@@ -49,9 +54,5 @@ enum UITestStalls {
     }
 
     /// "HH:MM:SS.s" (UTC) of seconds since 1970, the clock of `UITestOnboarding.clock`.
-    private static func clock(_ seconds: Double) -> String {
-        let day = seconds.truncatingRemainder(dividingBy: 86_400)
-        return String(format: "%02d:%02d:%04.1f", Int(day / 3600), Int(day.truncatingRemainder(dividingBy: 3600) / 60),
-                      day.truncatingRemainder(dividingBy: 60))
-    }
+    private static func clock(_ seconds: Double) -> String { UITestLifecycle.clock(seconds) }
 }

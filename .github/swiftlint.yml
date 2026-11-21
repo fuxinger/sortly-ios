@@ -1,10 +1,41 @@
-# SwiftLint configuration (ci.yml, "SwiftLint report"; version pinned in .github/lint-tools.json).
+# SwiftLint configuration (ci.yml, "SwiftLint"; version pinned in .github/lint-tools.json).
 # Here and not at the top of the repository: a file there would count in the app fingerprint of
 # the UI runs (ui_groups.py), and a lint setting does not change the app.
 #
-# For now SwiftLint's default rules, report-only: the first runs show what it finds in this code
-# base; then rules are switched off or tuned on purpose (each with a reason here), the baseline
-# is committed, and only new findings fail.
+# SwiftLint's default rules, tuned below after the first report (21.11.2026: 7,897 findings in
+# 309 files), each change with its reason. What is left from before SwiftLint ran is counted per
+# file and rule in .github/swiftlint-baseline.json; only findings beyond it fail the job
+# (.github/scripts/swiftlint_report.py). A setting SwiftLint does not take fails the job too.
 
 # The folders are named on the command line (ci.yml). A wrong folder must not read as "clean".
 allow_zero_lintable_files: false
+
+# The statically linked Linux binary does not use SourceKit ("Skipping enabled rule
+# 'statement_position' because it requires SourceKit", first run 21.11.2026): of the default
+# rules only statement_position is left out that way. Everything else runs on SwiftSyntax.
+
+disabled_rules:
+  # Trailing commas in lists over several lines are allowed everywhere since Swift 6.1 and give
+  # smaller diffs; the code base uses them on purpose (291 findings). Not a correctness question.
+  - trailing_comma
+
+line_length:
+  # The code is written for about 150 columns: 4,536 lines are over the default 120 but only 475
+  # over 160 and 84 over 200 (count 21.11.2026). 120 would flag every other test assertion; 160
+  # catches the lines that are really too long. A URL cannot be broken, so it does not count.
+  warning: 160
+  error: 200
+  ignores_urls: true
+
+identifier_name:
+  # Short names in a short scope (a closure, a loop, a test: `let s = store`, `for p in plan`) read
+  # well in Swift; 2,185 of the first findings were names of one letter, almost all of them there.
+  # A name of one letter in a wide scope is a review question, not a lint rule.
+  min_length:
+    warning: 1
+    error: 1
+  # Test functions describe their case in the name (Swift Testing, XCTest): 597 are longer than the
+  # default 40, 26 longer than 60. 60 keeps the long ones readable; above 100 is an error.
+  max_length:
+    warning: 60
+    error: 100

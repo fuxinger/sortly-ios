@@ -108,7 +108,8 @@ neue Appetize-App mit neuem Testlink), Ordner früherer Prüfungen `sortly-revie
 früheren Namen. Die Repository-Adressen (`fuxinger/sortly-ios`, `fuxinger.github.io/sortly-ios`)
 ändern sich nur mit `--repo-renamed`: GitHub leitet die alte Repository-Adresse weiter, die alte
 Pages-Adresse nicht. Datenschutz-Link der App und die URLs in App Store Connect wechseln deshalb im
-selben Schritt wie die Umbenennung.
+selben Schritt wie die Umbenennung. Erledigt: Das Repository heißt seit 21.11.2026 `albumist-ios`,
+der Lauf mit `--repo-renamed` ist gemacht.
 
 Danach auf dem Mac: Xcode-Projekt neu erzeugen (`xcodegen` in `App/`), das alte, ignorierte
 `App/Sortly.xcodeproj` und DerivedData löschen. Target, Schema und Programmdatei heißen dann

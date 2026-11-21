@@ -514,24 +514,24 @@ class PrivacyGateTests(unittest.TestCase):
 
     def test_only_a_clear_private_answer_counts_as_private(self):
         transport, calls = self.github(200, {"private": True})
-        self.assertTrue(asc_feedback.repo_is_private("fuxinger/sortly-ios", "gh-token", transport))
-        self.assertEqual(calls[0][0], "https://api.github.com/repos/fuxinger/sortly-ios")
+        self.assertTrue(asc_feedback.repo_is_private("fuxinger/albumist-ios", "gh-token", transport))
+        self.assertEqual(calls[0][0], "https://api.github.com/repos/fuxinger/albumist-ios")
         self.assertEqual(calls[0][1]["Authorization"], "Bearer gh-token")
         for status, body in [(200, {"private": False}), (200, {}), (200, {"private": "true"}), (404, {}),
                              (200, b"not json")]:
-            self.assertFalse(asc_feedback.repo_is_private("fuxinger/sortly-ios", "t", self.github(status, body)[0]))
+            self.assertFalse(asc_feedback.repo_is_private("fuxinger/albumist-ios", "t", self.github(status, body)[0]))
         self.assertFalse(asc_feedback.repo_is_private("", "t", transport))
         self.assertFalse(asc_feedback.repo_is_private("a/b/../c?x=1", "t", transport))
 
         def broken(method, url, headers):
             raise OSError("network down")
-        self.assertFalse(asc_feedback.repo_is_private("fuxinger/sortly-ios", "t", broken))
+        self.assertFalse(asc_feedback.repo_is_private("fuxinger/albumist-ios", "t", broken))
 
     def run_main(self, args, github_answer):
         out = tempfile.mkdtemp()
         summary = os.path.join(out, "summary.md")
         transport, calls = self.github(*github_answer)
-        env = {"GITHUB_REPOSITORY": "fuxinger/sortly-ios", "GH_TOKEN": "t", "KEY_ID": "k", "ISSUER_ID": "i",
+        env = {"GITHUB_REPOSITORY": "fuxinger/albumist-ios", "GH_TOKEN": "t", "KEY_ID": "k", "ISSUER_ID": "i",
                "KEY_PATH": os.path.join(out, "missing.p8"), "GITHUB_OUTPUT": os.path.join(out, "output")}
         with mock.patch.dict(os.environ, env), mock.patch.object(asc_feedback, "urllib_transport", transport), \
                 mock.patch.object(asc_feedback.Client, "get", side_effect=AssertionError("App Store Connect called")), \

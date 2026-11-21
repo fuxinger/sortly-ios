@@ -6,7 +6,9 @@ Periphery (pinned, .github/lint-tools.json) runs report-only for now, like Swift
 (swiftlint_report.py): its findings do not fail the job. The job fails only when Periphery itself
 did not scan: an exit status other than 0, or a JSON report that cannot be read. The summary
 counts the findings by kind of finding ("unused", "assignOnlyProperty", ...), by declaration kind
-and by folder, and lists the first ones with their place.
+and by folder, and lists the first ones with their place. Every finding also goes into the log
+as a `PERIPHERY_FINDING place | declaration | finding` line: the artifact cannot be downloaded
+through the API, the log can, and each finding is checked by hand.
 """
 from __future__ import annotations
 
@@ -45,7 +47,7 @@ def summary(findings: list[dict], listed: int = 40) -> str:
     for f in sorted(findings, key=place)[:listed]:
         lines.append(f"| {place(f)} | {f.get('kind', '?')} {f.get('name', '?')} | {'/'.join(f.get('hints') or ['?'])} |")
     if len(findings) > listed:
-        lines.append(f"| {len(findings) - listed} more (artifact \"periphery\") | | |")
+        lines.append(f"| {len(findings) - listed} more (PERIPHERY_FINDING lines in the log, artifact \"periphery\") | | |")
     return "\n".join(lines) + "\n"
 
 
@@ -67,6 +69,9 @@ def main(argv: list[str]) -> int:
         print(f"::error title=Periphery::its report {args.report} cannot be read: {error}", file=sys.stderr)
         return 1
     print(f"PERIPHERY findings={len(findings)}", file=sys.stderr)
+    for f in sorted(findings, key=place):
+        print(f"PERIPHERY_FINDING {place(f)} | {f.get('kind', '?')} {f.get('name', '?')} | "
+              f"{'/'.join(f.get('hints') or ['?'])}", file=sys.stderr)
     sys.stdout.write(summary(findings))
     return 0
 

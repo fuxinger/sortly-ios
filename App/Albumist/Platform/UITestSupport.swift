@@ -224,8 +224,20 @@ final class MainThreadWatch: @unchecked Sendable {
         guard !started else { return }
         started = true
         let center = NotificationCenter.default
-        _ = center.addObserver(forName: UIApplication.didBecomeActiveNotification, object: nil, queue: nil) { [self] _ in setActive(true) }
-        _ = center.addObserver(forName: UIApplication.willResignActiveNotification, object: nil, queue: nil) { [self] _ in setActive(false) }
+        _ = center.addObserver(forName: UIApplication.didBecomeActiveNotification, object: nil, queue: nil) { [self] _ in
+            setActive(true)
+            noteLifecycle("active")
+        }
+        _ = center.addObserver(forName: UIApplication.willResignActiveNotification, object: nil, queue: nil) { [self] _ in
+            setActive(false)
+            noteLifecycle("resign-active")
+        }
+        _ = center.addObserver(forName: UIApplication.didEnterBackgroundNotification, object: nil, queue: nil) { [self] _ in
+            noteLifecycle("background")
+        }
+        _ = center.addObserver(forName: UIApplication.willEnterForegroundNotification, object: nil, queue: nil) { [self] _ in
+            noteLifecycle("foreground")
+        }
         mainPort = mach_thread_self()
         let main = pthread_self()
         stackHigh = UInt(bitPattern: pthread_get_stackaddr_np(main))
@@ -272,6 +284,19 @@ final class MainThreadWatch: @unchecked Sendable {
         guard sysctl(&name, u_int(name.count), &info, &size, nil, 0) == 0, size > 0 else { return nil }
         let start = info.kp_proc.p_un.__p_starttime
         return Double(start.tv_sec) + Double(start.tv_usec) / 1_000_000
+    }
+
+    /// "^ <seconds since 1970> <event>" in the runner's file (`UITestLifecycle`): whether a Home
+    /// press of the UI tests reached the app at all (IMPROVEMENTS "Home-Druck kommt nicht an").
+    private func noteLifecycle(_ event: String) {
+        lock.lock()
+        let file = stressFile
+        lock.unlock()
+        guard let file else { return }
+        let line = "^ " + String(format: "%.1f", Date().timeIntervalSince1970) + " " + event + "\n"
+        fileLock.lock()
+        file.write(Data(line.utf8))
+        fileLock.unlock()
     }
 
     private func setActive(_ value: Bool) {

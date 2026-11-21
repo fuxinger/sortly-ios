@@ -32,7 +32,7 @@ Testing failed:
 # Job 133298844234: the simulator service dropped the connection while installing the runner.
 SERVICE_INTERRUPTED = """\
 2026-11-16 12:48:24.530 xcodebuild[7567:28001] [MT] IDELaunchReport: 8462062ab5750b00:8462062ab5751bc0:Launching AlbumistUITests Finished with error: Error returned in reply from CoreSimulatorService: Connection interrupted
-*** If you believe this error represents a bug, please attach the result bundle at /Users/runner/work/sortly-ios/sortly-ios/build/A11yResults.xcresult
+*** If you believe this error represents a bug, please attach the result bundle at /Users/runner/work/albumist-ios/albumist-ios/build/A11yResults.xcresult
 Testing failed:
 \tAlbumistUITests-Runner encountered an error (Failed to install or launch the test runner. (Underlying Error: Error returned in reply from CoreSimulatorService: Connection interrupted. Software caused connection abort))
 ** TEST FAILED **
@@ -61,7 +61,7 @@ Test Case '-[AlbumistUITests.AccessibilityUITests test4_Landscape]' passed (178.
 # Job 133066518887: real findings of the accessibility tests.
 A11Y_FINDING = """\
 A11Y_FAIL en overview | German word 'Fotos' in English UI | label 'Also not counted: 57 Fotos von zu Hause.' | 132,228 188x38
-/Users/runner/work/sortly-ios/sortly-ios/App/AlbumistUITests/AccessibilityUITests.swift:355: error: -[AlbumistUITests.AccessibilityUITests test2_EnglishMainScreens] : failed - en overview: 1 accessibility finding(s): German word 'Fotos'
+/Users/runner/work/albumist-ios/albumist-ios/App/AlbumistUITests/AccessibilityUITests.swift:355: error: -[AlbumistUITests.AccessibilityUITests test2_EnglishMainScreens] : failed - en overview: 1 accessibility finding(s): German word 'Fotos'
 Test Case '-[AlbumistUITests.AccessibilityUITests test2_EnglishMainScreens]' failed (432.008 seconds).
 \t Executed 4 tests, with 2 failures (0 unexpected) in 1400.000 (1400.100) seconds
 ** TEST FAILED **
@@ -71,7 +71,7 @@ Test Case '-[AlbumistUITests.AccessibilityUITests test2_EnglishMainScreens]' fai
 # repeated, even when the simulator was part of the story.
 SERVICE_AND_ASSERTION = """\
 Error returned in reply from CoreSimulatorService: Connection interrupted
-/Users/runner/work/sortly-ios/sortly-ios/App/AlbumistUITests/AccessibilityUITests.swift:148: error: -[AlbumistUITests.AccessibilityUITests test1_OnboardingAtLargestTextInDarkMode] : Failed to get matching snapshots: Timed out while evaluating UI query.
+/Users/runner/work/albumist-ios/albumist-ios/App/AlbumistUITests/AccessibilityUITests.swift:148: error: -[AlbumistUITests.AccessibilityUITests test1_OnboardingAtLargestTextInDarkMode] : Failed to get matching snapshots: Timed out while evaluating UI query.
 Test Case '-[AlbumistUITests.AccessibilityUITests test1_OnboardingAtLargestTextInDarkMode]' failed (333.957 seconds).
 ** TEST FAILED **
 """
@@ -79,7 +79,7 @@ Test Case '-[AlbumistUITests.AccessibilityUITests test1_OnboardingAtLargestTextI
 # Job 133066518646: a flow assertion.
 FLOW_ASSERTION = """\
 Test Case '-[AlbumistUITests.AlbumistFlowUITests test1_FullFlow]' started.
-/Users/runner/work/sortly-ios/sortly-ios/App/AlbumistUITests/AlbumistFlowUITests.swift:60: error: -[AlbumistUITests.AlbumistFlowUITests test1_FullFlow] : failed - Missing: open trip for split
+/Users/runner/work/albumist-ios/albumist-ios/App/AlbumistUITests/AlbumistFlowUITests.swift:60: error: -[AlbumistUITests.AlbumistFlowUITests test1_FullFlow] : failed - Missing: open trip for split
 Test Case '-[AlbumistUITests.AlbumistFlowUITests test1_FullFlow]' failed (985.922 seconds).
 ** TEST FAILED **
 """
@@ -126,7 +126,7 @@ Test Case '-[AlbumistUITests.DeviceConditionUITests test12_StressManyPhotosIClou
 
 # Job 133113879733: a compile error (xcodebuild test builds first).
 COMPILE_ERROR = """\
-/Users/runner/work/sortly-ios/sortly-ios/App/Albumist/Platform/SamplePhotos.swift:162:66: error: cannot infer key path type from context; consider explicitly specifying a root type
+/Users/runner/work/albumist-ios/albumist-ios/App/Albumist/Platform/SamplePhotos.swift:162:66: error: cannot infer key path type from context; consider explicitly specifying a root type
 Testing failed:
 ** TEST FAILED **
 """

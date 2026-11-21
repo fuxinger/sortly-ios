@@ -10,7 +10,7 @@ body:
         **Achtung, dieses Repository ist öffentlich:** Jede Meldung kann von allen gelesen werden.
         Bitte keine privaten Fotos oder Screenshots mit privaten Fotos anhängen und keine Namen,
         Orte, Albumnamen oder anderen persönlichen Angaben eintragen. Sicherheitslücken bitte
-        nicht hier melden, sondern wie in der [Sicherheitsrichtlinie](https://github.com/fuxinger/sortly-ios/security/policy) beschrieben.
+        nicht hier melden, sondern wie in der [Sicherheitsrichtlinie](https://github.com/fuxinger/albumist-ios/security/policy) beschrieben.
   - type: textarea
     id: what
     attributes:

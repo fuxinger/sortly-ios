@@ -288,7 +288,11 @@ final class AccessibilityUITests: XCTestCase {
         let overview = tabButton(w.overviewTab)
         if overview.waitForExistence(timeout: 20) { overview.tap() }
         UITestWait.appears(app.navigationBars[w.overviewTab], "\(tag) overview shown", timeout: 20)
-        let reviewSuggestions = app.buttons.matching(NSPredicate(format: "label MATCHES %@", w.reviewSuggestions)).firstMatch
+        // Right after an analysis the "Analyse fertig" card carries "Vorschläge prüfen" without a
+        // number ("analysis.review") and the counted button waits until it is gone: in the
+        // contrast run of UI run 44880878362 the light walk found only the card's button.
+        let reviewSuggestions = app.buttons.matching(NSPredicate(format: "label MATCHES %@ OR identifier == %@",
+                                                                 w.reviewSuggestions, "analysis.review")).firstMatch
         // Its content, not only its bar: the suggestions button the walk taps next. Not asserted
         // here, the tap below says when it is missing.
         _ = reviewSuggestions.waitForExistence(timeout: 20)
@@ -529,6 +533,7 @@ final class AccessibilityUITests: XCTestCase {
         case .moving: break // failed in the wait
         case .unread: print("A11Y_WARN \(screen) | not checked at rest: no snapshot")
         }
+        answerLateNotificationAlert(before: screen)
         shot("a11y-" + slug(screen))
         let chrome = chromeFrames()
         UITestOnboarding.clock("check start \(screen)")
@@ -1314,6 +1319,24 @@ final class AccessibilityUITests: XCTestCase {
             return false
         }
         print(answered ? "UI_STEP_OK notification alert" : "UI_FACT no notification alert within 20 s")
+    }
+
+    /// The notification question can come later than the 20 s `allowNotificationsIfAsked` waits:
+    /// on a busy Mac (load 669, UI run 44880878362) it came only after the demo library was made
+    /// and covered "overview after first analysis". The audit then could not reach the app
+    /// ("Invalid target app" twice) and the screen went unaudited. So every check first looks
+    /// once whether the system alert is in front and answers it as the onboarding does.
+    private func answerLateNotificationAlert(before screen: String) {
+        let alert = XCUIApplication(bundleIdentifier: "com.apple.springboard").alerts.firstMatch
+        guard alert.exists else { return }
+        let aboutNotifications = ["Notification", "Mitteilung"].contains { alert.label.localizedCaseInsensitiveContains($0) }
+        for label in ["Erlauben", "Allow"] where aboutNotifications && alert.buttons[label].exists {
+            alert.buttons[label].tap()
+            UITestWait.disappears(alert, "late notification alert before \(screen) answered", timeout: 10)
+            print("UI_FACT notification alert came late, answered before \(screen)")
+            return
+        }
+        print("UI_FACT system alert in front before \(screen): \(alert.label)")
     }
 
     @discardableResult

@@ -22,7 +22,8 @@ What a time limit is (a number of seconds or minutes the code waits for or measu
   - Swift tests (App/AlbumistUITests, App/AlbumistTests, Tests): `timeout: 20` (waitForExistence,
     UITestWait, XCTWaiter; also a default `timeout: TimeInterval = 15`), `limit: 15` of the
     timed(...) steps, an upper bound `< .seconds(3)` / `<= .milliseconds(500)` / `< .minutes(2)`,
-    and `.timeLimit(.minutes(5))`;
+    `.timeLimit(.minutes(5))`, and a deadline the test builds itself (`Date().addingTimeInterval(900)`,
+    `Date(timeIntervalSinceNow: 40)`; not one computed from a variable or moved back from a moment);
   - workflows (.github/workflows): `timeout-minutes: 75`.
 A limit is loosened when a changed line keeps its code but gets a larger number (the line pairs
 with the removed line of the same hunk that reads the same with the numbers left out, else with
@@ -48,6 +49,9 @@ SWIFT_LIMITS = (
     (re.compile(r"\btimed\(.*?\blimit\s*:\s*" + NUMBER + r"(?![\w.])"), lambda m: 1.0),
     (re.compile(r"<=?\s*\.(seconds|milliseconds|minutes)\(\s*" + NUMBER + r"\s*\)"), lambda m: UNITS[m.group(1)]),
     (re.compile(r"\.timeLimit\(\s*\.minutes\(\s*" + NUMBER + r"\s*\)\s*\)"), lambda m: 60.0),
+    # A deadline the test builds itself: `Date().addingTimeInterval(900)`, `Date(timeIntervalSinceNow: 40)`.
+    (re.compile(r"\bDate\(\)\.addingTimeInterval\(\s*" + NUMBER + r"\s*\)"), lambda m: 1.0),
+    (re.compile(r"\bDate\(\s*timeIntervalSinceNow\s*:\s*" + NUMBER + r"\s*\)"), lambda m: 1.0),
 )
 WORKFLOW_LIMITS = ((re.compile(r"^\s*timeout-minutes\s*:\s*" + NUMBER + r"\s*(?:#.*)?$"), lambda m: 60.0),)
 SWIFT_DIRS = ("App/AlbumistUITests/", "App/AlbumistTests/", "Tests/")
